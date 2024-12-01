@@ -1,40 +1,31 @@
 interface Pipeline {
   pipeline: GPURenderPipeline;
-  render: (
-    commandEncoder: GPUCommandEncoder,
-    textureView: GPUTextureView,
-    pipeline: GPURenderPipeline,
-    bindGroup: GPUBindGroup
-  ) => void;
-  bindGroup: GPUBindGroup;
+  render: PipelineRenderFunction;
 }
 
 interface PipelineOptions {
   descriptor: GPURenderPipelineDescriptor;
-  bindGroup: GPUBindGroup;
   renderFunction: PipelineRenderFunction;
 }
 
 type PipelineRenderFunction = (
   commandEncoder: GPUCommandEncoder,
   textureView: GPUTextureView,
-  pipeline: GPURenderPipeline,
-  bindGroup: GPUBindGroup
+  pipeline: GPURenderPipeline
 ) => void;
 
 function createPipeline(device: GPUDevice, pipelines: Pipeline[]) {
   return function (pipelineOptions: PipelineOptions): Pipeline {
-    const { descriptor, bindGroup, renderFunction } = pipelineOptions;
+    const { descriptor, renderFunction } = pipelineOptions;
 
     const pipeline = device.createRenderPipeline(descriptor);
 
     function render(commandEncoder: GPUCommandEncoder, textureView: GPUTextureView) {
-      renderFunction(commandEncoder, textureView, pipeline, bindGroup);
+      renderFunction(commandEncoder, textureView, pipeline);
     }
 
     const output = {
       pipeline,
-      bindGroup,
       render,
     };
 

@@ -34,8 +34,8 @@ async function createRenderer(props: RendererProps): Promise<Renderer | false> {
     const textureView = context.getCurrentTexture().createView();
 
     for (let i = 0; i < pipelines.length; i++) {
-      const { pipeline, render, bindGroup } = pipelines[i];
-      render(commandEncoder, textureView, pipeline, bindGroup);
+      const { pipeline, render } = pipelines[i];
+      render(commandEncoder, textureView, pipeline);
     }
 
     device.queue.submit([commandEncoder.finish()]);
@@ -56,3 +56,4 @@ async function createRenderer(props: RendererProps): Promise<Renderer | false> {
 }
 
 export { createRenderer };
+export type { Renderer };
