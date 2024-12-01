@@ -1,7 +1,7 @@
 import "./style.css";
 import { createRenderer } from "./renderer/renderer";
 import { simpleShaderPipeline } from "./simpleShaderPipeline";
-import { Pane } from "tweakpane";
+import { initDebug } from "./debug";
 
 const renderer = await createRenderer({ canvasOptions: { className: "webgpu-canvas" } });
 
@@ -16,25 +16,7 @@ const scale = new Float32Array(uniformsBufferValues, 16, 1);
 color.set([params.color.r, params.color.g, params.color.b, params.color.a], 0);
 scale.set([params.scale], 0);
 
-const debugPane = new Pane();
-debugPane
-  .addBinding(params, "color", {
-    color: { type: "float" },
-  })
-  .on("change", (event) => {
-    const { r, g, b, a } = event.value;
-    color.set([r, g, b, a], 0);
-  });
-
-debugPane
-  .addBinding(params, "scale", {
-    min: -2.0,
-    max: 2.0,
-  })
-  .on("change", (event) => {
-    const s = event.value;
-    scale.set([s], 0);
-  });
+initDebug(params, { color, scale });
 
 if (renderer) {
   const uniformsBuffer = renderer.device.createBuffer({
