@@ -1,18 +1,9 @@
-interface CanvasOptions {
-  className?: string;
-  dpr?: number;
-}
-
-type Canvas = {
-  device: GPUDevice;
-  presentationFormat: GPUTextureFormat;
-  canvasElement: HTMLCanvasElement;
-  context: GPUCanvasContext;
-};
+import { CBO } from "../data/CBO";
+import type { CanvasOptions, Canvas } from "../types";
 
 async function initCanvas(options: CanvasOptions = {}): Promise<Canvas | null> {
   const { className = "", dpr = 2 } = options;
-
+  const { uniforms: CBOUniforms } = CBO();
   const adapter = await navigator.gpu?.requestAdapter();
   const device = await adapter?.requestDevice();
   const presentationFormat = navigator.gpu?.getPreferredCanvasFormat();
@@ -40,10 +31,11 @@ async function initCanvas(options: CanvasOptions = {}): Promise<Canvas | null> {
   const observer = new ResizeObserver((entries) => {
     for (const entry of entries) {
       const { width, height } = entry.contentRect;
-      const w = width * dpr;
-      const h = height * dpr;
-      canvasElement.width = Math.max(1, Math.min(w, device.limits.maxTextureDimension2D));
-      canvasElement.height = Math.max(1, Math.min(h, device.limits.maxTextureDimension2D));
+      const w = Math.max(1, Math.min(width * dpr, device.limits.maxTextureDimension2D));
+      const h = Math.max(1, Math.min(height * dpr, device.limits.maxTextureDimension2D));
+      canvasElement.width = w;
+      canvasElement.height = h;
+      CBOUniforms.uResolution.set([w, h], 0);
     }
   });
 

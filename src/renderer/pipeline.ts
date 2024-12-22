@@ -1,18 +1,4 @@
-interface Pipeline {
-  pipeline: GPURenderPipeline;
-  render: PipelineRenderFunction;
-}
-
-interface PipelineOptions {
-  descriptor: GPURenderPipelineDescriptor;
-  renderFunction: PipelineRenderFunction;
-}
-
-type PipelineRenderFunction = (
-  commandEncoder: GPUCommandEncoder,
-  textureView: GPUTextureView,
-  pipeline: GPURenderPipeline
-) => void;
+import type { Pipeline, PipelineOptions, PipelineRenderFunction } from "../types";
 
 function createPipeline(device: GPUDevice, pipelines: Pipeline[]) {
   return function (pipelineOptions: PipelineOptions): Pipeline {

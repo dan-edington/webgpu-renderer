@@ -1,5 +1,5 @@
-import shader from "./shader.wgsl?raw";
-import type { Renderer } from "./renderer/renderer";
+import shader from "./shaders/shader.wgsl?raw";
+import type { Renderer } from "../renderer/renderer";
 
 function simpleShaderPipeline(renderer: Renderer, uniformsBuffer: GPUBuffer) {
   const basicShader = renderer.createShaderModule({
@@ -56,7 +56,7 @@ function simpleShaderPipeline(renderer: Renderer, uniformsBuffer: GPUBuffer) {
 
     passEncoder.setPipeline(pipeline);
     passEncoder.setBindGroup(0, bindGroup);
-    passEncoder.draw(3);
+    passEncoder.draw(6);
     passEncoder.end();
   }
 }

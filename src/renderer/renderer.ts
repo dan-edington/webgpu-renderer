@@ -1,20 +1,7 @@
-import { initCanvas, CanvasOptions } from "./canvas";
+import { initCanvas } from "./canvas";
 import { createShaderModule as _createShaderModule } from "./shaderModule";
-import { createPipeline as _createPipeline, Pipeline, PipelineOptions } from "./pipeline";
-
-interface RendererProps {
-  canvasOptions: CanvasOptions;
-}
-
-interface Renderer {
-  render: () => void;
-  createShaderModule: (descriptor: GPUShaderModuleDescriptor) => GPUShaderModule;
-  createPipeline: (pipelineOptions: PipelineOptions) => Pipeline;
-  device: GPUDevice;
-  canvasElement: HTMLCanvasElement;
-  presentationFormat: GPUTextureFormat;
-  context: GPUCanvasContext;
-}
+import { createPipeline as _createPipeline, Pipeline } from "./pipeline";
+import type { RendererProps, Renderer } from "../types";
 
 async function createRenderer(props: RendererProps): Promise<Renderer | false> {
   const { canvasOptions } = props;
