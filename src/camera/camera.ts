@@ -16,7 +16,7 @@ function createCamera(projectionMatrix: Float32Array, viewMatrix: Float32Array) 
   }
 
   function setPosition(newPosition: vec3) {
-    position = newPosition;
+    vec3.copy(position, newPosition);
     mat4.lookAt(_viewMatrix, position, target, cameraUp);
     viewMatrix.set(_viewMatrix, 0);
   }
