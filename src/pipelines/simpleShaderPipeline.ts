@@ -1,8 +1,9 @@
 import shader from "./shaders/shader.wgsl?raw";
 import type { Renderer } from "../renderer/renderer";
+import { ShaderModule } from "../renderer/ShaderModule";
 
 function simpleShaderPipeline(renderer: Renderer, uniformsBuffer: GPUBuffer) {
-  const basicShader = renderer.createShaderModule({
+  const basicShader = new ShaderModule(renderer.device, {
     label: "basic shader",
     code: shader,
   });
@@ -12,11 +13,11 @@ function simpleShaderPipeline(renderer: Renderer, uniformsBuffer: GPUBuffer) {
     layout: "auto",
     vertex: {
       entryPoint: "vertex_shader",
-      module: basicShader,
+      module: basicShader.module,
     },
     fragment: {
       entryPoint: "fragment_shader",
-      module: basicShader,
+      module: basicShader.module,
       targets: [{ format: renderer.presentationFormat }],
     },
   } as GPURenderPipelineDescriptor;

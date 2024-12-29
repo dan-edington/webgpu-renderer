@@ -1,9 +1,15 @@
-function createShaderModule(device: GPUDevice) {
-  return function (descriptor: GPUShaderModuleDescriptor) {
-    const shaderModule = device.createShaderModule(descriptor);
+class ShaderModule {
+  #device: GPUDevice;
+  #shaderModule: GPUShaderModule;
 
-    return shaderModule;
-  };
+  constructor(device: GPUDevice, descriptor: GPUShaderModuleDescriptor) {
+    this.#device = device;
+    this.#shaderModule = this.#device.createShaderModule(descriptor);
+  }
+
+  get module() {
+    return this.#shaderModule;
+  }
 }
 
-export { createShaderModule };
+export { ShaderModule };

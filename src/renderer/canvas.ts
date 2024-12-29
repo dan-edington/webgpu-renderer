@@ -1,12 +1,11 @@
-import { CBO } from "../data/CBO";
-import type { CanvasOptions, Canvas } from "../types";
+import type { CanvasOptions, Canvas, ResizeFunction } from "../types";
 
 async function initCanvas(options: CanvasOptions = {}): Promise<Canvas | null> {
   const { className = "", dpr = 2 } = options;
-  const { uniforms: CBOUniforms } = CBO();
   const adapter = await navigator.gpu?.requestAdapter();
   const device = await adapter?.requestDevice();
   const presentationFormat = navigator.gpu?.getPreferredCanvasFormat();
+  let onResize: ResizeFunction;
 
   if (!device || !presentationFormat) {
     return null;
@@ -35,13 +34,20 @@ async function initCanvas(options: CanvasOptions = {}): Promise<Canvas | null> {
       const h = Math.max(1, Math.min(height * dpr, device.limits.maxTextureDimension2D));
       canvasElement.width = w;
       canvasElement.height = h;
-      CBOUniforms.uResolution.set([w, h], 0);
+
+      if (onResize) {
+        onResize(w, h);
+      }
     }
   });
 
   observer.observe(canvasElement);
 
-  return { device, presentationFormat, canvasElement, context };
+  function setOnResize(resizeFunction: ResizeFunction) {
+    onResize = resizeFunction;
+  }
+
+  return { device, presentationFormat, canvasElement, context, setOnResize };
 }
 
 export { initCanvas };

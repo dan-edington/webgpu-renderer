@@ -17,6 +17,7 @@ export type Canvas = {
   presentationFormat: GPUTextureFormat;
   canvasElement: HTMLCanvasElement;
   context: GPUCanvasContext;
+  setOnResize: (resizeFunction: ResizeFunction) => void;
 };
 
 export type RendererProps = {
@@ -25,12 +26,12 @@ export type RendererProps = {
 
 export type Renderer = {
   render: () => void;
-  createShaderModule: (descriptor: GPUShaderModuleDescriptor) => GPUShaderModule;
   createPipeline: (pipelineOptions: PipelineOptions) => Pipeline;
   device: GPUDevice;
   canvasElement: HTMLCanvasElement;
   presentationFormat: GPUTextureFormat;
   context: GPUCanvasContext;
+  setOnResize: (resizeFunction: ResizeFunction) => void;
 };
 
 export type Pipeline = {
@@ -48,3 +49,5 @@ export type PipelineRenderFunction = (
   textureView: GPUTextureView,
   pipeline: GPURenderPipeline
 ) => void;
+
+export type ResizeFunction = (width: number, height: number) => void;
