@@ -1,28 +1,10 @@
-import { Renderer } from "../renderer/renderer";
-
-type UniformsList = Record<string, Float32Array | number[]>;
-
-interface IUBOOptions {
-  renderer: Renderer;
-  buffer: ArrayBuffer;
-  uniforms: UniformsList;
-  label?: string;
-}
-
-interface IUBO {
-  label: string;
-  bufferObject?: GPUBuffer;
-  bufferData?: ArrayBuffer;
-  uniforms?: UniformsList;
-  updateUniforms(updatedUniforms: UniformsList): void;
-  writeUpdatedBufferData(): void;
-}
+import type { IUBO, IUBOOptions, UniformsList, IRenderer } from "../types";
 
 class UBO implements IUBO {
   #needsUpdate: boolean = false;
-  #renderer: Renderer;
+  #renderer: IRenderer;
   label: string;
-  bufferObject: GPUBuffer;
+  gpuBuffer: GPUBuffer;
   uniforms: UniformsList;
   bufferData: ArrayBuffer;
 
@@ -32,11 +14,15 @@ class UBO implements IUBO {
     this.#renderer = renderer;
     this.label = label || "";
 
-    this.bufferObject = renderer.device.createBuffer({
-      label: this.label,
-      size: buffer.byteLength,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
+    if (this.#renderer.device) {
+      this.gpuBuffer = this.#renderer.device.createBuffer({
+        label: this.label,
+        size: buffer.byteLength,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      });
+    } else {
+      throw new Error("Device is not available.");
+    }
 
     this.bufferData = buffer;
     this.uniforms = uniforms;
@@ -53,8 +39,8 @@ class UBO implements IUBO {
   }
 
   writeUpdatedBufferData() {
-    if (this.#needsUpdate) {
-      this.#renderer.device.queue.writeBuffer(this.bufferObject, 0, this.bufferData);
+    if (this.#needsUpdate && this.#renderer.device) {
+      this.#renderer.device.queue.writeBuffer(this.gpuBuffer, 0, this.bufferData);
       this.#needsUpdate = false;
     }
   }

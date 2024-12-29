@@ -12,27 +12,29 @@ export type CanvasOptions = {
   dpr?: number;
 };
 
-export type Canvas = {
-  device: GPUDevice;
-  presentationFormat: GPUTextureFormat;
+export type ICanvas = {
+  device: GPUDevice | undefined;
+  presentationFormat: GPUTextureFormat | undefined;
   canvasElement: HTMLCanvasElement;
-  context: GPUCanvasContext;
-  setOnResize: (resizeFunction: ResizeFunction) => void;
+  context: GPUCanvasContext | null;
+  onResize: ResizeFunction;
 };
 
 export type RendererProps = {
   canvasOptions: CanvasOptions;
 };
 
-export type Renderer = {
+export interface IRenderer {
+  canvas: ICanvas;
+  device: GPUDevice | undefined;
+  canvasElement: HTMLCanvasElement | undefined;
+  presentationFormat: GPUTextureFormat | undefined;
+  context: GPUCanvasContext | null;
+  onResize?: ResizeFunction;
   render: () => void;
-  createPipeline: (pipelineOptions: PipelineOptions) => Pipeline;
-  device: GPUDevice;
-  canvasElement: HTMLCanvasElement;
-  presentationFormat: GPUTextureFormat;
-  context: GPUCanvasContext;
-  setOnResize: (resizeFunction: ResizeFunction) => void;
-};
+  init: () => Promise<void>;
+  createPipeline: (options: PipelineOptions) => Pipeline;
+}
 
 export type Pipeline = {
   pipeline: GPURenderPipeline;
@@ -51,3 +53,21 @@ export type PipelineRenderFunction = (
 ) => void;
 
 export type ResizeFunction = (width: number, height: number) => void;
+
+export type UniformsList = Record<string, Float32Array | number[]>;
+
+export interface IUBOOptions {
+  renderer: IRenderer;
+  buffer: ArrayBuffer;
+  uniforms: UniformsList;
+  label?: string;
+}
+
+export interface IUBO {
+  label: string;
+  gpuBuffer?: GPUBuffer;
+  bufferData?: ArrayBuffer;
+  uniforms?: UniformsList;
+  updateUniforms(updatedUniforms: UniformsList): void;
+  writeUpdatedBufferData(): void;
+}

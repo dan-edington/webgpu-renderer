@@ -1,31 +1,32 @@
 import "./style.css";
-import { createRenderer } from "./renderer/renderer";
+import { Renderer } from "./renderer/renderer";
 import { simpleShaderPipeline } from "./pipelines/simpleShaderPipeline";
 import { initCBO } from "./data/CBO";
+import type { IUBO } from "./UBO/UBO";
+import { IRenderer } from "./types";
 
-const renderer = await createRenderer({ canvasOptions: { className: "webgpu-canvas" } });
-
-if (!renderer) {
-  throw new Error("Failed to create renderer");
-}
+const renderer = new Renderer({ canvasOptions: { className: "webgpu-canvas" } }) as IRenderer;
+await renderer.init();
 
 if (renderer) {
+  const UBOList: IUBO[] = [];
   const CBO = initCBO(renderer);
+  UBOList.push(CBO);
 
-  renderer.setOnResize((width, height) => {
+  renderer.canvas.onResize = (width, height) => {
     CBO.updateUniforms({ uResolution: [width, height] });
-  });
+  };
 
-  simpleShaderPipeline(renderer, CBO.bufferObject);
-
-  let t = 0;
+  simpleShaderPipeline(renderer, CBO.gpuBuffer);
 
   function renderLoop() {
-    if (renderer && CBO.bufferObject) {
-      t = performance.now() / 1000;
+    if (renderer && CBO.gpuBuffer) {
+      // Update UBOs
+      for (let i = 0; i < UBOList.length; i++) {
+        UBOList[i].writeUpdatedBufferData();
+      }
 
-      CBO.writeUpdatedBufferData();
-
+      // Render pipelines
       renderer.render();
 
       requestAnimationFrame(renderLoop);

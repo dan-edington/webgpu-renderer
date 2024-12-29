@@ -1,44 +1,67 @@
-import { initCanvas } from "./canvas";
-import { createPipeline as _createPipeline, Pipeline } from "./pipeline";
-import type { RendererProps, Renderer } from "../types";
+import { Canvas } from "./canvas";
+import type { RendererProps, IRenderer, PipelineOptions, Pipeline } from "../types";
 
-async function createRenderer(props: RendererProps): Promise<Renderer | false> {
-  const { canvasOptions } = props;
+class Renderer implements IRenderer {
+  canvas: Canvas;
+  device: GPUDevice | undefined;
+  canvasElement: HTMLCanvasElement | undefined;
+  presentationFormat: GPUTextureFormat | undefined;
+  context: GPUCanvasContext | null;
+  #pipelines: Pipeline[];
 
-  const canvas = await initCanvas(canvasOptions);
-
-  if (!canvas) {
-    console.error("WebGPU not supported or something.");
-    return false;
+  constructor(options: RendererProps) {
+    const { canvasOptions } = options;
+    this.canvas = new Canvas(canvasOptions);
+    this.#pipelines = [];
+    this.context = null;
   }
 
-  const { device, canvasElement, presentationFormat, context, setOnResize } = canvas;
-  const pipelines: Pipeline[] = [];
-
-  function render() {
-    const commandEncoder = device.createCommandEncoder();
-    const textureView = context.getCurrentTexture().createView();
-
-    for (let i = 0; i < pipelines.length; i++) {
-      const { pipeline, render } = pipelines[i];
-      render(commandEncoder, textureView, pipeline);
+  async init() {
+    if (this.canvas) {
+      await this.canvas.init();
+      this.device = this.canvas.device;
+      this.canvasElement = this.canvas.canvasElement;
+      this.presentationFormat = this.canvas.presentationFormat;
+      this.context = this.canvas.context;
     }
-
-    device.queue.submit([commandEncoder.finish()]);
   }
 
-  const createPipeline = _createPipeline(device, pipelines);
+  render() {
+    if (this.device && this.context) {
+      const commandEncoder = this.device.createCommandEncoder();
+      const textureView = this.context.getCurrentTexture().createView();
 
-  return {
-    render,
-    createPipeline,
-    device,
-    canvasElement,
-    presentationFormat,
-    context,
-    setOnResize,
-  };
+      for (let i = 0; i < this.#pipelines.length; i++) {
+        const { pipeline, render } = this.#pipelines[i];
+        render(commandEncoder, textureView, pipeline);
+      }
+
+      this.device.queue.submit([commandEncoder.finish()]);
+    }
+  }
+
+  createPipeline(pipelineOptions: PipelineOptions): Pipeline {
+    const { descriptor, renderFunction } = pipelineOptions;
+
+    if (this.device) {
+      const pipeline = this.device.createRenderPipeline(descriptor);
+
+      function render(commandEncoder: GPUCommandEncoder, textureView: GPUTextureView) {
+        renderFunction(commandEncoder, textureView, pipeline);
+      }
+
+      const output = {
+        pipeline,
+        render,
+      };
+
+      this.#pipelines.push(output);
+
+      return output;
+    } else {
+      throw new Error("Device is not initialized");
+    }
+  }
 }
 
-export { createRenderer };
-export type { Renderer };
+export { Renderer };
