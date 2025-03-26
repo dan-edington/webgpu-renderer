@@ -1,10 +1,9 @@
 import shader from "./shaders/shader.wgsl?raw";
 import type { IRenderer } from "../types";
-import { ShaderModule } from "../renderer/shaderModule";
 
 function simpleShaderPipeline(renderer: IRenderer, uniformsBuffer: GPUBuffer) {
   if (renderer.device) {
-    const basicShader = new ShaderModule(renderer.device, {
+    const basicShader = renderer.createShaderModule({
       label: "basic shader",
       code: shader,
     });
@@ -12,22 +11,22 @@ function simpleShaderPipeline(renderer: IRenderer, uniformsBuffer: GPUBuffer) {
     const basicPipelineDesciptor = renderer.createPipelineDescriptor({
       vertex: {
         entryPoint: "vertex_shader",
-        module: basicShader.module,
+        module: basicShader,
       },
       fragment: {
         entryPoint: "fragment_shader",
-        module: basicShader.module,
+        module: basicShader,
         targets: [{ format: renderer.presentationFormat || "bgra8unorm" }],
       },
     });
 
-    const pipeline = renderer.createPipeline({
+    const basicPipeline = renderer.createPipeline({
       descriptor: basicPipelineDesciptor,
       renderFunction: basicPipelineRenderFunction,
     });
 
     const bindGroup = renderer.device.createBindGroup({
-      layout: pipeline.pipeline.getBindGroupLayout(0),
+      layout: basicPipeline.pipeline.getBindGroupLayout(0),
       entries: [
         {
           binding: 0,

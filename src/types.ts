@@ -36,6 +36,7 @@ export interface IRenderer {
   init: () => Promise<void>;
   createPipeline: (options: PipelineOptions) => Pipeline;
   createPipelineDescriptor: (options: Partial<GPURenderPipelineDescriptor>) => GPURenderPipelineDescriptor;
+  createShaderModule: (options: GPUShaderModuleDescriptor) => GPUShaderModule;
 }
 
 export type Pipeline = {

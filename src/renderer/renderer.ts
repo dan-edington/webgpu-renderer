@@ -43,6 +43,14 @@ class Renderer implements IRenderer {
     }
   }
 
+  createShaderModule(options: GPUShaderModuleDescriptor): GPUShaderModule {
+    if (this.device) {
+      return this.device.createShaderModule(options);
+    } else {
+      throw new Error("Device is not initialized");
+    }
+  }
+
   createPipeline(pipelineOptions: PipelineOptions): Pipeline {
     const { descriptor, renderFunction } = pipelineOptions;
 
