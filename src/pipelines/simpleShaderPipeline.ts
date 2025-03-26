@@ -9,9 +9,7 @@ function simpleShaderPipeline(renderer: IRenderer, uniformsBuffer: GPUBuffer) {
       code: shader,
     });
 
-    const basicPipelineDesciptor = {
-      label: "simple pipeline",
-      layout: "auto",
+    const basicPipelineDesciptor = renderer.createPipelineDescriptor({
       vertex: {
         entryPoint: "vertex_shader",
         module: basicShader.module,
@@ -19,9 +17,9 @@ function simpleShaderPipeline(renderer: IRenderer, uniformsBuffer: GPUBuffer) {
       fragment: {
         entryPoint: "fragment_shader",
         module: basicShader.module,
-        targets: [{ format: renderer.presentationFormat }],
+        targets: [{ format: renderer.presentationFormat || "bgra8unorm" }],
       },
-    } as GPURenderPipelineDescriptor;
+    });
 
     const pipeline = renderer.createPipeline({
       descriptor: basicPipelineDesciptor,

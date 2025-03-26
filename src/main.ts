@@ -1,14 +1,14 @@
 import "./style.css";
 import { Renderer } from "./renderer/renderer";
 import { simpleShaderPipeline } from "./pipelines/simpleShaderPipeline";
-import { initCBO } from "./data/CBO";
+import { initCBO } from "./data/CameraBufferObject";
 import type { IUBO } from "./UBO/UBO";
 import { IRenderer } from "./types";
 
 const renderer = new Renderer({ canvasOptions: { className: "webgpu-canvas" } }) as IRenderer;
 await renderer.init();
 
-if (renderer) {
+if (renderer.isReady) {
   const UBOList: IUBO[] = [];
   const CBO = initCBO(renderer);
   UBOList.push(CBO);

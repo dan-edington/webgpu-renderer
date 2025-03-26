@@ -3,10 +3,11 @@ import type { RendererProps, IRenderer, PipelineOptions, Pipeline } from "../typ
 
 class Renderer implements IRenderer {
   canvas: Canvas;
-  device: GPUDevice | undefined;
-  canvasElement: HTMLCanvasElement | undefined;
-  presentationFormat: GPUTextureFormat | undefined;
+  device?: GPUDevice;
+  canvasElement?: HTMLCanvasElement;
+  presentationFormat?: GPUTextureFormat;
   context: GPUCanvasContext | null;
+  isReady?: boolean;
   #pipelines: Pipeline[];
 
   constructor(options: RendererProps) {
@@ -14,6 +15,7 @@ class Renderer implements IRenderer {
     this.canvas = new Canvas(canvasOptions);
     this.#pipelines = [];
     this.context = null;
+    this.isReady = false;
   }
 
   async init() {
@@ -23,6 +25,7 @@ class Renderer implements IRenderer {
       this.canvasElement = this.canvas.canvasElement;
       this.presentationFormat = this.canvas.presentationFormat;
       this.context = this.canvas.context;
+      this.isReady = true;
     }
   }
 
@@ -61,6 +64,34 @@ class Renderer implements IRenderer {
     } else {
       throw new Error("Device is not initialized");
     }
+  }
+
+  createPipelineDescriptor(options: Partial<GPURenderPipelineDescriptor>): GPURenderPipelineDescriptor {
+    const vertexShaderModule = options.vertex?.module;
+    const fragmentShaderModule = options.fragment?.module;
+
+    if (!vertexShaderModule || !fragmentShaderModule) {
+      throw new Error("Vertex and Fragment shader modules are required");
+    }
+
+    const defaultDescriptor: GPURenderPipelineDescriptor = {
+      label: `Pipeline ${Date.now()}`,
+      layout: "auto",
+      vertex: {
+        entryPoint: "vertex_shader",
+        module: vertexShaderModule,
+      },
+      fragment: {
+        entryPoint: "fragment_shader",
+        module: fragmentShaderModule,
+        targets: [{ format: this.presentationFormat || "bgra8unorm" }],
+      },
+    };
+
+    return {
+      ...defaultDescriptor,
+      ...options,
+    } as GPURenderPipelineDescriptor;
   }
 }
 

@@ -26,14 +26,16 @@ export type RendererProps = {
 
 export interface IRenderer {
   canvas: ICanvas;
-  device: GPUDevice | undefined;
-  canvasElement: HTMLCanvasElement | undefined;
-  presentationFormat: GPUTextureFormat | undefined;
+  device?: GPUDevice;
+  canvasElement?: HTMLCanvasElement;
+  presentationFormat?: GPUTextureFormat;
   context: GPUCanvasContext | null;
+  isReady?: boolean;
   onResize?: ResizeFunction;
   render: () => void;
   init: () => Promise<void>;
   createPipeline: (options: PipelineOptions) => Pipeline;
+  createPipelineDescriptor: (options: Partial<GPURenderPipelineDescriptor>) => GPURenderPipelineDescriptor;
 }
 
 export type Pipeline = {
