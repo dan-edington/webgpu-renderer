@@ -5,6 +5,7 @@ import { Scene } from './core/Scene';
 import './style.css';
 import simpleShader from './simple.wgsl?raw';
 import { ShaderMaterial } from './core/ShaderMaterial';
+import { UniformBuffer } from './core/UniformBuffer';
 
 const container = document.getElementById('app');
 
@@ -25,13 +26,23 @@ if (container) {
   const material = new ShaderMaterial({ shader: simpleShader });
 
   // Create a mesh with the geometry and material
-  const mesh = new Mesh(geometry, material);
+  const meshUniformBuffer = new ArrayBuffer(16);
+  const mesh = new Mesh(
+    geometry,
+    material,
+    new UniformBuffer(
+      {
+        uColor: new Float32Array(meshUniformBuffer, 0, 4).set([0, 0.5, 1, 1]),
+      },
+      meshUniformBuffer,
+    ),
+  );
 
   // Add the mesh to the scene
   scene.add(mesh);
 
   // TODO:
-  // Create Uniform Buffer Class
+  // Improve how uniforms are created and updated
   // Add camera
 
   // Render the scene

@@ -1,3 +1,9 @@
+struct MeshUniforms {
+  uColor: vec4f,
+};
+
+@group(2) @binding(0) var<uniform> meshUniforms: MeshUniforms;
+
 @vertex
 fn vertex_shader(
   @builtin(vertex_index) vertexIndex: u32,
@@ -12,7 +18,7 @@ fn fragment_shader(
   @builtin(position) fragCoord: vec4<f32>
 ) -> @location(0) vec4f {
 
-  return vec4f(1, 0, 0, 1);
+  return meshUniforms.uColor;
 }
 
 
