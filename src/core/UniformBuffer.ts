@@ -1,16 +1,24 @@
 import { Renderer } from './Renderer';
+import {
+  computeBufferLayout,
+  writeUniformValuesToBuffer,
+  type UniformEntryMeta,
+  type UniformValue,
+  type UniformValueInput,
+} from './utilities/computeBufferLayout';
 
 class UniformBuffer {
   buffer: GPUBuffer;
-  uniforms: Record<string, any>;
+  uniforms: Record<string, UniformValue>;
   bufferData: ArrayBuffer;
   needsUpdate: boolean;
   rendererInstance: Renderer;
+  layoutEntries: UniformEntryMeta[] = [];
 
-  constructor(uniforms: Record<string, any>, bufferData: ArrayBuffer) {
+  constructor(uniforms: Record<string, UniformValue>) {
     this.uniforms = uniforms;
-    this.bufferData = bufferData;
     this.needsUpdate = true;
+    this.computeBufferLayout();
   }
 
   init(renderer: Renderer) {
@@ -24,13 +32,39 @@ class UniformBuffer {
     this.writeUpdatedBufferData();
   }
 
-  updateUniform(updatedUniforms: Record<string, any>) {
+  updateUniform(updatedUniforms: Record<string, UniformValueInput>) {
     for (const key in updatedUniforms) {
-      if (this.uniforms.hasOwnProperty(key)) {
-        this.uniforms[key].set(updatedUniforms[key], 0);
+      const currentUniform = this.uniforms[key];
+      if (!currentUniform) {
+        continue;
       }
+
+      const nextValue = updatedUniforms[key];
+
+      if (typeof currentUniform.value === 'number') {
+        if (typeof nextValue !== 'number') {
+          throw new Error(`Uniform '${key}' expects a number value.`);
+        }
+        currentUniform.value = nextValue;
+        continue;
+      }
+
+      if (typeof nextValue === 'number') {
+        if (currentUniform.value.length !== 1) {
+          throw new Error(`Uniform '${key}' expects ${currentUniform.value.length} values, got scalar.`);
+        }
+        currentUniform.value[0] = nextValue;
+        continue;
+      }
+
+      if (nextValue.length !== currentUniform.value.length) {
+        throw new Error(`Uniform '${key}' expects ${currentUniform.value.length} values, got ${nextValue.length}.`);
+      }
+
+      currentUniform.value.set(nextValue);
     }
 
+    this.writeAllUniformValuesToBuffer();
     this.needsUpdate = true;
   }
 
@@ -39,6 +73,16 @@ class UniformBuffer {
       this.rendererInstance.device.queue.writeBuffer(this.buffer, 0, this.bufferData);
       this.needsUpdate = false;
     }
+  }
+
+  computeBufferLayout() {
+    const { bufferData, layoutEntries } = computeBufferLayout(this.uniforms);
+    this.bufferData = bufferData;
+    this.layoutEntries = layoutEntries;
+  }
+
+  private writeAllUniformValuesToBuffer() {
+    writeUniformValuesToBuffer(this.uniforms, this.bufferData, this.layoutEntries);
   }
 }
 

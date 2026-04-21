@@ -26,23 +26,18 @@ if (container) {
   const material = new ShaderMaterial({ shader: simpleShader });
 
   // Create a mesh with the geometry and material
-  const meshUniformBuffer = new ArrayBuffer(16);
   const mesh = new Mesh(
     geometry,
     material,
-    new UniformBuffer(
-      {
-        uColor: new Float32Array(meshUniformBuffer, 0, 4).set([0, 0.5, 1, 1]),
-      },
-      meshUniformBuffer,
-    ),
+    new UniformBuffer({
+      uColor: { type: 'vec4<f32>', value: new Float32Array([0, 1, 0, 1]) },
+    }),
   );
 
   // Add the mesh to the scene
   scene.add(mesh);
 
   // TODO:
-  // Improve how uniforms are created and updated
   // Add camera
 
   // Render the scene
