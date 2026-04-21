@@ -1,37 +1,44 @@
-import "./style.css";
-import { Renderer } from "./renderer/renderer";
-import { simpleShaderPipeline } from "./pipelines/simpleShaderPipeline";
-import { initCBO } from "./data/CBO";
-import type { IUBO } from "./UBO/UBO";
-import { IRenderer } from "./types";
+import { Geometry } from './core/Geometry';
+import { Mesh } from './core/Mesh';
+import { Renderer } from './core/Renderer';
+import { Scene } from './core/Scene';
+import './style.css';
+import simpleShader from './simple.wgsl?raw';
+import { ShaderMaterial } from './core/ShaderMaterial';
 
-const renderer = new Renderer({ canvasOptions: { className: "webgpu-canvas" } }) as IRenderer;
-await renderer.init();
+const container = document.getElementById('app');
 
-if (renderer) {
-  const UBOList: IUBO[] = [];
-  const CBO = initCBO(renderer);
-  UBOList.push(CBO);
+if (container) {
+  // Create and init the renderer
+  const renderer = new Renderer({ containerElement: container });
+  await renderer.init();
 
-  renderer.canvas.onResize = (width, height) => {
-    CBO.updateUniforms({ uResolution: [width, height] });
-  };
+  // Create a scene
+  const scene = new Scene();
 
-  simpleShaderPipeline(renderer, CBO.gpuBuffer);
+  // Draw 2 triangles to create a quad (CCW winding order)
+  const vertices = new Float32Array([-0.8, 0.8, 0, 0.8, 0.8, 0, 0.8, -0.8, 0, -0.8, -0.8, 0]);
+  const vertexIndices = new Uint16Array([0, 3, 2, 2, 1, 0]);
+  const geometry = new Geometry({ vertices, indices: vertexIndices });
 
-  function renderLoop() {
-    if (renderer && CBO.gpuBuffer) {
-      // Update UBOs
-      for (let i = 0; i < UBOList.length; i++) {
-        UBOList[i].writeUpdatedBufferData();
-      }
+  // Create a material
+  const material = new ShaderMaterial({ shader: simpleShader });
 
-      // Render pipelines
-      renderer.render();
+  // Create a mesh with the geometry and material
+  const mesh = new Mesh(geometry, material);
 
-      requestAnimationFrame(renderLoop);
-    }
+  // Add the mesh to the scene
+  scene.add(mesh);
+
+  // TODO:
+  // Create Uniform Buffer Class
+  // Add camera
+
+  // Render the scene
+  function render() {
+    renderer.render(scene);
+    requestAnimationFrame(render);
   }
 
-  renderLoop();
+  render();
 }
