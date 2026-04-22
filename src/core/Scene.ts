@@ -95,10 +95,18 @@ class Scene implements IScene {
     } else {
       this.ambientLight.color = color;
     }
+
+    this.sceneUniformsBuffer?.updateUniform({
+      ambientLightColor: this.ambientLight.color,
+    });
   }
 
   setAmbientLightIntensity(intensity: number) {
     this.ambientLight.intensity = intensity;
+
+    this.sceneUniformsBuffer?.updateUniform({
+      ambientLightIntensity: this.ambientLight.intensity,
+    });
   }
 
   add(entity: Entity) {

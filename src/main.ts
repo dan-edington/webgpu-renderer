@@ -27,7 +27,7 @@ if (container) {
   const material = new ShaderMaterial({
     shader: simpleShader,
     uniforms: {
-      uColor: { type: 'vec4<f32>', value: new Float32Array([0, 1, 0, 1]) },
+      uColor: { type: 'vec4<f32>', value: new Float32Array([Math.random(), Math.random(), Math.random(), 1]) },
     },
   });
 
@@ -47,6 +47,7 @@ if (container) {
 
   // Add the mesh to the scene
   scene.add(mesh);
+  scene.setClearColor([Math.random(), Math.random(), Math.random(), 1]);
 
   // Render the scene
   function render() {
