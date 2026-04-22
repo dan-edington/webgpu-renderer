@@ -4,8 +4,8 @@ import { Geometry } from './Geometry';
 import { ShaderMaterial } from './ShaderMaterial';
 import type { IMesh } from './types';
 import { UniformBuffer } from './UniformBuffer';
-import { constants } from './constants';
-import { errorMessages } from './errorMessages';
+import { constants } from './constants/constants';
+import { errorMessages } from './constants/errorMessages';
 
 class Mesh extends Entity implements IMesh {
   geometry: Geometry;

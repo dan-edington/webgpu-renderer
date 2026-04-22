@@ -1,6 +1,6 @@
 import { Mesh } from './Mesh';
 import { Scene } from './Scene';
-import { errorMessages } from './errorMessages';
+import { errorMessages } from './constants/errorMessages';
 
 interface RendererOptions {
   containerElement?: HTMLElement;

@@ -1,4 +1,4 @@
-import { errorMessages } from './errorMessages';
+import { errorMessages } from './constants/errorMessages';
 import { Renderer } from './Renderer';
 import { IGeometry } from './types';
 import { padArrayToAlignmentBytes } from './utilities/padArrayToAlignmentBytes';
