@@ -16,7 +16,7 @@
     "vitest": "^4.1.4"
   },
   "dependencies": {
-    "gl-matrix": "^3.4.3",
-    "tweakpane": "^4.0.5"
+    "tweakpane": "^4.0.5",
+    "wgpu-matrix": "^3.4.2"
   }
 }

@@ -8,12 +8,12 @@ importers:
 
   .:
     dependencies:
-      gl-matrix:
-        specifier: ^3.4.3
-        version: 3.4.3
       tweakpane:
         specifier: ^4.0.5
         version: 4.0.5
+      wgpu-matrix:
+        specifier: ^3.4.2
+        version: 3.4.2
     devDependencies:
       '@tweakpane/core':
         specifier: ^2.0.5
@@ -240,9 +240,6 @@ packages:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
-
-  gl-matrix@3.4.3:
-    resolution: {integrity: sha512-wcCp8vu8FT22BnvKVPjXa/ICBWRq/zjFfdofZy1WSpQZpphblv12/bOQLBC1rMM7SGOFS9ltVmKOHil5+Ml7gA==}
 
   lightningcss-android-arm64@1.32.0:
     resolution: {integrity: sha512-YK7/ClTt4kAK0vo6w3X+Pnm0D2cf2vPHbhOXdoNti1Ga0al1P4TBZhwjATvjNwLEBCnKvjJc2jQgHXH0NEwlAg==}
@@ -471,6 +468,9 @@ packages:
       jsdom:
         optional: true
 
+  wgpu-matrix@3.4.2:
+    resolution: {integrity: sha512-IfZFbG7olEYBD76VCZy2TzqM57GKy3LT++AZh37tMHPPByO6R2h61zXGBZFNPi2IzxNivNi8y5dvze5PjaczjA==}
+
   why-is-node-running@2.3.0:
     resolution: {integrity: sha512-hUrmaWBdVDcxvYqnyh09zunKzROWjbZTiNy8dBEjkS7ehEDQibXJ7XvlmtbwuTclUiIyN+CyXQD4Vmko8fNm8w==}
     engines: {node: '>=8'}
@@ -640,8 +640,6 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
-  gl-matrix@3.4.3: {}
-
   lightningcss-android-arm64@1.32.0:
     optional: true
 
@@ -792,6 +790,8 @@ snapshots:
       why-is-node-running: 2.3.0
     transitivePeerDependencies:
       - msw
+
+  wgpu-matrix@3.4.2: {}
 
   why-is-node-running@2.3.0:
     dependencies:
