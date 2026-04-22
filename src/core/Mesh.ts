@@ -2,17 +2,21 @@ import type { Renderer } from './Renderer';
 import { Entity, IEntity } from './Entity';
 import { Geometry } from './Geometry';
 import { ShaderMaterial } from './ShaderMaterial';
-import { UniformBuffer } from './UniformBuffer';
 import { constants } from './constants/constants';
 import { errorMessages } from './constants/errorMessages';
+import { UniformBuffer } from './UniformBuffer';
 
 interface IMesh extends IEntity {
   geometry: Geometry;
   material: ShaderMaterial;
+  pipeline: GPURenderPipeline | null;
   isInitialized: boolean;
+  entityBuffer: UniformBuffer | null;
+  entityUniformsBindGroup: GPUBindGroup | null;
+  materialUniformsBindGroup: GPUBindGroup | null;
   init(renderer: Renderer): void;
   createPipeline(renderer: Renderer): void;
-  createMeshUniformBindGroup(renderer: Renderer): void;
+  createMaterialUniformsBindGroup(renderer: Renderer): void;
   draw(pass: GPURenderPassEncoder, renderer: Renderer): void;
 }
 
@@ -21,8 +25,9 @@ class Mesh extends Entity implements IMesh {
   material: ShaderMaterial;
   pipeline: GPURenderPipeline | null = null;
   isInitialized: boolean;
-  uniformBuffer?: UniformBuffer;
-  uniformBindGroup?: GPUBindGroup;
+  entityBuffer: UniformBuffer | null = null;
+  entityUniformsBindGroup: GPUBindGroup | null = null;
+  materialUniformsBindGroup: GPUBindGroup | null = null;
 
   constructor(geometry: Geometry, material: ShaderMaterial) {
     super('Mesh');
@@ -35,11 +40,19 @@ class Mesh extends Entity implements IMesh {
   init(renderer: Renderer) {
     this.geometry.init(renderer);
     this.material.init(renderer);
+    this.createEntityBuffer(renderer);
     this.createPipeline(renderer);
-    if (this.material.uniformBuffer) {
-      this.material.uniformBuffer.init(renderer);
-      this.createMeshUniformBindGroup(renderer);
+
+    if (this.material.materialUniformsBuffer) {
+      this.material.materialUniformsBuffer.init(renderer);
+      this.createMaterialUniformsBindGroup(renderer);
     }
+
+    if (this.entityBuffer) {
+      this.entityBuffer.init(renderer);
+      this.createEntityBufferBindGroup(renderer);
+    }
+
     this.isInitialized = true;
   }
 
@@ -82,13 +95,40 @@ class Mesh extends Entity implements IMesh {
     this.pipeline = renderer.device.createRenderPipeline(pipelineDescriptor);
   }
 
-  createMeshUniformBindGroup(renderer: Renderer) {
+  createEntityBuffer(renderer: Renderer) {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
 
-    if (this.material.uniformBuffer?.buffer && this.pipeline) {
-      this.uniformBindGroup = renderer.device.createBindGroup({
+    this.entityBuffer = new UniformBuffer({
+      modelMatrix: { type: 'mat4x4<f32>', value: this.matrix },
+    });
+  }
+
+  createEntityBufferBindGroup(renderer: Renderer) {
+    if (!renderer.device) throw new Error(errorMessages.missingDevice);
+
+    if (this.entityBuffer?.buffer && this.pipeline) {
+      this.entityUniformsBindGroup = renderer.device.createBindGroup({
+        layout: this.pipeline.getBindGroupLayout(constants.bindGroupIndices.ENTITY),
+        entries: [{ binding: 0, resource: { buffer: this.entityBuffer.buffer } }],
+      });
+    }
+  }
+
+  createMaterialUniformsBindGroup(renderer: Renderer) {
+    if (!renderer.device) throw new Error(errorMessages.missingDevice);
+
+    if (this.material.materialUniformsBuffer?.buffer && this.pipeline) {
+      this.materialUniformsBindGroup = renderer.device.createBindGroup({
         layout: this.pipeline.getBindGroupLayout(constants.bindGroupIndices.MATERIAL),
-        entries: [{ binding: 0, resource: { buffer: this.material.uniformBuffer.buffer } }],
+        entries: [{ binding: 0, resource: { buffer: this.material.materialUniformsBuffer.buffer } }],
+      });
+    }
+  }
+
+  protected override onMatrixUpdated() {
+    if (this.entityBuffer) {
+      this.entityBuffer.updateUniform({
+        modelMatrix: this.matrix,
       });
     }
   }
@@ -103,12 +143,20 @@ class Mesh extends Entity implements IMesh {
     pass.setPipeline(this.pipeline);
     pass.setVertexBuffer(0, this.geometry.vertexBuffer);
 
-    if (this.material.uniformBuffer) {
-      this.material.uniformBuffer.writeUpdatedBufferData();
+    if (this.material.materialUniformsBuffer) {
+      this.material.materialUniformsBuffer.writeUpdatedBufferData();
     }
 
-    if (this.uniformBindGroup) {
-      pass.setBindGroup(constants.bindGroupIndices.MATERIAL, this.uniformBindGroup);
+    if (this.entityBuffer) {
+      this.entityBuffer.writeUpdatedBufferData();
+    }
+
+    if (this.entityUniformsBindGroup) {
+      pass.setBindGroup(constants.bindGroupIndices.ENTITY, this.entityUniformsBindGroup);
+    }
+
+    if (this.materialUniformsBindGroup) {
+      pass.setBindGroup(constants.bindGroupIndices.MATERIAL, this.materialUniformsBindGroup);
     }
 
     if (this.geometry.isIndexed && this.geometry.indexBuffer) {

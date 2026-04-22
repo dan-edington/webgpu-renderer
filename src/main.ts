@@ -35,9 +35,6 @@ if (container) {
   // Add the mesh to the scene
   scene.add(mesh);
 
-  // TODO:
-  // Add camera
-
   // Render the scene
   function render() {
     renderer.render(scene);

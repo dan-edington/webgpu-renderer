@@ -72,33 +72,42 @@ class Entity implements IEntity {
   setPosition(x: number, y: number, z: number) {
     this.position.set([x, y, z]);
     this.matrixNeedsUpdate = true;
+    this.updateMatrix();
   }
 
   setScale(x: number, y: number, z: number) {
     this.scale.set([x, y, z]);
     this.matrixNeedsUpdate = true;
+    this.updateMatrix();
   }
 
   setRotation(x: number, y: number, z: number) {
     this.rotation.set([x, y, z]);
     this.matrixNeedsUpdate = true;
+    this.updateMatrix();
   }
 
   setQuaternion(x: number, y: number, z: number, w: number) {
     this.quaternion.set([x, y, z, w]);
     this.matrixNeedsUpdate = true;
+    this.updateMatrix();
   }
 
   updateMatrix() {
-    if (this.matrixNeedsUpdate) {
-      // Order: Rotation, Scale, Translation
-      quat.fromEuler(this.rotation[0], this.rotation[1], this.rotation[2], 'xyz', this.quaternion);
-      mat4.fromQuat(this.quaternion, this.matrix);
-      mat4.scale(this.matrix, this.scale, this.matrix);
-      mat4.setTranslation(this.matrix, this.position, this.matrix);
-      this.matrixNeedsUpdate = false;
+    if (!this.matrixNeedsUpdate) {
+      return;
     }
+
+    // Order: Rotation, Scale, Translation
+    quat.fromEuler(this.rotation[0], this.rotation[1], this.rotation[2], 'xyz', this.quaternion);
+    mat4.fromQuat(this.quaternion, this.matrix);
+    mat4.scale(this.matrix, this.scale, this.matrix);
+    mat4.setTranslation(this.matrix, this.position, this.matrix);
+    this.matrixNeedsUpdate = false;
+    this.onMatrixUpdated();
   }
+
+  protected onMatrixUpdated(): void {}
 }
 
 export { Entity };

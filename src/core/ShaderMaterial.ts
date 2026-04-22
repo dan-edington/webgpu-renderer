@@ -10,8 +10,8 @@ interface IShaderMaterial {
   type: string;
   shader: string;
   shaderModule: GPUShaderModule | null;
-  uniforms?: Record<string, UniformValue>;
-  uniformBuffer?: UniformBuffer;
+  materialUniforms?: Record<string, UniformValue>;
+  materialUniformsBuffer?: UniformBuffer;
   pipelineDescriptor: GPURenderPipelineDescriptor | null;
   shaderEntryPoints: {
     vertex: string;
@@ -37,8 +37,8 @@ class ShaderMaterial implements IShaderMaterial {
   type: string;
   shader: string;
   shaderModule: GPUShaderModule | null = null;
-  uniforms?: Record<string, UniformValue>;
-  uniformBuffer?: UniformBuffer;
+  materialUniforms?: Record<string, UniformValue>;
+  materialUniformsBuffer?: UniformBuffer;
   pipelineDescriptor: GPURenderPipelineDescriptor | null = null;
   shaderEntryPoints: {
     vertex: string;
@@ -54,9 +54,10 @@ class ShaderMaterial implements IShaderMaterial {
       vertex: 'vertex_shader',
       fragment: 'fragment_shader',
     };
-    this.uniforms = options.uniforms;
-    if (this.uniforms) {
-      this.uniformBuffer = new UniformBuffer(this.uniforms);
+    this.materialUniforms = options.uniforms;
+
+    if (this.materialUniforms) {
+      this.materialUniformsBuffer = new UniformBuffer(this.materialUniforms);
     }
   }
 
