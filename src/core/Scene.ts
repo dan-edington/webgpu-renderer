@@ -111,6 +111,16 @@ class Scene implements IScene {
 
   add(entity: Entity) {
     this.children.push(entity);
+    entity.parent = this;
+    this.renderListNeedsUpdate = true;
+  }
+
+  remove(entity: Entity) {
+    const index = this.children.findIndex((child) => child.id === entity.id);
+    if (index !== -1) {
+      this.children.splice(index, 1);
+    }
+    entity.parent = null;
     this.renderListNeedsUpdate = true;
   }
 
