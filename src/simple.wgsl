@@ -1,8 +1,8 @@
-struct MeshUniforms {
+struct ShaderMaterialUniforms {
   uColor: vec4f,
 };
 
-@group(2) @binding(0) var<uniform> meshUniforms: MeshUniforms;
+@group(2) @binding(0) var<uniform> shaderMaterialUniforms: ShaderMaterialUniforms;
 
 @vertex
 fn vertex_shader(
@@ -18,7 +18,7 @@ fn fragment_shader(
   @builtin(position) fragCoord: vec4<f32>
 ) -> @location(0) vec4f {
 
-  return meshUniforms.uColor;
+  return shaderMaterialUniforms.uColor;
 }
 
 

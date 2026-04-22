@@ -1,9 +1,12 @@
+import { errorMessages } from './errorMessages';
 import { Renderer } from './Renderer';
 import type { IShaderMaterial } from './types';
+import { UniformBuffer } from './UniformBuffer';
+import { UniformValue } from './utilities/computeBufferLayout';
 
 type ShaderMaterialOptions = {
   shader: string;
-  uniforms?: Record<string, any>;
+  uniforms?: Record<string, UniformValue>;
   shaderEntryPoints?: {
     vertex: string;
     fragment: string;
@@ -11,25 +14,33 @@ type ShaderMaterialOptions = {
 };
 
 class ShaderMaterial implements IShaderMaterial {
+  type: string;
   shader: string;
-  uniforms: Record<string, any>;
-  shaderModule: GPUShaderModule;
-  pipelineDescriptor: GPURenderPipelineDescriptor;
+  shaderModule: GPUShaderModule | null = null;
+  uniforms?: Record<string, UniformValue>;
+  uniformBuffer?: UniformBuffer;
+  pipelineDescriptor: GPURenderPipelineDescriptor | null = null;
   shaderEntryPoints: {
     vertex: string;
     fragment: string;
   };
 
   constructor(options: ShaderMaterialOptions) {
+    this.type = 'ShaderMaterial';
     this.shader = options.shader;
-    this.uniforms = options.uniforms || {};
     this.shaderEntryPoints = options.shaderEntryPoints || {
       vertex: 'vertex_shader',
       fragment: 'fragment_shader',
     };
+    this.uniforms = options.uniforms;
+    if (this.uniforms) {
+      this.uniformBuffer = new UniformBuffer(this.uniforms);
+    }
   }
 
   init(renderer: Renderer) {
+    if (!renderer.device) throw new Error(errorMessages.missingDevice);
+
     this.createShaderModule(renderer.device);
   }
 

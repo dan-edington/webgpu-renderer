@@ -19,8 +19,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "types": ["@webgpu/types"],
-    "strictPropertyInitialization": false
+    "types": ["@webgpu/types"]
   },
   "include": ["src"]
 }

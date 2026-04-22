@@ -5,7 +5,6 @@ import { Scene } from './core/Scene';
 import './style.css';
 import simpleShader from './simple.wgsl?raw';
 import { ShaderMaterial } from './core/ShaderMaterial';
-import { UniformBuffer } from './core/UniformBuffer';
 
 const container = document.getElementById('app');
 
@@ -23,16 +22,15 @@ if (container) {
   const geometry = new Geometry({ vertices, indices: vertexIndices });
 
   // Create a material
-  const material = new ShaderMaterial({ shader: simpleShader });
+  const material = new ShaderMaterial({
+    shader: simpleShader,
+    uniforms: {
+      uColor: { type: 'vec4<f32>', value: new Float32Array([0, 1, 0, 1]) },
+    },
+  });
 
   // Create a mesh with the geometry and material
-  const mesh = new Mesh(
-    geometry,
-    material,
-    new UniformBuffer({
-      uColor: { type: 'vec4<f32>', value: new Float32Array([0, 1, 0, 1]) },
-    }),
-  );
+  const mesh = new Mesh(geometry, material);
 
   // Add the mesh to the scene
   scene.add(mesh);

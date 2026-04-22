@@ -1,5 +1,6 @@
 import { Mesh } from './Mesh';
 import { Scene } from './Scene';
+import { errorMessages } from './errorMessages';
 
 interface RendererOptions {
   containerElement?: HTMLElement;
@@ -9,14 +10,13 @@ interface RendererOptions {
 
 class Renderer {
   containerElement: HTMLElement;
-  canvasElement: HTMLCanvasElement;
+  canvasElement: HTMLCanvasElement | null = null;
   dpr: number;
   alpha: boolean;
-  context: GPUCanvasContext;
-  adapter: GPUAdapter;
-  device: GPUDevice;
-  presentationFormat: GPUTextureFormat;
-  clearColor: GPUColor;
+  context: GPUCanvasContext | null = null;
+  adapter: GPUAdapter | null = null;
+  device: GPUDevice | null = null;
+  presentationFormat: GPUTextureFormat | null = null;
   currentFrame: number = 0;
   elapsedTime: number = 0;
   previousTime: number = 0;
@@ -27,28 +27,27 @@ class Renderer {
     this.containerElement = containerElement || document.body;
     this.dpr = rendererOptions.dpr || window.devicePixelRatio;
     this.alpha = rendererOptions.alpha || true;
-    this.clearColor = { r: 0, g: 0, b: 0, a: 1 };
   }
 
   async init() {
     this.canvasElement = document.createElement('canvas');
     this.containerElement.appendChild(this.canvasElement);
-    this.setCanvasSize();
 
     const context = this.canvasElement.getContext('webgpu');
 
-    if (!context) {
-      throw new Error('Could not create WebGPU context.');
-    }
+    if (!context) throw new Error(errorMessages.contextRequest);
 
     const adapter = await navigator.gpu.requestAdapter();
 
-    if (!adapter) {
-      throw new Error('Could not get GPU adapter.');
-    }
+    if (!adapter) throw new Error(errorMessages.adapterRequest);
 
     const device = await adapter.requestDevice();
+
+    if (!device) throw new Error(errorMessages.deviceRequest);
+
     const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
+
+    if (!presentationFormat) throw new Error(errorMessages.presentationFormatRequest);
 
     this.context = context;
     this.adapter = adapter;
@@ -60,6 +59,8 @@ class Renderer {
       format: this.presentationFormat,
       alphaMode: this.alpha ? 'premultiplied' : 'opaque',
     });
+
+    this.setCanvasSize();
   }
 
   updateTimersAndFrameCounter() {
@@ -80,6 +81,10 @@ class Renderer {
 
     scene.updateRenderList();
 
+    if (!this.device) throw new Error(errorMessages.missingDevice);
+    if (!this.context) throw new Error(errorMessages.missingContext);
+    if (!this.presentationFormat) throw new Error(errorMessages.missingPresentationFormat);
+
     const commandEncoder = this.device.createCommandEncoder();
     const textureView = this.context.getCurrentTexture().createView();
 
@@ -87,7 +92,7 @@ class Renderer {
       colorAttachments: [
         {
           view: textureView,
-          clearValue: this.clearColor,
+          clearValue: scene.clearColor,
           loadOp: 'clear',
           storeOp: 'store',
         },
@@ -110,6 +115,8 @@ class Renderer {
   }
 
   setCanvasSize() {
+    if (!this.canvasElement) throw new Error(errorMessages.missingCanvasElement);
+
     this.canvasElement.width = Math.floor(this.containerElement.clientWidth * this.dpr);
     this.canvasElement.height = Math.floor(this.containerElement.clientHeight * this.dpr);
   }

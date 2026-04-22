@@ -1,3 +1,4 @@
+import { errorMessages } from './errorMessages';
 import { Renderer } from './Renderer';
 import { IGeometry } from './types';
 import { padArrayToAlignmentBytes } from './utilities/padArrayToAlignmentBytes';
@@ -9,16 +10,18 @@ type GeometryOptions = {
 };
 
 class Geometry implements IGeometry {
+  type: string;
   vertices: Float32Array;
-  indices: Uint16Array | Uint32Array;
+  indices: Uint16Array | Uint32Array | undefined;
   isIndexed: boolean;
-  indexCount: number;
-  indexFormat: GPUIndexFormat;
+  indexCount: number = 0;
+  indexFormat: GPUIndexFormat = 'uint16';
   topology: GPUPrimitiveTopology;
-  vertexBuffer: GPUBuffer;
-  indexBuffer: GPUBuffer;
+  vertexBuffer: GPUBuffer | null = null;
+  indexBuffer: GPUBuffer | null = null;
 
   constructor(options: GeometryOptions) {
+    this.type = 'Geometry';
     if (options.indices) {
       this.isIndexed = true;
       const { paddedArray: paddedIndices, unpaddedLength } = padArrayToAlignmentBytes<Uint16Array | Uint32Array>(
@@ -41,6 +44,8 @@ class Geometry implements IGeometry {
   }
 
   protected createBuffers(renderer: Renderer) {
+    if (!renderer.device) throw new Error(errorMessages.missingDevice);
+
     this.vertexBuffer = renderer.device.createBuffer({
       size: this.vertices.byteLength,
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
