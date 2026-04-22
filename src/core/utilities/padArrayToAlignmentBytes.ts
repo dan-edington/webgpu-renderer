@@ -1,15 +1,4 @@
-type NumericTypedArray =
-  | Int8Array
-  | Uint8Array
-  | Uint8ClampedArray
-  | Int16Array
-  | Uint16Array
-  | Int32Array
-  | Uint32Array
-  | Float32Array
-  | Float64Array;
-
-type BigIntTypedArray = BigInt64Array | BigUint64Array;
+import { BigIntTypedArray, NumericTypedArray } from '../types';
 
 function padArrayToAlignmentBytes<T>(
   arrayToPad: NumericTypedArray,

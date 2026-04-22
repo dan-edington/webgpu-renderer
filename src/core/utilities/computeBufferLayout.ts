@@ -1,62 +1,13 @@
-type ScalarType = 'f16' | 'f32' | 'i32' | 'u32';
-
-type UniformValue = {
-  type: string;
-  value: number | Float16Array | Float32Array | Int32Array | Uint32Array;
-};
-
-type UniformValueInput = number | ArrayLike<number>;
-
-type ScalarLayout = {
-  kind: 'scalar';
-  scalar: ScalarType;
-  align: number;
-  size: number;
-  elementCount: number;
-};
-
-type VectorLayout = {
-  kind: 'vector';
-  scalar: ScalarType;
-  length: number;
-  align: number;
-  size: number;
-  elementCount: number;
-};
-
-type MatrixLayout = {
-  kind: 'matrix';
-  scalar: 'f16' | 'f32';
-  columns: number;
-  rows: number;
-  align: number;
-  size: number;
-  stride: number;
-  elementCount: number;
-};
-
-type ArrayLayout = {
-  kind: 'array';
-  element: UniformLayout;
-  length: number;
-  align: number;
-  size: number;
-  stride: number;
-  elementCount: number;
-};
-
-type UniformLayout = ScalarLayout | VectorLayout | MatrixLayout | ArrayLayout;
-
-type UniformEntryMeta = {
-  key: string;
-  offset: number;
-  layout: UniformLayout;
-};
-
-type ComputeBufferLayoutResult = {
-  bufferData: ArrayBuffer;
-  layoutEntries: UniformEntryMeta[];
-};
+import {
+  ArrayLayout,
+  ComputeBufferLayoutResult,
+  ScalarType,
+  UniformEntryMeta,
+  UniformLayout,
+  UniformValue,
+  UniformValueInput,
+  VectorLayout,
+} from '../types';
 
 function computeBufferLayout(uniforms: Record<string, UniformValue>): ComputeBufferLayoutResult {
   let bufferSize = 0;

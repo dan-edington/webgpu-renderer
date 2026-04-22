@@ -1,13 +1,38 @@
 import { Mat4, Quat, Vec3, vec3, quat, mat4 } from 'wgpu-matrix';
-import type { IEntity } from './types';
+import type { uuid } from './types';
+import { Scene } from './Scene';
+
+export interface IEntity {
+  id: uuid;
+  name?: string;
+  type: string;
+  isRenderable: boolean;
+  visible: boolean;
+  children: Entity[];
+  parent: Entity | Scene | null;
+  position: Vec3;
+  scale: Vec3;
+  rotation: Vec3;
+  quaternion: Quat;
+  matrix: Mat4;
+  matrixNeedsUpdate: boolean;
+  add(entity: Entity): void;
+  remove(entity: Entity): void;
+  setPosition(x: number, y: number, z: number): void;
+  setScale(x: number, y: number, z: number): void;
+  setRotation(x: number, y: number, z: number): void;
+  setQuaternion(x: number, y: number, z: number, w: number): void;
+  updateMatrix(): void;
+}
 
 class Entity implements IEntity {
   type: string;
-  id: string;
+  id: uuid;
   name?: string;
   isRenderable: boolean;
   visible: boolean;
-  children: IEntity[];
+  children: Entity[];
+  parent: Entity | Scene | null;
   position: Vec3;
   scale: Vec3;
   rotation: Vec3;
@@ -15,12 +40,13 @@ class Entity implements IEntity {
   matrix: Mat4;
   matrixNeedsUpdate: boolean;
 
-  constructor() {
-    this.type = 'Entity';
+  constructor(type: string = 'Entity') {
+    this.type = type;
     this.id = crypto.randomUUID();
     this.isRenderable = false;
     this.visible = true;
     this.children = [];
+    this.parent = null;
     this.position = vec3.create(0, 0, 0);
     this.scale = vec3.create(1, 1, 1);
     this.rotation = vec3.create(0, 0, 0);
@@ -30,15 +56,17 @@ class Entity implements IEntity {
     this.updateMatrix();
   }
 
-  add(entity: IEntity) {
+  add(entity: Entity) {
     this.children.push(entity);
+    entity.parent = this;
   }
 
-  remove(entity: IEntity) {
+  remove(entity: Entity) {
     const index = this.children.findIndex((child) => child.id === entity.id);
     if (index !== -1) {
       this.children.splice(index, 1);
     }
+    entity.parent = null;
   }
 
   setPosition(x: number, y: number, z: number) {

@@ -1,5 +1,6 @@
 import { errorMessages } from './constants/errorMessages';
 import { Renderer } from './Renderer';
+import { uuid } from './types';
 import {
   computeBufferLayout,
   writeUniformValuesToBuffer,
@@ -8,7 +9,21 @@ import {
   type UniformValueInput,
 } from './utilities/computeBufferLayout';
 
-class UniformBuffer {
+interface IUniformBuffer {
+  id: uuid;
+  type: string;
+  buffer: GPUBuffer | null;
+  uniforms: Record<string, UniformValue>;
+  bufferData: ArrayBuffer | null;
+  init(renderer: Renderer): void;
+  updateUniform(updatedUniforms: Record<string, UniformValueInput>): void;
+  writeUpdatedBufferData(): void;
+  computeBufferLayout(): void;
+}
+
+class UniformBuffer implements IUniformBuffer {
+  id: uuid;
+  type: string;
   buffer: GPUBuffer | null = null;
   uniforms: Record<string, UniformValue>;
   bufferData: ArrayBuffer | null = null;
@@ -17,6 +32,8 @@ class UniformBuffer {
   layoutEntries: UniformEntryMeta[] = [];
 
   constructor(uniforms: Record<string, UniformValue>) {
+    this.id = crypto.randomUUID();
+    this.type = 'UniformBuffer';
     this.uniforms = uniforms;
     this.needsUpdate = true;
     this.computeBufferLayout();

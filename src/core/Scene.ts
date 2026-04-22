@@ -1,14 +1,31 @@
 import { Vec4 } from 'wgpu-matrix';
-import type { IEntity, IScene } from './types';
+import type { uuid } from './types';
+import { Entity } from './Entity';
+
+interface IScene {
+  id: uuid;
+  name?: string;
+  type: string;
+  children: Entity[];
+  renderList: Entity[];
+  renderListNeedsUpdate: boolean;
+  clearColor: GPUColor;
+  setClearColor(color: GPUColor | [number, number, number, number] | Vec4): void;
+  add(entity: Entity): void;
+  updateRenderList(): void;
+}
 
 class Scene implements IScene {
+  id: uuid;
+  name?: string;
   type: string;
-  children: IEntity[];
-  renderList: IEntity[];
+  children: Entity[];
+  renderList: Entity[];
   renderListNeedsUpdate: boolean;
   clearColor: GPUColor;
 
   constructor() {
+    this.id = crypto.randomUUID();
     this.type = 'Scene';
     this.children = [];
     this.renderList = [];
@@ -24,7 +41,7 @@ class Scene implements IScene {
     }
   }
 
-  add(entity: IEntity) {
+  add(entity: Entity) {
     this.children.push(entity);
     this.renderListNeedsUpdate = true;
   }
@@ -33,7 +50,7 @@ class Scene implements IScene {
     if (this.renderListNeedsUpdate) {
       this.renderList = [];
 
-      const traverse = (entity: IEntity, parentVisible: boolean) => {
+      const traverse = (entity: Entity, parentVisible: boolean) => {
         const isVisible = parentVisible && entity.visible;
 
         if (!isVisible) {

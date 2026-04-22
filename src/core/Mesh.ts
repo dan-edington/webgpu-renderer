@@ -1,11 +1,20 @@
 import type { Renderer } from './Renderer';
-import { Entity } from './Entity';
+import { Entity, IEntity } from './Entity';
 import { Geometry } from './Geometry';
 import { ShaderMaterial } from './ShaderMaterial';
-import type { IMesh } from './types';
 import { UniformBuffer } from './UniformBuffer';
 import { constants } from './constants/constants';
 import { errorMessages } from './constants/errorMessages';
+
+interface IMesh extends IEntity {
+  geometry: Geometry;
+  material: ShaderMaterial;
+  isInitialized: boolean;
+  init(renderer: Renderer): void;
+  createPipeline(renderer: Renderer): void;
+  createMeshUniformBindGroup(renderer: Renderer): void;
+  draw(pass: GPURenderPassEncoder, renderer: Renderer): void;
+}
 
 class Mesh extends Entity implements IMesh {
   geometry: Geometry;
@@ -16,7 +25,7 @@ class Mesh extends Entity implements IMesh {
   uniformBindGroup?: GPUBindGroup;
 
   constructor(geometry: Geometry, material: ShaderMaterial) {
-    super();
+    super('Mesh');
     this.isRenderable = true;
     this.isInitialized = false;
     this.geometry = geometry;

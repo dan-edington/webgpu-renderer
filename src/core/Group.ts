@@ -2,8 +2,7 @@ import { Entity } from './Entity';
 
 class Group extends Entity {
   constructor() {
-    super();
-    this.type = 'Group';
+    super('Group');
   }
 }
 

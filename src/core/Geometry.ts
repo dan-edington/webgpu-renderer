@@ -1,7 +1,16 @@
 import { errorMessages } from './constants/errorMessages';
 import { Renderer } from './Renderer';
-import { IGeometry } from './types';
+import { uuid } from './types';
 import { padArrayToAlignmentBytes } from './utilities/padArrayToAlignmentBytes';
+
+interface IGeometry {
+  id: uuid;
+  name?: string;
+  type: string;
+  isIndexed: boolean;
+  vertices: Float32Array;
+  indices?: Uint16Array | Uint32Array;
+}
 
 type GeometryOptions = {
   vertices: Float32Array;
@@ -10,6 +19,8 @@ type GeometryOptions = {
 };
 
 class Geometry implements IGeometry {
+  id: uuid;
+  name?: string;
   type: string;
   vertices: Float32Array;
   indices: Uint16Array | Uint32Array | undefined;
@@ -21,6 +32,7 @@ class Geometry implements IGeometry {
   indexBuffer: GPUBuffer | null = null;
 
   constructor(options: GeometryOptions) {
+    this.id = crypto.randomUUID();
     this.type = 'Geometry';
     if (options.indices) {
       this.isIndexed = true;
