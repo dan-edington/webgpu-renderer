@@ -112,8 +112,15 @@ class Renderer implements IRenderer {
       ],
     });
 
-    // Group 1 is reserved for scene uniforms and currently unused.
-    this.sceneBindGroupLayout = this.device.createBindGroupLayout({ entries: [] });
+    this.sceneBindGroupLayout = this.device.createBindGroupLayout({
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: { type: 'uniform' },
+        },
+      ],
+    });
 
     this.materialBindGroupLayout = this.device.createBindGroupLayout({
       entries: [
@@ -169,6 +176,7 @@ class Renderer implements IRenderer {
   render(scene: Scene, camera: PerspectiveCamera) {
     this.updateTimersAndFrameCounter();
 
+    if (!scene.isInitialized) scene.init(this);
     if (!camera.isInitialized) camera.init(this);
 
     scene.updateRenderList();
@@ -179,6 +187,7 @@ class Renderer implements IRenderer {
     if (!camera.cameraUniformBuffer?.buffer) throw new Error(errorMessages.missingCameraBuffer);
     if (!camera.cameraBindGroup) throw new Error(errorMessages.missingCameraBindGroup);
 
+    scene.sceneUniformsBuffer?.writeUpdatedBufferData();
     camera.cameraUniformBuffer.writeUpdatedBufferData();
 
     const commandEncoder = this.device.createCommandEncoder();
@@ -198,6 +207,7 @@ class Renderer implements IRenderer {
     const pass = commandEncoder.beginRenderPass(renderPassDescriptor);
 
     pass.setBindGroup(constants.bindGroupIndices.CAMERA, camera.cameraBindGroup);
+    pass.setBindGroup(constants.bindGroupIndices.SCENE, scene.sceneUniformsBindGroup);
 
     scene.renderList.forEach((entity) => {
       if (entity.isRenderable && entity.visible) {

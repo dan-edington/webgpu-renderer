@@ -1,6 +1,9 @@
-import { Vec4 } from 'wgpu-matrix';
+import { vec4, Vec4 } from 'wgpu-matrix';
 import type { uuid } from './types';
 import { Entity } from './Entity';
+import { Renderer } from './Renderer';
+import { errorMessages } from './constants/errorMessages';
+import { UniformBuffer } from './UniformBuffer';
 
 interface IScene {
   id: uuid;
@@ -9,8 +12,17 @@ interface IScene {
   children: Entity[];
   renderList: Entity[];
   renderListNeedsUpdate: boolean;
+  sceneUniformsBuffer: UniformBuffer | null;
+  sceneUniformsBindGroup: GPUBindGroup | null;
+  isInitialized: boolean;
   clearColor: GPUColor;
+  ambientLight: {
+    color: Vec4;
+    intensity: number;
+  };
   setClearColor(color: GPUColor | [number, number, number, number] | Vec4): void;
+  setAmbientLightColor(color: Vec4 | [number, number, number, number]): void;
+  setAmbientLightIntensity(intensity: number): void;
   add(entity: Entity): void;
   updateRenderList(): void;
 }
@@ -22,7 +34,11 @@ class Scene implements IScene {
   children: Entity[];
   renderList: Entity[];
   renderListNeedsUpdate: boolean;
+  sceneUniformsBuffer: UniformBuffer | null = null;
+  sceneUniformsBindGroup: GPUBindGroup | null = null;
+  isInitialized: boolean;
   clearColor: GPUColor;
+  ambientLight: { color: Vec4; intensity: number };
 
   constructor() {
     this.id = crypto.randomUUID();
@@ -30,7 +46,39 @@ class Scene implements IScene {
     this.children = [];
     this.renderList = [];
     this.renderListNeedsUpdate = false;
+    this.isInitialized = false;
     this.clearColor = { r: 0, g: 0, b: 0, a: 1 };
+    this.ambientLight = {
+      color: vec4.create(1, 1, 1, 1),
+      intensity: 0.5,
+    };
+    this.createSceneUniformsBuffer();
+  }
+
+  init(renderer: Renderer) {
+    if (!this.sceneUniformsBuffer) throw new Error(errorMessages.missingSceneUniformsBuffer);
+    this.sceneUniformsBuffer.init(renderer);
+    this.createSceneUniformsBindGroup(renderer);
+    this.isInitialized = true;
+  }
+
+  createSceneUniformsBuffer() {
+    this.sceneUniformsBuffer = new UniformBuffer({
+      ambientLightColor: { type: 'vec4<f32>', value: this.ambientLight.color },
+      ambientLightIntensity: { type: 'f32', value: this.ambientLight.intensity },
+    });
+  }
+
+  createSceneUniformsBindGroup(renderer: Renderer) {
+    if (!renderer.device) throw new Error(errorMessages.missingDevice);
+    if (!renderer.sceneBindGroupLayout) throw new Error(errorMessages.missingSceneBindGroupLayout);
+
+    if (this.sceneUniformsBuffer?.buffer) {
+      this.sceneUniformsBindGroup = renderer.device.createBindGroup({
+        layout: renderer.sceneBindGroupLayout,
+        entries: [{ binding: 0, resource: { buffer: this.sceneUniformsBuffer.buffer } }],
+      });
+    }
   }
 
   setClearColor(color: GPUColor | [number, number, number, number] | Vec4) {
@@ -39,6 +87,18 @@ class Scene implements IScene {
     } else {
       this.clearColor = color;
     }
+  }
+
+  setAmbientLightColor(color: Vec4 | [number, number, number, number]) {
+    if (Array.isArray(color) || color instanceof Float32Array) {
+      this.ambientLight.color = vec4.fromValues(color[0], color[1], color[2], color[3]);
+    } else {
+      this.ambientLight.color = color;
+    }
+  }
+
+  setAmbientLightIntensity(intensity: number) {
+    this.ambientLight.intensity = intensity;
   }
 
   add(entity: Entity) {

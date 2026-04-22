@@ -20,6 +20,7 @@ const errorMessages = {
   missingEntityBindGroupLayout:
     'Entity bind group layout is missing. Ensure the renderer is initialized before rendering.',
   missingMeshPipelineLayout: 'Mesh pipeline layout is missing. Ensure the renderer is initialized before rendering.',
+  missingSceneUniformsBuffer: 'Scene uniforms buffer is missing. Ensure the scene is initialized before rendering.',
 };
 
 export { errorMessages };

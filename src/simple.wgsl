@@ -2,6 +2,11 @@ struct CameraUniforms {
   viewProjectionMatrix: mat4x4<f32>,
 };
 
+struct SceneUniforms {
+  ambientLightColor: vec4f,
+  ambientLightIntensity: f32,
+};
+
 struct MaterialUniforms {
   uColor: vec4f,
 };
@@ -11,6 +16,7 @@ struct EntityUniforms {
 };
 
 @group(0) @binding(0) var<uniform> cameraUniforms: CameraUniforms;
+@group(1) @binding(0) var<uniform> sceneUniforms: SceneUniforms;
 @group(2) @binding(0) var<uniform> materialUniforms: MaterialUniforms;
 @group(3) @binding(0) var<uniform> entityUniforms: EntityUniforms;
 
@@ -29,7 +35,7 @@ fn fragment_shader(
   @builtin(position) fragCoord: vec4<f32>
 ) -> @location(0) vec4f {
 
-  return materialUniforms.uColor;
+  return sceneUniforms.ambientLightColor * materialUniforms.uColor * sceneUniforms.ambientLightIntensity;
 }
 
 
