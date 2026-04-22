@@ -4,10 +4,12 @@ function padArrayToAlignmentBytes<T>(
   arrayToPad: NumericTypedArray,
   options?: { alignmentBytes?: number; padWith?: number },
 ): { paddedArray: T; unpaddedLength: number };
+
 function padArrayToAlignmentBytes<T>(
   arrayToPad: BigIntTypedArray,
   options?: { alignmentBytes?: number; padWith?: bigint },
 ): { paddedArray: T; unpaddedLength: number };
+
 function padArrayToAlignmentBytes<T>(arrayToPad: any, options: any = {}): any {
   const { alignmentBytes = 4 } = options;
   let padWith = options.padWith;
@@ -19,6 +21,7 @@ function padArrayToAlignmentBytes<T>(arrayToPad: any, options: any = {}): any {
       padWith = 0;
     }
   }
+
   const unpaddedLength = arrayToPad.length;
   let bytesPerElement: number;
 

@@ -6,6 +6,7 @@ import { Scene } from './core/Scene';
 import simpleShader from './simple.wgsl?raw';
 import { ShaderMaterial } from './core/ShaderMaterial';
 import { PerspectiveCamera } from './core/PerspectiveCamera';
+import { cube } from 'primitive-geometry';
 
 const container = document.getElementById('app');
 
@@ -17,10 +18,10 @@ if (container) {
   // Create a scene
   const scene = new Scene();
 
-  // Draw 2 triangles to create a quad (CCW winding order)
-  const vertices = new Float32Array([-0.8, 0.8, 0, 0.8, 0.8, 0, 0.8, -0.8, 0, -0.8, -0.8, 0]);
-  const vertexIndices = new Uint16Array([0, 3, 2, 2, 1, 0]);
-  const geometry = new Geometry({ vertices, indices: vertexIndices });
+  // Create geometry
+  const cubePrimitive = cube({ sx: 1, sy: 1, sz: 1, nx: 1, ny: 1, nz: 1 });
+  const indicesU32 = Uint16Array.from(cubePrimitive.cells); // CONVERT FROM UINT8 TO UINT16
+  const geometry = new Geometry({ vertices: cubePrimitive.positions, indices: indicesU32 });
 
   // Create a material
   const material = new ShaderMaterial({
@@ -53,6 +54,8 @@ if (container) {
     const t = renderer.elapsedTime;
     camera.setRotation(0, 0, Math.PI * 2 * (t / 10) * 0.001);
     camera.setPosition(0, 0, 4 + Math.sin(t * 0.001) * 2);
+
+    mesh.setRotation(0, t * 0.001, 0);
 
     requestAnimationFrame(render);
   }
