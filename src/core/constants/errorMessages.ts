@@ -10,6 +10,16 @@ const errorMessages = {
     'Presentation format is missing. Ensure the renderer is initialized before calling this method.',
   missingCanvasElement: 'Canvas element is missing. Ensure the renderer is initialized before calling this method.',
   missingPipeline: 'Render pipeline is missing. Ensure the mesh is initialized before rendering.',
+  missingCameraBuffer: 'Camera uniform buffer is missing. Ensure the renderer is initialized before rendering.',
+  missingCameraBindGroup: 'Camera bind group is missing. Ensure the camera is initialized before rendering.',
+  missingCameraBufferLayout: 'Camera buffer layout is missing. Ensure the renderer is initialized before rendering.',
+  missingSceneBindGroupLayout:
+    'Scene bind group layout is missing. Ensure the renderer is initialized before rendering.',
+  missingMaterialBindGroupLayout:
+    'Material bind group layout is missing. Ensure the renderer is initialized before rendering.',
+  missingEntityBindGroupLayout:
+    'Entity bind group layout is missing. Ensure the renderer is initialized before rendering.',
+  missingMeshPipelineLayout: 'Mesh pipeline layout is missing. Ensure the renderer is initialized before rendering.',
 };
 
 export { errorMessages };

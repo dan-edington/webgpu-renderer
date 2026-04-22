@@ -58,9 +58,10 @@ class Mesh extends Entity implements IMesh {
 
   createPipeline(renderer: Renderer) {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
+    if (!renderer.meshPipelineLayout) throw new Error(errorMessages.missingMeshPipelineLayout);
 
     const pipelineDescriptor = {
-      layout: 'auto',
+      layout: renderer.meshPipelineLayout,
       vertex: {
         module: this.material.shaderModule,
         entryPoint: this.material.shaderEntryPoints.vertex,
@@ -105,10 +106,11 @@ class Mesh extends Entity implements IMesh {
 
   createEntityBufferBindGroup(renderer: Renderer) {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
+    if (!renderer.entityBindGroupLayout) throw new Error(errorMessages.missingEntityBindGroupLayout);
 
     if (this.entityBuffer?.buffer && this.pipeline) {
       this.entityUniformsBindGroup = renderer.device.createBindGroup({
-        layout: this.pipeline.getBindGroupLayout(constants.bindGroupIndices.ENTITY),
+        layout: renderer.entityBindGroupLayout,
         entries: [{ binding: 0, resource: { buffer: this.entityBuffer.buffer } }],
       });
     }
@@ -116,10 +118,11 @@ class Mesh extends Entity implements IMesh {
 
   createMaterialUniformsBindGroup(renderer: Renderer) {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
+    if (!renderer.materialBindGroupLayout) throw new Error(errorMessages.missingMaterialBindGroupLayout);
 
     if (this.material.materialUniformsBuffer?.buffer && this.pipeline) {
       this.materialUniformsBindGroup = renderer.device.createBindGroup({
-        layout: this.pipeline.getBindGroupLayout(constants.bindGroupIndices.MATERIAL),
+        layout: renderer.materialBindGroupLayout,
         entries: [{ binding: 0, resource: { buffer: this.material.materialUniformsBuffer.buffer } }],
       });
     }

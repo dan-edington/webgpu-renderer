@@ -1,14 +1,42 @@
 import { Mesh } from './Mesh';
+import { PerspectiveCamera } from './PerspectiveCamera';
 import { Scene } from './Scene';
 import { errorMessages } from './constants/errorMessages';
+import { constants } from './constants/constants';
 
-interface RendererOptions {
+interface IRenderer {
+  containerElement: HTMLElement;
+  canvasElement: HTMLCanvasElement | null;
+  dpr: number;
+  alpha: boolean;
+  context: GPUCanvasContext | null;
+  adapter: GPUAdapter | null;
+  device: GPUDevice | null;
+  presentationFormat: GPUTextureFormat | null;
+  currentFrame: number;
+  elapsedTime: number;
+  previousTime: number;
+  deltaTime: number;
+  cameraBindGroupLayout: GPUBindGroupLayout | null;
+  sceneBindGroupLayout: GPUBindGroupLayout | null;
+  materialBindGroupLayout: GPUBindGroupLayout | null;
+  entityBindGroupLayout: GPUBindGroupLayout | null;
+  meshPipelineLayout: GPUPipelineLayout | null;
+  init(): Promise<void>;
+  createBindGroupLayouts(): void;
+  createMeshPipelineLayout(): void;
+  updateTimersAndFrameCounter(): void;
+  render(scene: Scene, camera: PerspectiveCamera): void;
+  setCanvasSize(): void;
+}
+
+type RendererOptions = {
   containerElement?: HTMLElement;
   dpr?: number;
   alpha?: boolean;
-}
+};
 
-class Renderer {
+class Renderer implements IRenderer {
   containerElement: HTMLElement;
   canvasElement: HTMLCanvasElement | null = null;
   dpr: number;
@@ -21,6 +49,11 @@ class Renderer {
   elapsedTime: number = 0;
   previousTime: number = 0;
   deltaTime: number = 0;
+  cameraBindGroupLayout: GPUBindGroupLayout | null = null;
+  sceneBindGroupLayout: GPUBindGroupLayout | null = null;
+  materialBindGroupLayout: GPUBindGroupLayout | null = null;
+  entityBindGroupLayout: GPUBindGroupLayout | null = null;
+  meshPipelineLayout: GPUPipelineLayout | null = null;
 
   constructor(rendererOptions: RendererOptions) {
     const { containerElement } = rendererOptions;
@@ -60,7 +93,64 @@ class Renderer {
       alphaMode: this.alpha ? 'premultiplied' : 'opaque',
     });
 
+    this.createBindGroupLayouts();
+    this.createMeshPipelineLayout();
+
     this.setCanvasSize();
+  }
+
+  createBindGroupLayouts() {
+    if (!this.device) throw new Error(errorMessages.missingDevice);
+
+    this.cameraBindGroupLayout = this.device.createBindGroupLayout({
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: { type: 'uniform' },
+        },
+      ],
+    });
+
+    // Group 1 is reserved for scene uniforms and currently unused.
+    this.sceneBindGroupLayout = this.device.createBindGroupLayout({ entries: [] });
+
+    this.materialBindGroupLayout = this.device.createBindGroupLayout({
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: { type: 'uniform' },
+        },
+      ],
+    });
+
+    this.entityBindGroupLayout = this.device.createBindGroupLayout({
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: { type: 'uniform' },
+        },
+      ],
+    });
+  }
+
+  createMeshPipelineLayout() {
+    if (!this.device) throw new Error(errorMessages.missingDevice);
+    if (!this.cameraBindGroupLayout) throw new Error(errorMessages.missingCameraBufferLayout);
+    if (!this.sceneBindGroupLayout) throw new Error(errorMessages.missingSceneBindGroupLayout);
+    if (!this.materialBindGroupLayout) throw new Error(errorMessages.missingMaterialBindGroupLayout);
+    if (!this.entityBindGroupLayout) throw new Error(errorMessages.missingEntityBindGroupLayout);
+
+    this.meshPipelineLayout = this.device.createPipelineLayout({
+      bindGroupLayouts: [
+        this.cameraBindGroupLayout,
+        this.sceneBindGroupLayout,
+        this.materialBindGroupLayout,
+        this.entityBindGroupLayout,
+      ],
+    });
   }
 
   updateTimersAndFrameCounter() {
@@ -76,14 +166,20 @@ class Renderer {
     this.previousTime = currentTime;
   }
 
-  render(scene: Scene) {
+  render(scene: Scene, camera: PerspectiveCamera) {
     this.updateTimersAndFrameCounter();
+
+    if (!camera.isInitialized) camera.init(this);
 
     scene.updateRenderList();
 
     if (!this.device) throw new Error(errorMessages.missingDevice);
     if (!this.context) throw new Error(errorMessages.missingContext);
     if (!this.presentationFormat) throw new Error(errorMessages.missingPresentationFormat);
+    if (!camera.cameraUniformBuffer?.buffer) throw new Error(errorMessages.missingCameraBuffer);
+    if (!camera.cameraBindGroup) throw new Error(errorMessages.missingCameraBindGroup);
+
+    camera.cameraUniformBuffer.writeUpdatedBufferData();
 
     const commandEncoder = this.device.createCommandEncoder();
     const textureView = this.context.getCurrentTexture().createView();
@@ -100,6 +196,8 @@ class Renderer {
     };
 
     const pass = commandEncoder.beginRenderPass(renderPassDescriptor);
+
+    pass.setBindGroup(constants.bindGroupIndices.CAMERA, camera.cameraBindGroup);
 
     scene.renderList.forEach((entity) => {
       if (entity.isRenderable && entity.visible) {
