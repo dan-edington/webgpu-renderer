@@ -1,15 +1,10 @@
 import { vec4, Vec4 } from 'wgpu-matrix';
-import type { uuid } from './types';
-import { Entity } from './Entity';
+import { Entity, IEntity } from './Entity';
 import { Renderer } from './Renderer';
 import { errorMessages } from './constants/errorMessages';
 import { UniformBuffer } from './UniformBuffer';
 
-interface IScene {
-  id: uuid;
-  name?: string;
-  type: string;
-  children: Entity[];
+interface IScene extends IEntity {
   renderList: Entity[];
   renderListNeedsUpdate: boolean;
   sceneUniformsBuffer: UniformBuffer | null;
@@ -20,18 +15,16 @@ interface IScene {
     color: Vec4;
     intensity: number;
   };
+  init(renderer: Renderer): void;
+  createSceneUniformsBuffer(): void;
+  createSceneUniformsBindGroup(renderer: Renderer): void;
   setClearColor(color: GPUColor | [number, number, number, number] | Vec4): void;
   setAmbientLightColor(color: Vec4 | [number, number, number, number]): void;
   setAmbientLightIntensity(intensity: number): void;
-  add(entity: Entity): void;
   updateRenderList(): void;
 }
 
-class Scene implements IScene {
-  id: uuid;
-  name?: string;
-  type: string;
-  children: Entity[];
+class Scene extends Entity implements IScene {
   renderList: Entity[];
   renderListNeedsUpdate: boolean;
   sceneUniformsBuffer: UniformBuffer | null = null;
@@ -41,9 +34,7 @@ class Scene implements IScene {
   ambientLight: { color: Vec4; intensity: number };
 
   constructor() {
-    this.id = crypto.randomUUID();
-    this.type = 'Scene';
-    this.children = [];
+    super('Scene');
     this.renderList = [];
     this.renderListNeedsUpdate = false;
     this.isInitialized = false;
@@ -107,21 +98,6 @@ class Scene implements IScene {
     this.sceneUniformsBuffer?.updateUniform({
       ambientLightIntensity: this.ambientLight.intensity,
     });
-  }
-
-  add(entity: Entity) {
-    this.children.push(entity);
-    entity.parent = this;
-    this.renderListNeedsUpdate = true;
-  }
-
-  remove(entity: Entity) {
-    const index = this.children.findIndex((child) => child.id === entity.id);
-    if (index !== -1) {
-      this.children.splice(index, 1);
-    }
-    entity.parent = null;
-    this.renderListNeedsUpdate = true;
   }
 
   updateRenderList() {
