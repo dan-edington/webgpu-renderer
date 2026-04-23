@@ -67,20 +67,7 @@ describe('computeBufferLayout', () => {
     expect(layoutEntries[0].layout.size).toBe(48);
 
     const f32View = new Float32Array(bufferData);
-    expect(Array.from(f32View.slice(0, 12))).toEqual([
-      1,
-      2,
-      3,
-      0,
-      4,
-      5,
-      6,
-      0,
-      7,
-      8,
-      9,
-      0,
-    ]);
+    expect(Array.from(f32View.slice(0, 12))).toEqual([1, 2, 3, 0, 4, 5, 6, 0, 7, 8, 9, 0]);
   });
 
   it('computes array stride correctly for array<vec3f, N> and writes each element at stride boundaries', () => {
@@ -119,12 +106,53 @@ describe('computeBufferLayout', () => {
     if (layout.kind !== 'array') {
       throw new Error('Expected array layout for nested.');
     }
-    expect(layout.size).toBe(32);
-    expect(layout.stride).toBe(16);
+    expect(layout.size).toBe(64);
+    expect(layout.stride).toBe(32);
     expect(layout.elementCount).toBe(8);
 
     const f32View = new Float32Array(bufferData);
-    expect(Array.from(f32View.slice(0, 8))).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(Array.from(f32View.slice(0, 16))).toEqual([1, 2, 0, 0, 3, 4, 0, 0, 5, 6, 0, 0, 7, 8, 0, 0]);
+  });
+
+  it('uses 16-byte stride for scalar arrays in uniform address space', () => {
+    const uniforms = {
+      weights: { type: 'array<f32, 2>', value: new Float32Array([2, 4]) },
+    };
+
+    const { bufferData, layoutEntries } = computeBufferLayout(uniforms);
+    const layout = layoutEntries[0].layout;
+
+    expect(layout.kind).toBe('array');
+    if (layout.kind !== 'array') {
+      throw new Error('Expected array layout for weights.');
+    }
+
+    expect(layout.align).toBe(4);
+    expect(layout.stride).toBe(16);
+    expect(layout.size).toBe(32);
+
+    const f32View = new Float32Array(bufferData);
+    expect(Array.from(f32View.slice(0, 8))).toEqual([2, 0, 0, 0, 4, 0, 0, 0]);
+  });
+
+  it('supports tightly-packed scalar arrays in storage address space', () => {
+    const uniforms = {
+      weights: { type: 'array<f32, 2>', value: new Float32Array([2, 4]) },
+    };
+
+    const { bufferData, layoutEntries } = computeBufferLayout(uniforms, { addressSpace: 'storage' });
+    const layout = layoutEntries[0].layout;
+
+    expect(layout.kind).toBe('array');
+    if (layout.kind !== 'array') {
+      throw new Error('Expected array layout for weights.');
+    }
+
+    expect(layout.stride).toBe(4);
+    expect(layout.size).toBe(8);
+
+    const f32View = new Float32Array(bufferData);
+    expect(Array.from(f32View.slice(0, 2))).toEqual([2, 4]);
   });
 
   it('rewrites an existing buffer with writeUniformValuesToBuffer using precomputed layout entries', () => {

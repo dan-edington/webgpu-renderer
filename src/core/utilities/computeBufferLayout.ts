@@ -1,5 +1,7 @@
 import {
+  BufferAddressSpace,
   ArrayLayout,
+  ComputeBufferLayoutOptions,
   ComputeBufferLayoutResult,
   ScalarType,
   UniformEntryMeta,
@@ -9,14 +11,18 @@ import {
   VectorLayout,
 } from '../types';
 
-function computeBufferLayout(uniforms: Record<string, UniformValue>): ComputeBufferLayoutResult {
+function computeBufferLayout(
+  uniforms: Record<string, UniformValue>,
+  options: ComputeBufferLayoutOptions = {},
+): ComputeBufferLayoutResult {
+  const addressSpace = options.addressSpace ?? 'uniform';
   let bufferSize = 0;
   const layoutEntries: UniformEntryMeta[] = [];
 
   for (const key in uniforms) {
     const uniform = uniforms[key];
-    const layout = getLayoutForType(uniform.type);
-    bufferSize = alignTo(bufferSize, layout.align);
+    const layout = getLayoutForType(uniform.type, addressSpace);
+    bufferSize = alignTo(bufferSize, getRequiredAlignForAddressSpace(layout, addressSpace));
 
     layoutEntries.push({
       key,
@@ -211,11 +217,11 @@ function writeScalar(bufferData: ArrayBuffer, scalar: ScalarType, byteOffset: nu
   new Uint32Array(bufferData, byteOffset, 1)[0] = value;
 }
 
-function getLayoutForType(type: string): UniformLayout {
+function getLayoutForType(type: string, addressSpace: BufferAddressSpace): UniformLayout {
   const normalizedType = normalizeTypeName(type);
 
   if (normalizedType.startsWith('array<')) {
-    return parseArrayLayout(normalizedType);
+    return parseArrayLayout(normalizedType, addressSpace);
   }
 
   const scalarMatch = /^(f16|f32|i32|u32)$/.exec(normalizedType);
@@ -254,7 +260,7 @@ function getLayoutForType(type: string): UniformLayout {
     const columns = Number(matrixMatch[1]);
     const rows = Number(matrixMatch[2]);
     const scalar = matrixMatch[3] as 'f16' | 'f32';
-    const vectorLayout = getLayoutForType(`vec${rows}<${scalar}>`) as VectorLayout;
+    const vectorLayout = getLayoutForType(`vec${rows}<${scalar}>`, addressSpace) as VectorLayout;
     const stride = alignTo(vectorLayout.size, vectorLayout.align);
 
     return {
@@ -272,7 +278,7 @@ function getLayoutForType(type: string): UniformLayout {
   throw new Error(`Unsupported data type: ${type}`);
 }
 
-function parseArrayLayout(type: string): ArrayLayout {
+function parseArrayLayout(type: string, addressSpace: BufferAddressSpace): ArrayLayout {
   const inner = getArrayInner(type);
   const splitIndex = findTopLevelComma(inner);
 
@@ -287,8 +293,8 @@ function parseArrayLayout(type: string): ArrayLayout {
     throw new Error(`Invalid array element count in type declaration: ${type}`);
   }
 
-  const elementLayout = getLayoutForType(elementTypeName);
-  const stride = alignTo(elementLayout.size, elementLayout.align);
+  const elementLayout = getLayoutForType(elementTypeName, addressSpace);
+  const stride = getArrayElementStride(elementLayout, addressSpace);
 
   return {
     kind: 'array',
@@ -358,5 +364,34 @@ function alignTo(value: number, alignment: number): number {
   return Math.ceil(value / alignment) * alignment;
 }
 
+function roundUpTo16(value: number): number {
+  return alignTo(value, 16);
+}
+
+function getRequiredAlignForAddressSpace(layout: UniformLayout, addressSpace: BufferAddressSpace): number {
+  if (addressSpace === 'uniform' && layout.kind === 'array') {
+    // Uniform arrays require 16-byte member alignment at use-sites.
+    return roundUpTo16(layout.align);
+  }
+
+  return layout.align;
+}
+
+function getArrayElementStride(elementLayout: UniformLayout, addressSpace: BufferAddressSpace): number {
+  if (addressSpace === 'uniform') {
+    // Uniform arrays use a stride aligned to roundUp(16, AlignOf(element)).
+    return alignTo(elementLayout.size, roundUpTo16(elementLayout.align));
+  }
+
+  return alignTo(elementLayout.size, elementLayout.align);
+}
+
 export { computeBufferLayout, writeUniformValuesToBuffer };
-export type { ComputeBufferLayoutResult, UniformEntryMeta, UniformLayout, UniformValue, UniformValueInput };
+export type {
+  ComputeBufferLayoutOptions,
+  ComputeBufferLayoutResult,
+  UniformEntryMeta,
+  UniformLayout,
+  UniformValue,
+  UniformValueInput,
+};
