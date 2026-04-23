@@ -12,13 +12,16 @@ interface IShaderMaterial {
   shaderModule: GPUShaderModule | null;
   materialUniforms?: Record<string, UniformValue>;
   materialUniformsBuffer?: UniformBuffer;
+  materialUniformsBindGroup: GPUBindGroup | null;
   pipelineDescriptor: GPURenderPipelineDescriptor | null;
   shaderEntryPoints: {
     vertex: string;
     fragment: string;
   };
+  isInitialized: boolean;
   init(renderer: Renderer): void;
   createShaderModule(device: GPUDevice): void;
+  createMaterialUniformsBindGroup(renderer: Renderer): void;
 }
 
 type ShaderMaterialOptions = {
@@ -39,11 +42,13 @@ class ShaderMaterial implements IShaderMaterial {
   shaderModule: GPUShaderModule | null = null;
   materialUniforms?: Record<string, UniformValue>;
   materialUniformsBuffer?: UniformBuffer;
+  materialUniformsBindGroup: GPUBindGroup | null = null;
   pipelineDescriptor: GPURenderPipelineDescriptor | null = null;
   shaderEntryPoints: {
     vertex: string;
     fragment: string;
   };
+  isInitialized: boolean = false;
 
   constructor(options: ShaderMaterialOptions) {
     this.id = crypto.randomUUID();
@@ -62,15 +67,38 @@ class ShaderMaterial implements IShaderMaterial {
   }
 
   init(renderer: Renderer) {
+    if (this.isInitialized) {
+      return;
+    }
+
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
 
     this.createShaderModule(renderer.device);
+
+    if (this.materialUniformsBuffer) {
+      this.materialUniformsBuffer.init(renderer);
+      this.createMaterialUniformsBindGroup(renderer);
+    }
+
+    this.isInitialized = true;
   }
 
   createShaderModule(device: GPUDevice) {
     this.shaderModule = device.createShaderModule({
       code: this.shader,
     });
+  }
+
+  createMaterialUniformsBindGroup(renderer: Renderer) {
+    if (!renderer.device) throw new Error(errorMessages.missingDevice);
+    if (!renderer.materialBindGroupLayout) throw new Error(errorMessages.missingMaterialBindGroupLayout);
+
+    if (this.materialUniformsBuffer?.buffer) {
+      this.materialUniformsBindGroup = renderer.device.createBindGroup({
+        layout: renderer.materialBindGroupLayout,
+        entries: [{ binding: 0, resource: { buffer: this.materialUniformsBuffer.buffer } }],
+      });
+    }
   }
 }
 

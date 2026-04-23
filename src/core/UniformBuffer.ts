@@ -51,6 +51,9 @@ class UniformBuffer implements IUniformBuffer {
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
 
+    // Ensure freshly created GPU buffers are always populated, even if this
+    // UniformBuffer instance was initialized before.
+    this.needsUpdate = true;
     this.writeUpdatedBufferData();
   }
 

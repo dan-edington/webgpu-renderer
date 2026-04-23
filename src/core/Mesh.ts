@@ -13,10 +13,8 @@ interface IMesh extends IEntity {
   isInitialized: boolean;
   entityBuffer: UniformBuffer | null;
   entityUniformsBindGroup: GPUBindGroup | null;
-  materialUniformsBindGroup: GPUBindGroup | null;
   init(renderer: Renderer): void;
   createPipeline(renderer: Renderer): void;
-  createMaterialUniformsBindGroup(renderer: Renderer): void;
   draw(pass: GPURenderPassEncoder, renderer: Renderer): void;
 }
 
@@ -27,7 +25,6 @@ class Mesh extends Entity implements IMesh {
   isInitialized: boolean;
   entityBuffer: UniformBuffer | null = null;
   entityUniformsBindGroup: GPUBindGroup | null = null;
-  materialUniformsBindGroup: GPUBindGroup | null = null;
 
   constructor(geometry: Geometry, material: ShaderMaterial) {
     super('Mesh');
@@ -41,11 +38,6 @@ class Mesh extends Entity implements IMesh {
     this.material.init(renderer);
     this.createEntityBuffer(renderer);
     this.createPipeline(renderer);
-
-    if (this.material.materialUniformsBuffer) {
-      this.material.materialUniformsBuffer.init(renderer);
-      this.createMaterialUniformsBindGroup(renderer);
-    }
 
     if (this.entityBuffer) {
       this.entityBuffer.init(renderer);
@@ -115,18 +107,6 @@ class Mesh extends Entity implements IMesh {
     }
   }
 
-  createMaterialUniformsBindGroup(renderer: Renderer) {
-    if (!renderer.device) throw new Error(errorMessages.missingDevice);
-    if (!renderer.materialBindGroupLayout) throw new Error(errorMessages.missingMaterialBindGroupLayout);
-
-    if (this.material.materialUniformsBuffer?.buffer && this.pipeline) {
-      this.materialUniformsBindGroup = renderer.device.createBindGroup({
-        layout: renderer.materialBindGroupLayout,
-        entries: [{ binding: 0, resource: { buffer: this.material.materialUniformsBuffer.buffer } }],
-      });
-    }
-  }
-
   protected override onMatrixUpdated() {
     if (this.entityBuffer) {
       this.entityBuffer.updateUniform({
@@ -157,8 +137,8 @@ class Mesh extends Entity implements IMesh {
       pass.setBindGroup(constants.bindGroupIndices.ENTITY, this.entityUniformsBindGroup);
     }
 
-    if (this.materialUniformsBindGroup) {
-      pass.setBindGroup(constants.bindGroupIndices.MATERIAL, this.materialUniformsBindGroup);
+    if (this.material.materialUniformsBindGroup) {
+      pass.setBindGroup(constants.bindGroupIndices.MATERIAL, this.material.materialUniformsBindGroup);
     }
 
     if (this.geometry.isIndexed && this.geometry.indexBuffer) {
