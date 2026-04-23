@@ -3,11 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { Entity } from '../Entity';
 import { Scene } from '../Scene';
 
-function createEntity(name: string, options?: { isRenderable?: boolean; visible?: boolean }) {
+function createEntity(name: string, options?: { visible?: boolean }) {
   const entity = new Entity();
 
   entity.name = name;
-  entity.isRenderable = options?.isRenderable ?? false;
   entity.visible = options?.visible ?? true;
 
   return entity;
@@ -15,39 +14,30 @@ function createEntity(name: string, options?: { isRenderable?: boolean; visible?
 
 function buildSceneFixture() {
   const rootVisibleRenderable = createEntity('root-visible-renderable', {
-    isRenderable: true,
     visible: true,
   });
   const childVisibleRenderable = createEntity('child-visible-renderable', {
-    isRenderable: true,
     visible: true,
   });
   const childVisibleNotRenderable = createEntity('child-visible-not-renderable', {
-    isRenderable: false,
     visible: true,
   });
   const grandchildVisibleRenderable = createEntity('grandchild-visible-renderable', {
-    isRenderable: true,
     visible: true,
   });
   const hiddenParentRenderable = createEntity('hidden-parent-renderable', {
-    isRenderable: true,
     visible: false,
   });
   const hiddenBranchChildRenderable = createEntity('hidden-branch-child-renderable', {
-    isRenderable: true,
     visible: true,
   });
   const secondRootVisibleNotRenderable = createEntity('second-root-visible-not-renderable', {
-    isRenderable: false,
     visible: true,
   });
   const secondRootChildRenderable = createEntity('second-root-child-renderable', {
-    isRenderable: true,
     visible: true,
   });
   const secondRootGrandchildHidden = createEntity('second-root-grandchild-hidden', {
-    isRenderable: true,
     visible: false,
   });
 
@@ -98,12 +88,43 @@ describe('Scene', () => {
 
     expect(scene.renderListNeedsUpdate).toBe(false);
     expect(scene.renderList.map((entity) => entity.id)).toEqual(expectedRenderListIds);
-    expect(scene.renderList.every((entity) => entity.visible && entity.isRenderable)).toBe(true);
+    expect(scene.renderList.every((entity) => entity.visible)).toBe(true);
 
     const firstRenderListIds = scene.renderList.map((entity) => entity.id);
 
     scene.updateRenderList();
 
     expect(scene.renderList.map((entity) => entity.id)).toEqual(firstRenderListIds);
+  });
+
+  it('marks render list dirty when adding via nested entity', () => {
+    const scene = new Scene();
+    const parent = createEntity('parent');
+    const child = createEntity('child');
+
+    scene.add(parent);
+    scene.updateRenderList();
+
+    expect(scene.renderListNeedsUpdate).toBe(false);
+
+    parent.add(child);
+
+    expect(scene.renderListNeedsUpdate).toBe(true);
+  });
+
+  it('marks render list dirty when removing via nested entity', () => {
+    const scene = new Scene();
+    const parent = createEntity('parent');
+    const child = createEntity('child');
+
+    scene.add(parent);
+    parent.add(child);
+    scene.updateRenderList();
+
+    expect(scene.renderListNeedsUpdate).toBe(false);
+
+    parent.remove(child);
+
+    expect(scene.renderListNeedsUpdate).toBe(true);
   });
 });

@@ -6,7 +6,8 @@ import { Scene } from './core/Scene';
 import simpleShader from './simple.wgsl?raw';
 import { ShaderMaterial } from './core/ShaderMaterial';
 import { PerspectiveCamera } from './core/PerspectiveCamera';
-import { cube } from 'primitive-geometry';
+import { cube, sphere } from 'primitive-geometry';
+import { Group } from './core/Group';
 
 const container = document.getElementById('app');
 
@@ -17,11 +18,27 @@ if (container) {
 
   // Create a scene
   const scene = new Scene();
+  scene.setClearColor([Math.random(), Math.random(), Math.random(), 1]);
 
-  // Create geometry
+  // Create a camera
+  const camera = new PerspectiveCamera({
+    near: 0.1,
+    far: 100,
+    fov: (60 * Math.PI) / 180,
+    aspect: container.clientWidth / container.clientHeight,
+  });
+
+  camera.setPosition(0, 0, 4);
+
+  // Create cube geometry
   const cubePrimitive = cube({ sx: 1, sy: 1, sz: 1, nx: 1, ny: 1, nz: 1 });
-  const indicesU32 = Uint16Array.from(cubePrimitive.cells); // CONVERT FROM UINT8 TO UINT16
-  const geometry = new Geometry({ vertices: cubePrimitive.positions, indices: indicesU32 });
+  const cubeIndices = Uint16Array.from(cubePrimitive.cells); // CONVERT FROM UINT8 TO UINT16
+  const cubeGeometry = new Geometry({ vertices: cubePrimitive.positions, indices: cubeIndices });
+
+  // Create sphere geometry
+  const spherePrimitive = sphere({ radius: 0.5 });
+  const sphereIndices = Uint16Array.from(spherePrimitive.cells); // CONVERT FROM UINT8 TO UINT16
+  const sphereGeometry = new Geometry({ vertices: spherePrimitive.positions, indices: sphereIndices });
 
   // Create a material
   const material = new ShaderMaterial({
@@ -31,33 +48,26 @@ if (container) {
     },
   });
 
-  // Create a mesh with the geometry and material
-  const mesh = new Mesh(geometry, material);
+  // Create meshes
+  const cubeMesh = new Mesh(cubeGeometry, material);
+  cubeMesh.setPosition(-1.5, 0, 0);
+  const sphereMesh = new Mesh(sphereGeometry, material);
+  sphereMesh.setPosition(1.5, 0, 0);
 
-  // Create a camera and add to scene
-  const camera = new PerspectiveCamera({
-    near: 0.1,
-    far: 100,
-    fov: (60 * Math.PI) / 180,
-    aspect: container.clientWidth / container.clientHeight,
-  });
+  // Create a group
+  const group = new Group();
+  group.add([cubeMesh, sphereMesh]);
+  group.setPosition(0, 0, -10);
 
-  camera.setPosition(0, 0, 4);
-  scene.add(camera);
-
-  // Add the mesh to the scene
-  scene.add(mesh);
-  scene.setClearColor([Math.random(), Math.random(), Math.random(), 1]);
+  // Add the meshes and camera to the scene
+  scene.add([group, camera]);
 
   // Render the scene
   function render() {
-    renderer.render(scene, camera);
     const t = renderer.elapsedTime;
-    camera.setRotation(0, 0, Math.PI * 2 * (t / 10) * 0.001);
-    camera.setPosition(0, 0, 4 + Math.sin(t * 0.001) * 2);
-
-    mesh.setRotation(0, t * 0.001, 0);
-
+    cubeMesh.setRotation(0, t * 0.001, t * 0.002);
+    group.setRotation(0, t * -0.001, 0);
+    renderer.render(scene, camera);
     requestAnimationFrame(render);
   }
 
@@ -65,9 +75,7 @@ if (container) {
 
   // Add resize handler for camera
   window.addEventListener('resize', () => {
-    if (camera) {
-      camera.aspect = container.clientWidth / container.clientHeight;
-      camera.updateProjectionMatrix();
-    }
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
   });
 }

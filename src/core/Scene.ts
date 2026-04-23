@@ -111,9 +111,7 @@ class Scene extends Entity implements IScene {
           return;
         }
 
-        if (entity.isRenderable) {
-          this.renderList.push(entity);
-        }
+        this.renderList.push(entity);
 
         entity.children.forEach((child) => {
           traverse(child, isVisible);
@@ -121,7 +119,7 @@ class Scene extends Entity implements IScene {
       };
 
       this.children.forEach((child) => {
-        traverse(child, true);
+        traverse(child, this.visible);
       });
 
       this.renderListNeedsUpdate = false;

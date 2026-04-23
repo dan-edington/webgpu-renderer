@@ -24,17 +24,15 @@ struct EntityUniforms {
 fn vertex_shader(
   @builtin(vertex_index) vertexIndex: u32,
   @location(0) pos: vec3<f32>
-) -> @builtin(position) vec4f {
-
+) -> @builtin(position) vec4f
+{
   let position = cameraUniforms.viewProjectionMatrix * entityUniforms.modelMatrix * vec4f(pos, 1.0);
   return position;
 }
 
 @fragment
-fn fragment_shader(
-  @builtin(position) fragCoord: vec4<f32>
-) -> @location(0) vec4f {
-
+fn fragment_shader(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec4f
+{
   return sceneUniforms.ambientLightColor * materialUniforms.uColor * sceneUniforms.ambientLightIntensity;
 }
 

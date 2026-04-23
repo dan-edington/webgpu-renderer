@@ -31,7 +31,6 @@ class Mesh extends Entity implements IMesh {
 
   constructor(geometry: Geometry, material: ShaderMaterial) {
     super('Mesh');
-    this.isRenderable = true;
     this.isInitialized = false;
     this.geometry = geometry;
     this.material = material;
@@ -100,7 +99,7 @@ class Mesh extends Entity implements IMesh {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
 
     this.entityBuffer = new UniformBuffer({
-      modelMatrix: { type: 'mat4x4<f32>', value: this.matrix },
+      modelMatrix: { type: 'mat4x4<f32>', value: this.matrixWorld },
     });
   }
 
@@ -131,7 +130,7 @@ class Mesh extends Entity implements IMesh {
   protected override onMatrixUpdated() {
     if (this.entityBuffer) {
       this.entityBuffer.updateUniform({
-        modelMatrix: this.matrix,
+        modelMatrix: this.matrixWorld,
       });
     }
   }

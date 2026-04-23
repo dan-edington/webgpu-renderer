@@ -210,10 +210,8 @@ class Renderer implements IRenderer {
     pass.setBindGroup(constants.bindGroupIndices.SCENE, scene.sceneUniformsBindGroup);
 
     scene.renderList.forEach((entity) => {
-      if (entity.isRenderable && entity.visible) {
-        if (entity instanceof Mesh) {
-          entity.draw(pass, this);
-        }
+      if (entity instanceof Mesh) {
+        entity.draw(pass, this);
       }
     });
 
