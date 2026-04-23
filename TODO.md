@@ -1,4 +1,16 @@
 # TODO
 
-- DEPTH!
-- Add lights and materials
+- [ ] DEPTH
+
+- [ ] LIGHTS
+  - [x] Ambient
+  - [ ] Point
+  - [ ] Spot
+  - [ ] Directional
+
+- [ ] MATERIALS
+  - [ ] Unlit
+  - [ ] Lambert
+  - [ ] Phong
+  - [ ] PBR
+  - [ ] Custom Shader
