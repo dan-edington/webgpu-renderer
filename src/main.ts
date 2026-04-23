@@ -3,11 +3,11 @@ import { Geometry } from './core/Geometry';
 import { Mesh } from './core/Mesh';
 import { Renderer } from './core/Renderer';
 import { Scene } from './core/Scene';
-import simpleShader from './simple.wgsl?raw';
-import { ShaderMaterial } from './core/ShaderMaterial';
 import { PerspectiveCamera } from './core/PerspectiveCamera';
 import { cube, sphere, torus } from 'primitive-geometry';
 import { Group } from './core/Group';
+import { LambertMaterial } from './core/materials/LambertMaterial';
+import { PointLight } from './core/lights/PointLight';
 
 const container = document.getElementById('app');
 
@@ -18,7 +18,7 @@ if (container) {
 
   // Create a scene
   const scene = new Scene();
-  scene.setClearColor([Math.random(), Math.random(), Math.random(), 1]);
+  scene.setClearColor([0, 0, 0, 1]);
 
   // Create a camera
   const camera = new PerspectiveCamera({
@@ -33,32 +33,37 @@ if (container) {
   // Create cube geometry
   const cubePrimitive = cube({ sx: 1, sy: 1, sz: 1, nx: 1, ny: 1, nz: 1 });
   const cubeIndices = Uint16Array.from(cubePrimitive.cells); // CONVERT FROM UINT8 TO UINT16
-  const cubeGeometry = new Geometry({ vertices: cubePrimitive.positions, indices: cubeIndices });
+  const cubeNormals = cubePrimitive.normals;
+  const cubeGeometry = new Geometry({ vertices: cubePrimitive.positions, indices: cubeIndices, normals: cubeNormals });
 
   // Create sphere geometry
   const spherePrimitive = sphere({ radius: 0.5 });
   const sphereIndices = Uint16Array.from(spherePrimitive.cells); // CONVERT FROM UINT8 TO UINT16
-  const sphereGeometry = new Geometry({ vertices: spherePrimitive.positions, indices: sphereIndices });
+  const sphereNormals = spherePrimitive.normals;
+  const sphereGeometry = new Geometry({
+    vertices: spherePrimitive.positions,
+    indices: sphereIndices,
+    normals: sphereNormals,
+  });
 
   // Create torus geometry
   const torusPrimitive = torus({ radius: 0.5, segments: 32 });
   const torusIndices = Uint16Array.from(torusPrimitive.cells); // CONVERT FROM UINT8 TO UINT16
-  const torusGeometry = new Geometry({ vertices: torusPrimitive.positions, indices: torusIndices });
+  const torusNormals = torusPrimitive.normals;
+  const torusGeometry = new Geometry({
+    vertices: torusPrimitive.positions,
+    indices: torusIndices,
+    normals: torusNormals,
+  });
 
   // Create a material
-  const material = new ShaderMaterial({
-    shader: simpleShader,
-    uniforms: {
-      uColor: { type: 'vec4<f32>', value: new Float32Array([Math.random(), Math.random(), Math.random(), 1]) },
-    },
+  const material = new LambertMaterial({
+    color: [1, 0, 1, 1],
   });
 
   // Create a second material with a different color
-  const materialTwo = new ShaderMaterial({
-    shader: simpleShader,
-    uniforms: {
-      uColor: { type: 'vec4<f32>', value: new Float32Array([Math.random(), Math.random(), Math.random(), 1]) },
-    },
+  const materialTwo = new LambertMaterial({
+    color: [0, 1, 1, 1],
   });
 
   // Create meshes
@@ -74,14 +79,22 @@ if (container) {
   group.add([cubeMesh, sphereMesh, torusMesh]);
   group.setPosition(0, 0, -10);
 
-  // Add the meshes and camera to the scene
-  scene.add([group, camera]);
+  // Create a point light
+  const pointLight = new PointLight();
+  pointLight.setPosition(0, 2, 2);
+
+  // Add objects to scene
+  scene.add([group, camera, pointLight]);
+
+  scene.setAmbientLightIntensity(0);
+  pointLight.intensity = 1;
 
   // Render the scene
   function render() {
     const t = renderer.elapsedTime;
-    cubeMesh.setRotation(0, t * 0.001, t * 0.002);
+    cubeMesh.setRotation(t * 0.001, 0, t * 0.002);
     group.setRotation(0, t * -0.001, 0);
+    pointLight.setPosition(Math.cos(t * 0.001) * 10, 0, Math.sin(t * 0.001) * 10);
     renderer.render(scene, camera);
     requestAnimationFrame(render);
   }

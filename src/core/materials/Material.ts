@@ -1,13 +1,12 @@
-import { errorMessages } from './constants/errorMessages';
-import { Renderer } from './Renderer';
-import type { UniformValueInput, uuid } from './types';
-import { UniformBuffer } from './UniformBuffer';
-import { UniformValue } from './utilities/computeBufferLayout';
+import { errorMessages } from '../constants/errorMessages';
+import { Renderer } from '../Renderer';
+import { MaterialType, UniformValue, UniformValueInput, uuid } from '../types';
+import { UniformBuffer } from '../UniformBuffer';
 
-interface IShaderMaterial {
+interface IMaterial {
   id: uuid;
   name?: string;
-  type: string;
+  type: MaterialType;
   shader: string;
   shaderModule: GPUShaderModule | null;
   materialUniforms?: Record<string, UniformValue>;
@@ -20,10 +19,11 @@ interface IShaderMaterial {
   };
   isInitialized: boolean;
   init(renderer: Renderer): void;
+  getPipelineCacheKey(): string;
   updateUniforms(updatedUniforms: Record<string, UniformValueInput>): void;
 }
 
-type ShaderMaterialOptions = {
+type MaterialOptions = {
   shader: string;
   uniforms?: Record<string, UniformValue>;
   shaderEntryPoints?: {
@@ -31,12 +31,13 @@ type ShaderMaterialOptions = {
     fragment: string;
   };
   name?: string;
+  type: MaterialType;
 };
 
-class ShaderMaterial implements IShaderMaterial {
+class Material implements IMaterial {
   id: uuid;
   name?: string;
-  type: string;
+  type: MaterialType;
   shader: string;
   shaderModule: GPUShaderModule | null = null;
   materialUniforms?: Record<string, UniformValue>;
@@ -48,14 +49,15 @@ class ShaderMaterial implements IShaderMaterial {
     fragment: string;
   };
   isInitialized: boolean = false;
+  protected rendererInstance: Renderer | null = null;
 
-  constructor(options: ShaderMaterialOptions) {
+  constructor(options: MaterialOptions) {
     this.id = crypto.randomUUID();
     this.name = options.name;
-    this.type = 'ShaderMaterial';
+    this.type = options.type;
     this.materialUniforms = options.uniforms;
     this.shader = options.shader;
-    this.shaderEntryPoints = options.shaderEntryPoints || {
+    this.shaderEntryPoints = options.shaderEntryPoints ?? {
       vertex: 'vertex_shader',
       fragment: 'fragment_shader',
     };
@@ -70,14 +72,21 @@ class ShaderMaterial implements IShaderMaterial {
 
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
 
+    this.rendererInstance = renderer;
+
     this.createShaderModule(renderer.device);
 
     if (this.materialUniformsBuffer) {
       this.materialUniformsBuffer.init(renderer);
-      this.createMaterialUniformsBindGroup(renderer);
     }
 
+    this.createMaterialBindGroup(renderer);
+
     this.isInitialized = true;
+  }
+
+  getPipelineCacheKey(): string {
+    return this.type;
   }
 
   updateUniforms(updatedUniforms: Record<string, UniformValueInput>) {
@@ -92,17 +101,31 @@ class ShaderMaterial implements IShaderMaterial {
     });
   }
 
-  private createMaterialUniformsBindGroup(renderer: Renderer) {
-    if (!renderer.device) throw new Error(errorMessages.missingDevice);
-    if (!renderer.materialBindGroupLayout) throw new Error(errorMessages.missingMaterialBindGroupLayout);
+  protected recreateMaterialBindGroup() {
+    if (!this.rendererInstance || !this.isInitialized) return;
 
-    if (this.materialUniformsBuffer?.buffer) {
+    this.createMaterialBindGroup(this.rendererInstance);
+  }
+
+  protected createMaterialBindGroup(renderer: Renderer) {
+    if (!renderer.device) throw new Error(errorMessages.missingDevice);
+
+    const materialBindGroupLayout = renderer.getMaterialBindGroupLayout(this.type);
+    const entries = this.getBindGroupEntries(renderer);
+
+    if (entries.length > 0) {
       this.materialUniformsBindGroup = renderer.device.createBindGroup({
-        layout: renderer.materialBindGroupLayout,
-        entries: [{ binding: 0, resource: { buffer: this.materialUniformsBuffer.buffer } }],
+        layout: materialBindGroupLayout,
+        entries,
       });
     }
   }
+
+  protected getBindGroupEntries(_renderer: Renderer): GPUBindGroupEntry[] {
+    if (!this.materialUniformsBuffer?.buffer) return [];
+
+    return [{ binding: 0, resource: { buffer: this.materialUniformsBuffer.buffer } }];
+  }
 }
 
-export { ShaderMaterial };
+export { Material };

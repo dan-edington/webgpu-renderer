@@ -5,6 +5,7 @@ const constants = {
     MATERIAL: 2,
     ENTITY: 3,
   },
-};
+  MAX_LIGHTS: 64,
+} as const;
 
 export { constants };

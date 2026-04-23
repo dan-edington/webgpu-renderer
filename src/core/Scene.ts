@@ -2,12 +2,15 @@ import { vec4, Vec4 } from 'wgpu-matrix';
 import { Entity, IEntity } from './Entity';
 import { Renderer } from './Renderer';
 import { errorMessages } from './constants/errorMessages';
+import { constants } from './constants/constants';
 import { UniformBuffer } from './UniformBuffer';
+import { Light } from './lights/Light';
 
 interface IScene extends IEntity {
   renderList: Entity[];
   renderListNeedsUpdate: boolean;
   sceneUniformsBuffer: UniformBuffer | null;
+  lightUniformsBuffer: UniformBuffer | null;
   sceneUniformsBindGroup: GPUBindGroup | null;
   isInitialized: boolean;
   clearColor: GPUColor;
@@ -15,6 +18,8 @@ interface IScene extends IEntity {
     color: Vec4;
     intensity: number;
   };
+  lights: Light[];
+  lightsNeedUpdate: boolean;
   init(renderer: Renderer): void;
   createSceneUniformsBuffer(): void;
   createSceneUniformsBindGroup(renderer: Renderer): void;
@@ -28,10 +33,14 @@ class Scene extends Entity implements IScene {
   renderList: Entity[];
   renderListNeedsUpdate: boolean;
   sceneUniformsBuffer: UniformBuffer | null = null;
+  lightUniformsBuffer: UniformBuffer | null = null;
   sceneUniformsBindGroup: GPUBindGroup | null = null;
   isInitialized: boolean;
   clearColor: GPUColor;
   ambientLight: { color: Vec4; intensity: number };
+  lights: Light[];
+  lightsNeedUpdate: boolean;
+  private rendererInstance: Renderer | null = null;
 
   constructor() {
     super('Scene');
@@ -41,14 +50,22 @@ class Scene extends Entity implements IScene {
     this.clearColor = { r: 0, g: 0, b: 0, a: 1 };
     this.ambientLight = {
       color: vec4.create(1, 1, 1, 1),
-      intensity: 0.5,
+      intensity: 0.1,
     };
+    this.lights = [];
+    this.lightsNeedUpdate = false;
+
+    this.createLightUniformsBuffer();
     this.createSceneUniformsBuffer();
   }
 
   init(renderer: Renderer) {
     if (!this.sceneUniformsBuffer) throw new Error(errorMessages.missingSceneUniformsBuffer);
+    if (!this.lightUniformsBuffer) throw new Error(errorMessages.missingLightUniformsBuffer);
+
+    this.rendererInstance = renderer;
     this.sceneUniformsBuffer.init(renderer);
+    this.lightUniformsBuffer.init(renderer);
     this.createSceneUniformsBindGroup(renderer);
     this.isInitialized = true;
   }
@@ -60,14 +77,61 @@ class Scene extends Entity implements IScene {
     });
   }
 
+  createLightUniformsBuffer() {
+    const maxLights = constants.MAX_LIGHTS;
+    const positions = new Float32Array(maxLights * 4);
+    const colors = new Float32Array(maxLights * 4);
+    const params = new Float32Array(maxLights * 4);
+
+    const activeLights = this.lights.slice(0, maxLights);
+
+    activeLights.forEach((light, index) => {
+      const base = index * 4;
+
+      positions[base + 0] = light.position[0];
+      positions[base + 1] = light.position[1];
+      positions[base + 2] = light.position[2];
+      positions[base + 3] = 1;
+
+      colors[base + 0] = light.color[0];
+      colors[base + 1] = light.color[1];
+      colors[base + 2] = light.color[2];
+      colors[base + 3] = light.color[3];
+
+      params[base + 0] = light.intensity;
+      params[base + 1] = light.range;
+      params[base + 2] = 0;
+      params[base + 3] = 0;
+    });
+
+    this.lightUniformsBuffer = new UniformBuffer(
+      {
+        count: { type: 'u32', value: activeLights.length },
+        positions: { type: `array<vec4<f32>, ${maxLights}>`, value: positions },
+        colors: { type: `array<vec4<f32>, ${maxLights}>`, value: colors },
+        params: { type: `array<vec4<f32>, ${maxLights}>`, value: params },
+      },
+      { addressSpace: 'storage' },
+    );
+  }
+
   createSceneUniformsBindGroup(renderer: Renderer) {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
     if (!renderer.sceneBindGroupLayout) throw new Error(errorMessages.missingSceneBindGroupLayout);
 
-    if (this.sceneUniformsBuffer?.buffer) {
+    if (this.sceneUniformsBuffer?.buffer && this.lightUniformsBuffer?.buffer) {
       this.sceneUniformsBindGroup = renderer.device.createBindGroup({
         layout: renderer.sceneBindGroupLayout,
-        entries: [{ binding: 0, resource: { buffer: this.sceneUniformsBuffer.buffer } }],
+        entries: [
+          {
+            binding: 0,
+            resource: { buffer: this.sceneUniformsBuffer.buffer },
+          },
+          {
+            binding: 1,
+            resource: { buffer: this.lightUniformsBuffer.buffer },
+          },
+        ],
       });
     }
   }
@@ -124,6 +188,40 @@ class Scene extends Entity implements IScene {
 
       this.renderListNeedsUpdate = false;
     }
+  }
+
+  populateLightsArray() {
+    this.lights = [];
+
+    const traverse = (entity: Entity) => {
+      if (entity.isLight) {
+        this.lights.push(entity as Light);
+      }
+
+      entity.children.forEach((child) => {
+        traverse(child);
+      });
+    };
+
+    this.children.forEach((child) => {
+      traverse(child);
+    });
+  }
+
+  updateLights() {
+    if (this.lightsNeedUpdate) {
+      if (!this.rendererInstance) {
+        this.lightsNeedUpdate = false;
+        return;
+      }
+
+      this.populateLightsArray();
+      this.createLightUniformsBuffer();
+      this.lightUniformsBuffer?.init(this.rendererInstance);
+      this.createSceneUniformsBindGroup(this.rendererInstance);
+    }
+
+    this.lightsNeedUpdate = false;
   }
 }
 

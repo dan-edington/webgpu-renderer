@@ -6,6 +6,7 @@ export interface IEntity {
   id: uuid;
   name?: string;
   type: string;
+  isLight: boolean;
   children: Entity[];
   parent: Entity | Scene | null;
   position: Vec3;
@@ -26,6 +27,7 @@ class Entity implements IEntity {
   type: string;
   id: uuid;
   name?: string;
+  isLight: boolean;
   private _visible: boolean;
   children: Entity[];
   parent: Entity | Scene | null;
@@ -40,6 +42,7 @@ class Entity implements IEntity {
   constructor(type: string = 'Entity') {
     this.type = type;
     this.id = crypto.randomUUID();
+    this.isLight = false;
     this._visible = true;
     this.children = [];
     this.parent = null;
@@ -58,13 +61,19 @@ class Entity implements IEntity {
       entity.forEach((e) => {
         this.children.push(e);
         e.parent = this;
+        if (this.isLightEntity(e)) {
+          this.markSceneAsDirty('lights');
+        }
       });
     } else {
       this.children.push(entity);
       entity.parent = this;
+      if (this.isLightEntity(entity)) {
+        this.markSceneAsDirty('lights');
+      }
     }
 
-    this.markSceneRenderListDirty();
+    this.markSceneAsDirty('renderlist');
   }
 
   public remove(entity: Entity) {
@@ -72,7 +81,10 @@ class Entity implements IEntity {
 
     if (index !== -1) {
       this.children.splice(index, 1);
-      this.markSceneRenderListDirty();
+      this.markSceneAsDirty('renderlist');
+      if (this.isLightEntity(entity)) {
+        this.markSceneAsDirty('lights');
+      }
     }
 
     entity.parent = null;
@@ -132,7 +144,11 @@ class Entity implements IEntity {
   set visible(value: boolean) {
     if (this._visible !== value) {
       this._visible = value;
-      this.markSceneRenderListDirty();
+      if (this.isLightEntity(this)) {
+        this.markSceneAsDirty('lights');
+      } else {
+        this.markSceneAsDirty('renderlist');
+      }
     }
   }
 
@@ -142,13 +158,21 @@ class Entity implements IEntity {
 
   protected onMatrixUpdated(): void {}
 
-  protected markSceneRenderListDirty(): void {
+  private isLightEntity(entity: Entity): boolean {
+    return entity.isLight;
+  }
+
+  protected markSceneAsDirty(dirtyType: 'lights' | 'renderlist'): void {
     let currentNode: Entity | Scene | null = this;
 
     // Walk back up the scene graph to the Scene and set renderListNeedsUpdate to true
     while (currentNode) {
       if (currentNode.type === 'Scene' && 'renderListNeedsUpdate' in currentNode) {
-        currentNode.renderListNeedsUpdate = true;
+        if (dirtyType === 'lights') {
+          currentNode.lightsNeedUpdate = true;
+        } else if (dirtyType === 'renderlist') {
+          currentNode.renderListNeedsUpdate = true;
+        }
         return;
       }
 

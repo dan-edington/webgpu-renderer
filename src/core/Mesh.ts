@@ -1,14 +1,14 @@
 import type { Renderer } from './Renderer';
 import { Entity, IEntity } from './Entity';
 import { Geometry } from './Geometry';
-import { ShaderMaterial } from './ShaderMaterial';
+import { Material } from './materials/Material';
 import { constants } from './constants/constants';
 import { errorMessages } from './constants/errorMessages';
 import { UniformBuffer } from './UniformBuffer';
 
 interface IMesh extends IEntity {
   geometry: Geometry;
-  material: ShaderMaterial;
+  material: Material;
   pipeline: GPURenderPipeline | null;
   isInitialized: boolean;
   entityBuffer: UniformBuffer | null;
@@ -19,13 +19,13 @@ interface IMesh extends IEntity {
 
 class Mesh extends Entity implements IMesh {
   geometry: Geometry;
-  material: ShaderMaterial;
+  material: Material;
   pipeline: GPURenderPipeline | null = null;
   isInitialized: boolean;
   entityBuffer: UniformBuffer | null = null;
   entityUniformsBindGroup: GPUBindGroup | null = null;
 
-  constructor(geometry: Geometry, material: ShaderMaterial) {
+  constructor(geometry: Geometry, material: Material) {
     super('Mesh');
     this.isInitialized = false;
     this.geometry = geometry;
@@ -48,42 +48,7 @@ class Mesh extends Entity implements IMesh {
 
   private createPipeline(renderer: Renderer) {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
-    if (!renderer.meshPipelineLayout) throw new Error(errorMessages.missingMeshPipelineLayout);
-
-    const pipelineDescriptor = {
-      layout: renderer.meshPipelineLayout,
-      vertex: {
-        module: this.material.shaderModule,
-        entryPoint: this.material.shaderEntryPoints.vertex,
-        buffers: [
-          {
-            arrayStride: 3 * Float32Array.BYTES_PER_ELEMENT,
-            attributes: [
-              {
-                shaderLocation: 0,
-                offset: 0,
-                format: 'float32x3',
-              },
-            ],
-          },
-        ],
-      },
-      fragment: {
-        module: this.material.shaderModule,
-        entryPoint: this.material.shaderEntryPoints.fragment,
-        targets: [
-          {
-            format: renderer.presentationFormat,
-          },
-        ],
-      },
-      primitive: {
-        topology: this.geometry.topology,
-        cullMode: 'back',
-      },
-    } as GPURenderPipelineDescriptor;
-
-    this.pipeline = renderer.device.createRenderPipeline(pipelineDescriptor);
+    this.pipeline = renderer.createMeshPipeline(this.material, this.geometry);
   }
 
   private createEntityBuffer(renderer: Renderer) {
@@ -122,7 +87,9 @@ class Mesh extends Entity implements IMesh {
     if (!this.pipeline) throw new Error(errorMessages.missingPipeline);
 
     pass.setPipeline(this.pipeline);
+
     pass.setVertexBuffer(0, this.geometry.vertexBuffer);
+    pass.setVertexBuffer(1, this.geometry.normalBuffer);
 
     if (this.material.materialUniformsBuffer) {
       this.material.materialUniformsBuffer.writeUpdatedBufferData();

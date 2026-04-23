@@ -16,6 +16,7 @@ interface IGeometry {
 type GeometryOptions = {
   vertices: Float32Array;
   indices?: Uint16Array | Uint32Array;
+  normals: Float32Array;
   topology?: GPUPrimitiveTopology;
 };
 
@@ -25,12 +26,14 @@ class Geometry implements IGeometry {
   type: string;
   vertices: Float32Array;
   indices: Uint16Array | Uint32Array | undefined;
+  normals: Float32Array;
   isIndexed: boolean;
   indexCount: number = 0;
   indexFormat: GPUIndexFormat = 'uint16';
   topology: GPUPrimitiveTopology;
   vertexBuffer: GPUBuffer | null = null;
   indexBuffer: GPUBuffer | null = null;
+  normalBuffer: GPUBuffer | null = null;
 
   constructor(options: GeometryOptions) {
     this.id = crypto.randomUUID();
@@ -49,7 +52,8 @@ class Geometry implements IGeometry {
     }
 
     this.vertices = padArrayToAlignmentBytes<Float32Array>(options.vertices, { alignmentBytes: 4 }).paddedArray;
-    this.topology = options.topology || 'triangle-list';
+    this.normals = padArrayToAlignmentBytes<Float32Array>(options.normals, { alignmentBytes: 4 }).paddedArray;
+    this.topology = options.topology ?? 'triangle-list';
   }
 
   init(renderer: Renderer) {
@@ -74,6 +78,13 @@ class Geometry implements IGeometry {
 
       renderer.device.queue.writeBuffer(this.indexBuffer, 0, this.indices.buffer);
     }
+
+    this.normalBuffer = renderer.device.createBuffer({
+      size: this.normals.byteLength,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    });
+
+    renderer.device.queue.writeBuffer(this.normalBuffer, 0, this.normals.buffer);
   }
 }
 

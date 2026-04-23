@@ -1,5 +1,7 @@
 # TODO
 
+- [ ] TEXTURES
+
 - [ ] DEPTH
 
 - [ ] LIGHTS
@@ -14,3 +16,15 @@
   - [ ] Phong
   - [ ] PBR
   - [ ] Custom Shader
+
+- [ ] Resource destruction
+
+## WIP
+
+### Point Light
+
+Add falloff
+
+### Lambert
+
+Test albedo and normal maps

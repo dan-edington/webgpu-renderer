@@ -15,6 +15,8 @@ export type BigIntTypedArray = BigInt64Array | BigUint64Array;
 
 export type ScalarType = 'f16' | 'f32' | 'i32' | 'u32';
 
+export type BufferAddressSpace = 'uniform' | 'storage';
+
 export type UniformValue = {
   type: string;
   value: number | Float16Array | Float32Array | Int32Array | Uint32Array;
@@ -72,3 +74,12 @@ export type ComputeBufferLayoutResult = {
   bufferData: ArrayBuffer;
   layoutEntries: UniformEntryMeta[];
 };
+
+export type ComputeBufferLayoutOptions = {
+  addressSpace?: BufferAddressSpace;
+};
+
+export type MaterialType = 'lambert' | 'phong' | 'pbr';
+
+export type TextureKey = string;
+export type SamplerDescriptorKey = string;

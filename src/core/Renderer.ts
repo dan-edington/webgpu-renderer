@@ -1,8 +1,14 @@
 import { Mesh } from './Mesh';
+import type { Geometry } from './Geometry';
 import { PerspectiveCamera } from './PerspectiveCamera';
+import { MaterialLayoutRepository } from './materials/MaterialLayoutRepository';
+import type { Material } from './materials/Material';
+import { TextureLibrary } from './libraries/TextureLibrary';
+import { SamplerLibrary } from './libraries/SamplerLibrary';
 import { Scene } from './Scene';
 import { errorMessages } from './constants/errorMessages';
 import { constants } from './constants/constants';
+import type { MaterialType } from './types';
 
 interface IRenderer {
   containerElement: HTMLElement;
@@ -22,7 +28,12 @@ interface IRenderer {
   materialBindGroupLayout: GPUBindGroupLayout | null;
   entityBindGroupLayout: GPUBindGroupLayout | null;
   meshPipelineLayout: GPUPipelineLayout | null;
+  materialLayoutRepository: MaterialLayoutRepository;
+  textureLibrary: TextureLibrary | null;
+  samplerLibrary: SamplerLibrary | null;
   init(): Promise<void>;
+  getMaterialBindGroupLayout(materialType: MaterialType): GPUBindGroupLayout;
+  createMeshPipeline(material: Material, geometry: Geometry): GPURenderPipeline;
   render(scene: Scene, camera: PerspectiveCamera): void;
   updateCanvasElementSize(): void;
 }
@@ -51,12 +62,18 @@ class Renderer implements IRenderer {
   materialBindGroupLayout: GPUBindGroupLayout | null = null;
   entityBindGroupLayout: GPUBindGroupLayout | null = null;
   meshPipelineLayout: GPUPipelineLayout | null = null;
+  materialLayoutRepository: MaterialLayoutRepository;
+  textureLibrary: TextureLibrary | null = null;
+  samplerLibrary: SamplerLibrary | null = null;
+  private materialBindGroupLayoutCache: Map<MaterialType, GPUBindGroupLayout> = new Map();
+  private meshPipelineCache: Map<string, GPURenderPipeline> = new Map();
 
   constructor(rendererOptions: RendererOptions) {
     const { containerElement } = rendererOptions;
-    this.containerElement = containerElement || document.body;
-    this.dpr = rendererOptions.dpr || window.devicePixelRatio;
-    this.alpha = rendererOptions.alpha || true;
+    this.containerElement = containerElement ?? document.body;
+    this.dpr = rendererOptions.dpr ?? window.devicePixelRatio;
+    this.alpha = rendererOptions.alpha ?? true;
+    this.materialLayoutRepository = new MaterialLayoutRepository();
   }
 
   async init() {
@@ -86,13 +103,15 @@ class Renderer implements IRenderer {
       alphaMode: this.alpha ? 'premultiplied' : 'opaque',
     });
 
-    this.createBindGroupLayouts();
-    this.createMeshPipelineLayout();
+    this.samplerLibrary = new SamplerLibrary(this.device);
+    this.textureLibrary = new TextureLibrary(this);
+
+    this.createCameraSceneEntityBindGroupLayouts();
 
     this.updateCanvasElementSize();
   }
 
-  private createBindGroupLayouts() {
+  private createCameraSceneEntityBindGroupLayouts() {
     if (!this.device) throw new Error(errorMessages.missingDevice);
 
     this.cameraBindGroupLayout = this.device.createBindGroupLayout({
@@ -112,15 +131,10 @@ class Renderer implements IRenderer {
           visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
           buffer: { type: 'uniform' },
         },
-      ],
-    });
-
-    this.materialBindGroupLayout = this.device.createBindGroupLayout({
-      entries: [
         {
-          binding: 0,
-          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          buffer: { type: 'uniform' },
+          binding: 1,
+          visibility: GPUShaderStage.FRAGMENT,
+          buffer: { type: 'read-only-storage' },
         },
       ],
     });
@@ -136,21 +150,92 @@ class Renderer implements IRenderer {
     });
   }
 
-  private createMeshPipelineLayout() {
+  getMaterialBindGroupLayout(materialType: MaterialType): GPUBindGroupLayout {
     if (!this.device) throw new Error(errorMessages.missingDevice);
+
+    const cachedLayout = this.materialBindGroupLayoutCache.get(materialType);
+    if (cachedLayout) return cachedLayout;
+
+    const layoutDescriptor = this.materialLayoutRepository.getMaterialLayoutDescriptor(materialType);
+    if (!layoutDescriptor) throw new Error(`No material layout descriptor registered for '${materialType}'.`);
+
+    const layout = this.device.createBindGroupLayout(layoutDescriptor);
+    this.materialBindGroupLayoutCache.set(materialType, layout);
+
+    return layout;
+  }
+
+  createMeshPipeline(material: Material, geometry: Geometry): GPURenderPipeline {
+    if (!this.device) throw new Error(errorMessages.missingDevice);
+    if (!this.presentationFormat) throw new Error(errorMessages.missingPresentationFormat);
     if (!this.cameraBindGroupLayout) throw new Error(errorMessages.missingCameraBufferLayout);
     if (!this.sceneBindGroupLayout) throw new Error(errorMessages.missingSceneBindGroupLayout);
-    if (!this.materialBindGroupLayout) throw new Error(errorMessages.missingMaterialBindGroupLayout);
     if (!this.entityBindGroupLayout) throw new Error(errorMessages.missingEntityBindGroupLayout);
+    if (!material.shaderModule) throw new Error(errorMessages.missingMaterialShaderModule);
 
-    this.meshPipelineLayout = this.device.createPipelineLayout({
+    const materialBindGroupLayout = this.getMaterialBindGroupLayout(material.type);
+    const pipelineKey = `${material.getPipelineCacheKey()}:${geometry.topology}:${this.presentationFormat}`;
+    const cachedPipeline = this.meshPipelineCache.get(pipelineKey);
+
+    if (cachedPipeline) {
+      return cachedPipeline;
+    }
+
+    const pipelineLayout = this.device.createPipelineLayout({
       bindGroupLayouts: [
         this.cameraBindGroupLayout,
         this.sceneBindGroupLayout,
-        this.materialBindGroupLayout,
+        materialBindGroupLayout,
         this.entityBindGroupLayout,
       ],
     });
+
+    const pipeline = this.device.createRenderPipeline({
+      layout: pipelineLayout,
+      vertex: {
+        module: material.shaderModule,
+        entryPoint: material.shaderEntryPoints.vertex,
+        buffers: [
+          {
+            arrayStride: 3 * Float32Array.BYTES_PER_ELEMENT,
+            attributes: [
+              {
+                shaderLocation: 0,
+                offset: 0,
+                format: 'float32x3',
+              },
+            ],
+          },
+          {
+            arrayStride: 3 * Float32Array.BYTES_PER_ELEMENT,
+            attributes: [
+              {
+                shaderLocation: 1,
+                offset: 0,
+                format: 'float32x3',
+              },
+            ],
+          },
+        ],
+      },
+      fragment: {
+        module: material.shaderModule,
+        entryPoint: material.shaderEntryPoints.fragment,
+        targets: [
+          {
+            format: this.presentationFormat,
+          },
+        ],
+      },
+      primitive: {
+        topology: geometry.topology,
+        cullMode: 'back',
+      },
+    });
+
+    this.meshPipelineCache.set(pipelineKey, pipeline);
+
+    return pipeline;
   }
 
   private updateTimersAndFrameCounter() {
@@ -173,14 +258,17 @@ class Renderer implements IRenderer {
     if (!camera.isInitialized) camera.init(this);
 
     scene.updateRenderList();
+    scene.updateLights();
 
     if (!this.device) throw new Error(errorMessages.missingDevice);
     if (!this.context) throw new Error(errorMessages.missingContext);
     if (!this.presentationFormat) throw new Error(errorMessages.missingPresentationFormat);
     if (!camera.cameraUniformBuffer?.buffer) throw new Error(errorMessages.missingCameraBuffer);
     if (!camera.cameraBindGroup) throw new Error(errorMessages.missingCameraBindGroup);
+    if (!scene.sceneUniformsBindGroup) throw new Error(errorMessages.missingSceneBindGroup);
 
     scene.sceneUniformsBuffer?.writeUpdatedBufferData();
+    scene.lightUniformsBuffer?.writeUpdatedBufferData();
     camera.cameraUniformBuffer.writeUpdatedBufferData();
 
     const commandEncoder = this.device.createCommandEncoder();

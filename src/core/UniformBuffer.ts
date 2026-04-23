@@ -1,6 +1,6 @@
 import { errorMessages } from './constants/errorMessages';
 import { Renderer } from './Renderer';
-import { uuid } from './types';
+import { BufferAddressSpace, uuid } from './types';
 import {
   computeBufferLayout,
   writeUniformValuesToBuffer,
@@ -20,6 +20,11 @@ interface IUniformBuffer {
   writeUpdatedBufferData(): void;
 }
 
+type UniformBufferOptions = {
+  addressSpace?: BufferAddressSpace;
+  usage?: GPUBufferUsageFlags;
+};
+
 class UniformBuffer implements IUniformBuffer {
   id: uuid;
   type: string;
@@ -29,12 +34,20 @@ class UniformBuffer implements IUniformBuffer {
   needsUpdate: boolean;
   rendererInstance: Renderer | null = null;
   layoutEntries: UniformEntryMeta[] = [];
+  addressSpace: BufferAddressSpace;
+  usage: GPUBufferUsageFlags;
 
-  constructor(uniforms: Record<string, UniformValue>) {
+  constructor(uniforms: Record<string, UniformValue>, options: UniformBufferOptions = {}) {
     this.id = crypto.randomUUID();
     this.type = 'UniformBuffer';
     this.uniforms = uniforms;
     this.needsUpdate = true;
+    this.addressSpace = options.addressSpace ?? 'uniform';
+    this.usage =
+      options.usage ??
+      (this.addressSpace === 'storage'
+        ? GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+        : GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST);
     this.computeBufferLayout();
   }
 
@@ -47,7 +60,7 @@ class UniformBuffer implements IUniformBuffer {
 
     this.buffer = this.rendererInstance.device.createBuffer({
       size: this.bufferData.byteLength,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      usage: this.usage,
     });
 
     this.needsUpdate = true;
@@ -100,7 +113,9 @@ class UniformBuffer implements IUniformBuffer {
   }
 
   private computeBufferLayout() {
-    const { bufferData, layoutEntries } = computeBufferLayout(this.uniforms);
+    const { bufferData, layoutEntries } = computeBufferLayout(this.uniforms, {
+      addressSpace: this.addressSpace,
+    });
     this.bufferData = bufferData;
     this.layoutEntries = layoutEntries;
   }
