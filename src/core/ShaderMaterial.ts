@@ -1,6 +1,6 @@
 import { errorMessages } from './constants/errorMessages';
 import { Renderer } from './Renderer';
-import type { uuid } from './types';
+import type { UniformValueInput, uuid } from './types';
 import { UniformBuffer } from './UniformBuffer';
 import { UniformValue } from './utilities/computeBufferLayout';
 
@@ -11,7 +11,7 @@ interface IShaderMaterial {
   shader: string;
   shaderModule: GPUShaderModule | null;
   materialUniforms?: Record<string, UniformValue>;
-  materialUniformsBuffer?: UniformBuffer;
+  materialUniformsBuffer: UniformBuffer | null;
   materialUniformsBindGroup: GPUBindGroup | null;
   pipelineDescriptor: GPURenderPipelineDescriptor | null;
   shaderEntryPoints: {
@@ -20,8 +20,7 @@ interface IShaderMaterial {
   };
   isInitialized: boolean;
   init(renderer: Renderer): void;
-  createShaderModule(device: GPUDevice): void;
-  createMaterialUniformsBindGroup(renderer: Renderer): void;
+  updateUniforms(updatedUniforms: Record<string, UniformValueInput>): void;
 }
 
 type ShaderMaterialOptions = {
@@ -41,7 +40,7 @@ class ShaderMaterial implements IShaderMaterial {
   shader: string;
   shaderModule: GPUShaderModule | null = null;
   materialUniforms?: Record<string, UniformValue>;
-  materialUniformsBuffer?: UniformBuffer;
+  materialUniformsBuffer: UniformBuffer | null = null;
   materialUniformsBindGroup: GPUBindGroup | null = null;
   pipelineDescriptor: GPURenderPipelineDescriptor | null = null;
   shaderEntryPoints: {
@@ -54,12 +53,12 @@ class ShaderMaterial implements IShaderMaterial {
     this.id = crypto.randomUUID();
     this.name = options.name;
     this.type = 'ShaderMaterial';
+    this.materialUniforms = options.uniforms;
     this.shader = options.shader;
     this.shaderEntryPoints = options.shaderEntryPoints || {
       vertex: 'vertex_shader',
       fragment: 'fragment_shader',
     };
-    this.materialUniforms = options.uniforms;
 
     if (this.materialUniforms) {
       this.materialUniformsBuffer = new UniformBuffer(this.materialUniforms);
@@ -67,9 +66,7 @@ class ShaderMaterial implements IShaderMaterial {
   }
 
   init(renderer: Renderer) {
-    if (this.isInitialized) {
-      return;
-    }
+    if (this.isInitialized) return;
 
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
 
@@ -83,13 +80,19 @@ class ShaderMaterial implements IShaderMaterial {
     this.isInitialized = true;
   }
 
-  createShaderModule(device: GPUDevice) {
+  updateUniforms(updatedUniforms: Record<string, UniformValueInput>) {
+    if (!this.materialUniforms) return;
+
+    this.materialUniformsBuffer?.updateUniform(updatedUniforms);
+  }
+
+  private createShaderModule(device: GPUDevice) {
     this.shaderModule = device.createShaderModule({
       code: this.shader,
     });
   }
 
-  createMaterialUniformsBindGroup(renderer: Renderer) {
+  private createMaterialUniformsBindGroup(renderer: Renderer) {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
     if (!renderer.materialBindGroupLayout) throw new Error(errorMessages.missingMaterialBindGroupLayout);
 
