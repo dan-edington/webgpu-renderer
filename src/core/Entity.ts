@@ -6,7 +6,6 @@ export interface IEntity {
   id: uuid;
   name?: string;
   type: string;
-  _visible: boolean;
   children: Entity[];
   parent: Entity | Scene | null;
   position: Vec3;
@@ -27,7 +26,7 @@ class Entity implements IEntity {
   type: string;
   id: uuid;
   name?: string;
-  _visible: boolean;
+  private _visible: boolean;
   children: Entity[];
   parent: Entity | Scene | null;
   position: Vec3;
