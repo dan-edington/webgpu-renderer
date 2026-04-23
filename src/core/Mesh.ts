@@ -14,7 +14,6 @@ interface IMesh extends IEntity {
   entityBuffer: UniformBuffer | null;
   entityUniformsBindGroup: GPUBindGroup | null;
   init(renderer: Renderer): void;
-  createPipeline(renderer: Renderer): void;
   draw(pass: GPURenderPassEncoder, renderer: Renderer): void;
 }
 
@@ -47,7 +46,7 @@ class Mesh extends Entity implements IMesh {
     this.isInitialized = true;
   }
 
-  createPipeline(renderer: Renderer) {
+  private createPipeline(renderer: Renderer) {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
     if (!renderer.meshPipelineLayout) throw new Error(errorMessages.missingMeshPipelineLayout);
 
@@ -87,7 +86,7 @@ class Mesh extends Entity implements IMesh {
     this.pipeline = renderer.device.createRenderPipeline(pipelineDescriptor);
   }
 
-  createEntityBuffer(renderer: Renderer) {
+  private createEntityBuffer(renderer: Renderer) {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
 
     this.entityBuffer = new UniformBuffer({
@@ -95,7 +94,7 @@ class Mesh extends Entity implements IMesh {
     });
   }
 
-  createEntityBufferBindGroup(renderer: Renderer) {
+  private createEntityBufferBindGroup(renderer: Renderer) {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
     if (!renderer.entityBindGroupLayout) throw new Error(errorMessages.missingEntityBindGroupLayout);
 

@@ -10,6 +10,7 @@ interface IGeometry {
   isIndexed: boolean;
   vertices: Float32Array;
   indices?: Uint16Array | Uint32Array;
+  init(renderer: Renderer): void;
 }
 
 type GeometryOptions = {

@@ -23,11 +23,8 @@ interface IRenderer {
   entityBindGroupLayout: GPUBindGroupLayout | null;
   meshPipelineLayout: GPUPipelineLayout | null;
   init(): Promise<void>;
-  createBindGroupLayouts(): void;
-  createMeshPipelineLayout(): void;
-  updateTimersAndFrameCounter(): void;
   render(scene: Scene, camera: PerspectiveCamera): void;
-  setCanvasSize(): void;
+  updateCanvasElementSize(): void;
 }
 
 type RendererOptions = {
@@ -67,19 +64,15 @@ class Renderer implements IRenderer {
     this.containerElement.appendChild(this.canvasElement);
 
     const context = this.canvasElement.getContext('webgpu');
-
     if (!context) throw new Error(errorMessages.contextRequest);
 
     const adapter = await navigator.gpu.requestAdapter();
-
     if (!adapter) throw new Error(errorMessages.adapterRequest);
 
     const device = await adapter.requestDevice();
-
     if (!device) throw new Error(errorMessages.deviceRequest);
 
     const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
-
     if (!presentationFormat) throw new Error(errorMessages.presentationFormatRequest);
 
     this.context = context;
@@ -96,10 +89,10 @@ class Renderer implements IRenderer {
     this.createBindGroupLayouts();
     this.createMeshPipelineLayout();
 
-    this.setCanvasSize();
+    this.updateCanvasElementSize();
   }
 
-  createBindGroupLayouts() {
+  private createBindGroupLayouts() {
     if (!this.device) throw new Error(errorMessages.missingDevice);
 
     this.cameraBindGroupLayout = this.device.createBindGroupLayout({
@@ -143,7 +136,7 @@ class Renderer implements IRenderer {
     });
   }
 
-  createMeshPipelineLayout() {
+  private createMeshPipelineLayout() {
     if (!this.device) throw new Error(errorMessages.missingDevice);
     if (!this.cameraBindGroupLayout) throw new Error(errorMessages.missingCameraBufferLayout);
     if (!this.sceneBindGroupLayout) throw new Error(errorMessages.missingSceneBindGroupLayout);
@@ -160,7 +153,7 @@ class Renderer implements IRenderer {
     });
   }
 
-  updateTimersAndFrameCounter() {
+  private updateTimersAndFrameCounter() {
     this.currentFrame++;
     const currentTime = performance.now();
 
@@ -220,7 +213,7 @@ class Renderer implements IRenderer {
     this.device.queue.submit([commandEncoder.finish()]);
   }
 
-  setCanvasSize() {
+  updateCanvasElementSize() {
     if (!this.canvasElement) throw new Error(errorMessages.missingCanvasElement);
 
     this.canvasElement.width = Math.floor(this.containerElement.clientWidth * this.dpr);

@@ -18,7 +18,6 @@ interface IUniformBuffer {
   init(renderer: Renderer): void;
   updateUniform(updatedUniforms: Record<string, UniformValueInput>): void;
   writeUpdatedBufferData(): void;
-  computeBufferLayout(): void;
 }
 
 class UniformBuffer implements IUniformBuffer {
@@ -51,8 +50,6 @@ class UniformBuffer implements IUniformBuffer {
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
 
-    // Ensure freshly created GPU buffers are always populated, even if this
-    // UniformBuffer instance was initialized before.
     this.needsUpdate = true;
     this.writeUpdatedBufferData();
   }
@@ -102,7 +99,7 @@ class UniformBuffer implements IUniformBuffer {
     }
   }
 
-  computeBufferLayout() {
+  private computeBufferLayout() {
     const { bufferData, layoutEntries } = computeBufferLayout(this.uniforms);
     this.bufferData = bufferData;
     this.layoutEntries = layoutEntries;
