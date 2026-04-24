@@ -8,7 +8,6 @@ import { cube, sphere, torus } from 'primitive-geometry';
 import { Group } from './core/Group';
 import { LambertMaterial } from './core/materials/LambertMaterial';
 import { PointLight } from './core/lights/PointLight';
-import { vec4 } from 'wgpu-matrix';
 
 const container = document.getElementById('app');
 

@@ -2,7 +2,9 @@
 
 - [x] TEXTURES
 
-- [x] DEPTH
+- [ ] DEPTH
+  - [x] Basic depth support
+  - [ ] Add support for transparency
 
 - [ ] LIGHTS
   - [x] Ambient
