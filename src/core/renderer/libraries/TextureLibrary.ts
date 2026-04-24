@@ -1,6 +1,6 @@
-import { Texture } from '../Texture';
-import { Renderer } from '../renderer/Renderer';
-import { TextureKey } from '../types';
+import { Texture } from '../../Texture';
+import { Renderer } from '../../renderer/Renderer';
+import { TextureKey } from '../../types';
 
 class TextureLibrary {
   private device: GPUDevice | null = null;

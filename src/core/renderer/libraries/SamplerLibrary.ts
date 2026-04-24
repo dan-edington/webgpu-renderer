@@ -1,5 +1,5 @@
-import { errorMessages } from '../constants/errorMessages';
-import type { SamplerDescriptorKey } from '../types';
+import { errorMessages } from '../../constants/errorMessages';
+import type { SamplerDescriptorKey } from '../../types';
 
 interface SamplerConfig {
   magFilter?: GPUFilterMode;

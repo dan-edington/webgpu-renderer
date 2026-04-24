@@ -1,5 +1,5 @@
-const shaderIncludes = import.meta.glob('../materials/shaders/includes/*.wgsl', { as: 'raw', eager: true });
-const shaders = import.meta.glob('../materials/shaders/*.wgsl', { as: 'raw', eager: true });
+const shaderIncludes = import.meta.glob('../../materials/shaders/includes/*.wgsl', { as: 'raw', eager: true });
+const shaders = import.meta.glob('../../materials/shaders/*.wgsl', { as: 'raw', eager: true });
 
 const INCLUDE_REGEX = /^\s*\/\/\s*#include\s*(['"])([a-z0-9/]+)\1\s*$/gm;
 
@@ -15,7 +15,7 @@ class ShaderLibrary {
   }
 
   private generateIncludeCache() {
-    const basePath = '../materials/shaders/includes/';
+    const basePath = '../../materials/shaders/includes/';
 
     for (const key in shaderIncludes) {
       const includeContent = shaderIncludes[key];
@@ -33,7 +33,7 @@ class ShaderLibrary {
   }
 
   private generateShaders() {
-    const basePath = '../materials/shaders/';
+    const basePath = '../../materials/shaders/';
 
     for (const key in shaders) {
       const shaderName = key.replace(basePath, '').replace('.wgsl', '');
