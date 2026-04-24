@@ -9,7 +9,7 @@ class OpaquePass extends Pass {
     super(options);
   }
 
-  override buildRenderPassDescriptor(scene: Scene): GPURenderPassDescriptor {
+  private buildRenderPassDescriptor(scene: Scene): GPURenderPassDescriptor {
     if (!this.rendererInstance.context) throw new Error('WebGPU context is not initialized on the renderer instance.');
     if (!this.rendererInstance.depthTexture?.depthTexture)
       throw new Error('Depth texture is not initialized on the renderer instance.');

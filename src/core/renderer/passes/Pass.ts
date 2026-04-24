@@ -16,8 +16,6 @@ abstract class Pass {
     this.rendererInstance = options.rendererInstance;
   }
 
-  abstract buildRenderPassDescriptor(scene: Scene): GPURenderPassDescriptor;
-
   abstract runPass(commandEncoder: GPUCommandEncoder, scene: Scene, camera: PerspectiveCamera): void;
 }
 
