@@ -1,5 +1,19 @@
 import { BigIntTypedArray, NumericTypedArray } from '../types';
 
+const BYTES_PER_ELEMENT = new Map<any, number>([
+  [Int8Array, 1],
+  [Uint8Array, 1],
+  [Uint8ClampedArray, 1],
+  [Int16Array, 2],
+  [Uint16Array, 2],
+  [Int32Array, 4],
+  [Uint32Array, 4],
+  [Float32Array, 4],
+  [Float64Array, 8],
+  [BigInt64Array, 8],
+  [BigUint64Array, 8],
+]);
+
 function padArrayToAlignmentBytes<T>(
   arrayToPad: NumericTypedArray,
   options?: { alignmentBytes?: number; padWith?: number },
@@ -14,86 +28,31 @@ function padArrayToAlignmentBytes<T>(arrayToPad: any, options: any = {}): any {
   const { alignmentBytes = 4 } = options;
   let padWith = options.padWith;
 
-  if (padWith === undefined) {
-    if (arrayToPad instanceof BigInt64Array || arrayToPad instanceof BigUint64Array) {
-      padWith = 0n;
-    } else {
-      padWith = 0;
-    }
-  }
-
   const unpaddedLength = arrayToPad.length;
-  let bytesPerElement: number;
+  const arrayConstructor = arrayToPad.constructor;
 
-  if (arrayToPad instanceof Int8Array || arrayToPad instanceof Uint8Array || arrayToPad instanceof Uint8ClampedArray) {
-    bytesPerElement = 1;
-  } else if (arrayToPad instanceof Int16Array || arrayToPad instanceof Uint16Array) {
-    bytesPerElement = 2;
-  } else if (
-    arrayToPad instanceof Int32Array ||
-    arrayToPad instanceof Uint32Array ||
-    arrayToPad instanceof Float32Array
-  ) {
-    bytesPerElement = 4;
-  } else if (
-    arrayToPad instanceof Float64Array ||
-    arrayToPad instanceof BigInt64Array ||
-    arrayToPad instanceof BigUint64Array
-  ) {
-    bytesPerElement = 8;
-  } else {
-    throw new Error('Unsupported array type');
+  if (!BYTES_PER_ELEMENT.has(arrayConstructor)) throw new Error('Unsupported array type');
+
+  const bytesPerElement = BYTES_PER_ELEMENT.get(arrayConstructor)!;
+
+  if (padWith === undefined) {
+    padWith = arrayConstructor === BigInt64Array || arrayConstructor === BigUint64Array ? 0n : 0;
   }
 
   const totalBytes = unpaddedLength * bytesPerElement;
-  const isAligned = totalBytes % alignmentBytes === 0;
+  const alignmentOffset = totalBytes % alignmentBytes;
 
-  if (isAligned) {
+  if (alignmentOffset === 0) {
     return { paddedArray: arrayToPad as T, unpaddedLength };
-  } else {
-    const paddingBytes = alignmentBytes - (totalBytes % alignmentBytes);
-    const paddingElements = Math.ceil(paddingBytes / bytesPerElement);
-    const paddedLength = unpaddedLength + paddingElements;
-
-    let paddedArray;
-
-    if (arrayToPad instanceof Int8Array) {
-      paddedArray = new Int8Array(paddedLength).fill(padWith);
-      paddedArray.set(arrayToPad);
-    } else if (arrayToPad instanceof Uint8Array) {
-      paddedArray = new Uint8Array(paddedLength).fill(padWith);
-      paddedArray.set(arrayToPad);
-    } else if (arrayToPad instanceof Uint8ClampedArray) {
-      paddedArray = new Uint8ClampedArray(paddedLength).fill(padWith);
-      paddedArray.set(arrayToPad);
-    } else if (arrayToPad instanceof Int16Array) {
-      paddedArray = new Int16Array(paddedLength).fill(padWith);
-      paddedArray.set(arrayToPad);
-    } else if (arrayToPad instanceof Uint16Array) {
-      paddedArray = new Uint16Array(paddedLength).fill(padWith);
-      paddedArray.set(arrayToPad);
-    } else if (arrayToPad instanceof Int32Array) {
-      paddedArray = new Int32Array(paddedLength).fill(padWith);
-      paddedArray.set(arrayToPad);
-    } else if (arrayToPad instanceof Uint32Array) {
-      paddedArray = new Uint32Array(paddedLength).fill(padWith);
-      paddedArray.set(arrayToPad);
-    } else if (arrayToPad instanceof Float32Array) {
-      paddedArray = new Float32Array(paddedLength).fill(padWith);
-      paddedArray.set(arrayToPad);
-    } else if (arrayToPad instanceof Float64Array) {
-      paddedArray = new Float64Array(paddedLength).fill(padWith);
-      paddedArray.set(arrayToPad);
-    } else if (arrayToPad instanceof BigInt64Array) {
-      paddedArray = new BigInt64Array(paddedLength).fill(padWith);
-      paddedArray.set(arrayToPad);
-    } else if (arrayToPad instanceof BigUint64Array) {
-      paddedArray = new BigUint64Array(paddedLength).fill(padWith);
-      paddedArray.set(arrayToPad);
-    }
-
-    return { paddedArray, unpaddedLength };
   }
+
+  const paddingBytes = alignmentBytes - alignmentOffset;
+  const paddingElements = Math.ceil(paddingBytes / bytesPerElement);
+  const paddedLength = unpaddedLength + paddingElements;
+
+  const paddedArray = new arrayConstructor(paddedLength).fill(padWith).set(arrayToPad);
+
+  return { paddedArray, unpaddedLength };
 }
 
 export { padArrayToAlignmentBytes };
