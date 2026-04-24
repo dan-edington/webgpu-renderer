@@ -36,7 +36,7 @@ type MaterialOptions = {
   transparent?: boolean;
 };
 
-class Material implements IMaterial {
+abstract class Material implements IMaterial {
   id: uuid;
   name?: string;
   type: MaterialType;

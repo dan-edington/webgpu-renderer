@@ -15,7 +15,7 @@ export type LightOptions = {
   range?: number;
 };
 
-class Light extends Entity implements ILight {
+abstract class Light extends Entity implements ILight {
   intensity: number;
   color: Vec4;
   range: number;
