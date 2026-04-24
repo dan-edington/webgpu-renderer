@@ -103,6 +103,5 @@ if (container) {
   // Add resize handler for camera
   window.addEventListener('resize', () => {
     camera.aspect = container.clientWidth / container.clientHeight;
-    camera.updateProjectionMatrix();
   });
 }
