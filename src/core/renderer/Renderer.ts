@@ -114,7 +114,7 @@ class Renderer implements IRenderer {
     this.configurePasses();
   }
 
-  configurePasses() {
+  private configurePasses() {
     this.passManager = new PassManager(this);
     this.passManager.registerPass('opaque', OpaquePass);
   }
@@ -267,22 +267,28 @@ class Renderer implements IRenderer {
     this.previousTime = currentTime;
   }
 
-  render(scene: Scene, camera: PerspectiveCamera) {
-    this.updateTimersAndFrameCounter();
-
+  private updateSceneAndCamera(scene: Scene, camera: PerspectiveCamera) {
     if (!scene.isInitialized) scene.init(this);
     if (!camera.isInitialized) camera.init(this);
 
     scene.updateRenderList();
     scene.updateLights();
 
-    if (!this.passManager) throw new Error('PassManager not initialized.');
-    if (!this.device) throw new Error(errorMessages.missingDevice);
+    if (!scene.sceneUniformsBuffer) throw new Error(errorMessages.missingSceneUniformsBuffer);
+    if (!scene.lightUniformsBuffer) throw new Error(errorMessages.missingLightUniformsBuffer);
     if (!camera.cameraUniformBuffer?.buffer) throw new Error(errorMessages.missingCameraBuffer);
 
-    scene.sceneUniformsBuffer?.writeUpdatedBufferData();
-    scene.lightUniformsBuffer?.writeUpdatedBufferData();
+    scene.sceneUniformsBuffer.writeUpdatedBufferData();
+    scene.lightUniformsBuffer.writeUpdatedBufferData();
     camera.cameraUniformBuffer.writeUpdatedBufferData();
+  }
+
+  render(scene: Scene, camera: PerspectiveCamera) {
+    this.updateTimersAndFrameCounter();
+    this.updateSceneAndCamera(scene, camera);
+
+    if (!this.passManager) throw new Error('PassManager not initialized.');
+    if (!this.device) throw new Error(errorMessages.missingDevice);
 
     const commandEncoder = this.device.createCommandEncoder();
 
