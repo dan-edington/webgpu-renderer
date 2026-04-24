@@ -1,12 +1,19 @@
 import { errorMessages } from '../constants/errorMessages';
 import { Renderer } from './Renderer';
 
+interface ICanvasManager {
+  rendererInstance: Renderer;
+  canvasElement: HTMLCanvasElement;
+  containerElement: HTMLElement;
+  updateCanvasSize(): void;
+}
+
 type CanvasManagerOptions = {
   renderer: Renderer;
   containerElement?: HTMLElement;
 };
 
-class CanvasManager {
+class CanvasManager implements ICanvasManager {
   rendererInstance: Renderer;
   containerElement: HTMLElement;
   canvasElement: HTMLCanvasElement;

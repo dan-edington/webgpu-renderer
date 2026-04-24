@@ -12,9 +12,11 @@ import { constants } from '../constants/constants';
 import type { MaterialType } from '../types';
 import { DepthTexture } from '../DepthTexture';
 import { CanvasManager } from './CanvasManager';
+import { ContextManager } from './ContextManager';
 
 interface IRenderer {
   canvasManager: CanvasManager;
+  contextManager: ContextManager;
   dpr: number;
   alpha: boolean;
   context: GPUCanvasContext | null;
@@ -39,7 +41,6 @@ interface IRenderer {
   getMaterialBindGroupLayout(materialType: MaterialType): GPUBindGroupLayout;
   createMeshPipeline(material: Material, geometry: Geometry): GPURenderPipeline;
   render(scene: Scene, camera: PerspectiveCamera): void;
-  updateCanvasElementSize(): void;
 }
 
 type RendererOptions = {
@@ -50,6 +51,7 @@ type RendererOptions = {
 
 class Renderer implements IRenderer {
   canvasManager: CanvasManager;
+  contextManager: ContextManager;
   dpr: number;
   alpha: boolean;
   context: GPUCanvasContext | null = null;
@@ -78,34 +80,20 @@ class Renderer implements IRenderer {
     this.alpha = options.alpha ?? true;
     this.materialLayoutRepository = new MaterialLayoutRepository();
     this.canvasManager = new CanvasManager({ renderer: this, containerElement: options.containerElement });
-  }
-  updateCanvasElementSize(): void {
-    throw new Error('Method not implemented.');
+    this.contextManager = new ContextManager({
+      canvasElement: this.canvasManager.canvasElement,
+      alpha: this.alpha,
+    });
   }
 
   async init() {
-    const context = this.canvasManager.canvasElement.getContext('webgpu');
-    if (!context) throw new Error(errorMessages.contextRequest);
+    await this.contextManager.init();
+    this.context = this.contextManager.context;
+    this.adapter = this.contextManager.adapter;
+    this.device = this.contextManager.device;
+    this.presentationFormat = this.contextManager.presentationFormat;
 
-    const adapter = await navigator.gpu.requestAdapter();
-    if (!adapter) throw new Error(errorMessages.adapterRequest);
-
-    const device = await adapter.requestDevice();
-    if (!device) throw new Error(errorMessages.deviceRequest);
-
-    const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
-    if (!presentationFormat) throw new Error(errorMessages.presentationFormatRequest);
-
-    this.context = context;
-    this.adapter = adapter;
-    this.device = device;
-    this.presentationFormat = presentationFormat;
-
-    context.configure({
-      device: this.device,
-      format: this.presentationFormat,
-      alphaMode: this.alpha ? 'premultiplied' : 'opaque',
-    });
+    if (!this.device) throw new Error(errorMessages.missingDevice);
 
     this.samplerLibrary = new SamplerLibrary(this.device);
     this.textureLibrary = new TextureLibrary(this);
