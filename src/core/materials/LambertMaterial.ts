@@ -1,4 +1,3 @@
-import lambertShader from './shaders/lambert.wgsl?raw';
 import { Material } from './Material';
 import { Renderer } from '../Renderer';
 import { Texture } from '../Texture';
@@ -21,7 +20,7 @@ class LambertMaterial extends Material {
     super({
       name: options.name,
       type: 'lambert',
-      shader: lambertShader,
+      shader: 'lambert',
       uniforms: {
         uColor: { type: 'vec4<f32>', value: color },
       },

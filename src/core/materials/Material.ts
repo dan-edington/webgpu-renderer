@@ -96,8 +96,16 @@ class Material implements IMaterial {
   }
 
   private createShaderModule(device: GPUDevice) {
+    if (!this.rendererInstance?.shaderLibrary)
+      throw new Error('Shader library is missing. Ensure the renderer is initialized before initializing materials.');
+    const shaderCode = this.rendererInstance.shaderLibrary.getShader(this.shader);
+    if (!shaderCode)
+      throw new Error(
+        'Could not find shader code for material. Ensure the shader name is correct and the shader is included in the shader library.',
+      );
+
     this.shaderModule = device.createShaderModule({
-      code: this.shader,
+      code: shaderCode,
     });
   }
 

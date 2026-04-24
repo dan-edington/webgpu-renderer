@@ -93,7 +93,7 @@ if (container) {
     const t = renderer.elapsedTime;
     cubeMesh.setRotation(t * 0.001, 0, t * 0.002);
     torusMesh.setPosition(0, Math.sin(t * 0.001), 0);
-    group.setRotation(0, t * -0.001, 0);
+    group.setRotation(0, t * -0.005, 0);
     renderer.render(scene, camera);
     requestAnimationFrame(render);
   }

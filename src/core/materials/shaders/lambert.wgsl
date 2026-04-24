@@ -1,44 +1,22 @@
-struct CameraUniforms {
-  viewProjectionMatrix: mat4x4<f32>,
-};
-
-struct SceneUniforms {
-  ambientLightColor: vec4f,
-  ambientLightIntensity: f32,
-};
-
-struct LightUniforms {
-  count: u32,
-  positions: array<vec4f, 64>,
-  colors: array<vec4f, 64>,
-  params: array<vec4f, 64>,
-}
+// #include "camera"
+// #include "scene"
+// #include "lights"
+// #include "entity"
 
 struct MaterialUniforms {
   uColor: vec4f,
 };
-
-struct EntityUniforms {
-  modelMatrix: mat4x4<f32>,
-};
-
-struct VertexOutput {
-  @builtin(position) position: vec4f,
-  @location(0) worldPosition: vec3f,
-  @location(1) normal: vec3f,
-};
-
-@group(0) @binding(0) var<uniform> cameraUniforms: CameraUniforms;
-
-@group(1) @binding(0) var<uniform> sceneUniforms: SceneUniforms;
-@group(1) @binding(1) var<storage, read> lightUniforms: LightUniforms;
 
 @group(2) @binding(0) var<uniform> materialUniforms: MaterialUniforms;
 @group(2) @binding(1) var albedoTexture: texture_2d<f32>;
 @group(2) @binding(2) var normalTexture: texture_2d<f32>;
 @group(2) @binding(3) var materialSampler: sampler;
 
-@group(3) @binding(0) var<uniform> entityUniforms: EntityUniforms;
+struct VertexOutput {
+  @builtin(position) position: vec4f,
+  @location(0) worldPosition: vec3f,
+  @location(1) normal: vec3f,
+};
 
 @vertex
 fn vertex_shader(

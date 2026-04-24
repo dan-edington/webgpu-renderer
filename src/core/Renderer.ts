@@ -5,6 +5,7 @@ import { MaterialLayoutRepository } from './materials/MaterialLayoutRepository';
 import type { Material } from './materials/Material';
 import { TextureLibrary } from './libraries/TextureLibrary';
 import { SamplerLibrary } from './libraries/SamplerLibrary';
+import { ShaderLibrary } from './libraries/ShaderLibrary';
 import { Scene } from './Scene';
 import { errorMessages } from './constants/errorMessages';
 import { constants } from './constants/constants';
@@ -32,6 +33,8 @@ interface IRenderer {
   materialLayoutRepository: MaterialLayoutRepository;
   textureLibrary: TextureLibrary | null;
   samplerLibrary: SamplerLibrary | null;
+  shaderLibrary: ShaderLibrary | null;
+  depthTexture: DepthTexture | null;
   init(): Promise<void>;
   getMaterialBindGroupLayout(materialType: MaterialType): GPUBindGroupLayout;
   createMeshPipeline(material: Material, geometry: Geometry): GPURenderPipeline;
@@ -67,6 +70,7 @@ class Renderer implements IRenderer {
   depthTexture: DepthTexture | null = null;
   textureLibrary: TextureLibrary | null = null;
   samplerLibrary: SamplerLibrary | null = null;
+  shaderLibrary: ShaderLibrary | null = null;
   private materialBindGroupLayoutCache: Map<MaterialType, GPUBindGroupLayout> = new Map();
   private meshPipelineCache: Map<string, GPURenderPipeline> = new Map();
 
@@ -107,6 +111,7 @@ class Renderer implements IRenderer {
 
     this.samplerLibrary = new SamplerLibrary(this.device);
     this.textureLibrary = new TextureLibrary(this);
+    this.shaderLibrary = new ShaderLibrary();
 
     this.createCameraSceneEntityBindGroupLayouts();
 
