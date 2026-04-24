@@ -26,6 +26,7 @@ const errorMessages = {
   missingMaterialShaderModule:
     'Material shader module is missing. Ensure the material is initialized before rendering.',
   missingLightUniformsBuffer: 'Light uniforms buffer is missing. Ensure the scene is initialized before rendering.',
+  missingDepthTexture: 'Depth texture is missing. Ensure the renderer is initialized before rendering.',
 };
 
 export { errorMessages };

@@ -8,6 +8,7 @@ import { cube, sphere, torus } from 'primitive-geometry';
 import { Group } from './core/Group';
 import { LambertMaterial } from './core/materials/LambertMaterial';
 import { PointLight } from './core/lights/PointLight';
+import { vec4 } from 'wgpu-matrix';
 
 const container = document.getElementById('app');
 
@@ -87,14 +88,13 @@ if (container) {
   scene.add([group, camera, pointLight]);
 
   scene.setAmbientLightIntensity(0);
-  pointLight.intensity = 1;
 
   // Render the scene
   function render() {
     const t = renderer.elapsedTime;
     cubeMesh.setRotation(t * 0.001, 0, t * 0.002);
+    torusMesh.setPosition(0, Math.sin(t * 0.001), 0);
     group.setRotation(0, t * -0.001, 0);
-    pointLight.setPosition(Math.cos(t * 0.001) * 10, 0, Math.sin(t * 0.001) * 10);
     renderer.render(scene, camera);
     requestAnimationFrame(render);
   }

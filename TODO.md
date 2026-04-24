@@ -1,8 +1,8 @@
 # TODO
 
-- [ ] TEXTURES
+- [x] TEXTURES
 
-- [ ] DEPTH
+- [x] DEPTH
 
 - [ ] LIGHTS
   - [x] Ambient

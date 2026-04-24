@@ -9,6 +9,7 @@ import { Scene } from './Scene';
 import { errorMessages } from './constants/errorMessages';
 import { constants } from './constants/constants';
 import type { MaterialType } from './types';
+import { DepthTexture } from './DepthTexture';
 
 interface IRenderer {
   containerElement: HTMLElement;
@@ -63,6 +64,7 @@ class Renderer implements IRenderer {
   entityBindGroupLayout: GPUBindGroupLayout | null = null;
   meshPipelineLayout: GPUPipelineLayout | null = null;
   materialLayoutRepository: MaterialLayoutRepository;
+  depthTexture: DepthTexture | null = null;
   textureLibrary: TextureLibrary | null = null;
   samplerLibrary: SamplerLibrary | null = null;
   private materialBindGroupLayoutCache: Map<MaterialType, GPUBindGroupLayout> = new Map();
@@ -109,6 +111,12 @@ class Renderer implements IRenderer {
     this.createCameraSceneEntityBindGroupLayouts();
 
     this.updateCanvasElementSize();
+
+    this.depthTexture = new DepthTexture({
+      width: this.canvasElement.width,
+      height: this.canvasElement.height,
+      renderer: this,
+    });
   }
 
   private createCameraSceneEntityBindGroupLayouts() {
@@ -172,6 +180,7 @@ class Renderer implements IRenderer {
     if (!this.sceneBindGroupLayout) throw new Error(errorMessages.missingSceneBindGroupLayout);
     if (!this.entityBindGroupLayout) throw new Error(errorMessages.missingEntityBindGroupLayout);
     if (!material.shaderModule) throw new Error(errorMessages.missingMaterialShaderModule);
+    if (!this.depthTexture) throw new Error(errorMessages.missingDepthTexture);
 
     const materialBindGroupLayout = this.getMaterialBindGroupLayout(material.type);
     const pipelineKey = `${material.getPipelineCacheKey()}:${geometry.topology}:${this.presentationFormat}`;
@@ -190,7 +199,7 @@ class Renderer implements IRenderer {
       ],
     });
 
-    const pipeline = this.device.createRenderPipeline({
+    const pipelineDescriptor: GPURenderPipelineDescriptor = {
       layout: pipelineLayout,
       vertex: {
         module: material.shaderModule,
@@ -231,7 +240,14 @@ class Renderer implements IRenderer {
         topology: geometry.topology,
         cullMode: 'back',
       },
-    });
+      depthStencil: {
+        format: this.depthTexture.format,
+        depthWriteEnabled: true,
+        depthCompare: 'less',
+      },
+    };
+
+    const pipeline = this.device.createRenderPipeline(pipelineDescriptor);
 
     this.meshPipelineCache.set(pipelineKey, pipeline);
 
@@ -263,6 +279,7 @@ class Renderer implements IRenderer {
     if (!this.device) throw new Error(errorMessages.missingDevice);
     if (!this.context) throw new Error(errorMessages.missingContext);
     if (!this.presentationFormat) throw new Error(errorMessages.missingPresentationFormat);
+    if (!this.depthTexture || !this.depthTexture.depthTextureView) throw new Error(errorMessages.missingDepthTexture);
     if (!camera.cameraUniformBuffer?.buffer) throw new Error(errorMessages.missingCameraBuffer);
     if (!camera.cameraBindGroup) throw new Error(errorMessages.missingCameraBindGroup);
     if (!scene.sceneUniformsBindGroup) throw new Error(errorMessages.missingSceneBindGroup);
@@ -283,6 +300,12 @@ class Renderer implements IRenderer {
           storeOp: 'store',
         },
       ],
+      depthStencilAttachment: {
+        view: this.depthTexture.depthTextureView,
+        depthLoadOp: 'clear',
+        depthClearValue: 1,
+        depthStoreOp: 'store',
+      },
     };
 
     const pass = commandEncoder.beginRenderPass(renderPassDescriptor);
@@ -306,6 +329,7 @@ class Renderer implements IRenderer {
 
     this.canvasElement.width = Math.floor(this.containerElement.clientWidth * this.dpr);
     this.canvasElement.height = Math.floor(this.containerElement.clientHeight * this.dpr);
+    this.depthTexture?.resize(this.canvasElement.width, this.canvasElement.height);
   }
 }
 

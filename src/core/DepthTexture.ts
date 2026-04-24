@@ -1,0 +1,63 @@
+import { errorMessages } from './constants/errorMessages';
+import { Renderer } from './Renderer';
+
+interface IDepthTexture {
+  width: number;
+  height: number;
+  format: GPUTextureFormat;
+  depthTexture: GPUTexture | null;
+  rendererInstance: Renderer | null;
+  resize(width: number, height: number): void;
+  destroy(): void;
+}
+
+type DepthTextureOptions = {
+  width?: number;
+  height?: number;
+  format?: GPUTextureFormat;
+  renderer: Renderer;
+};
+
+class DepthTexture implements IDepthTexture {
+  width: number;
+  height: number;
+  format: GPUTextureFormat;
+  depthTexture: GPUTexture | null = null;
+  depthTextureView: GPUTextureView | null = null;
+  rendererInstance: Renderer | null = null;
+
+  constructor(depthTextureOption: DepthTextureOptions) {
+    this.width = depthTextureOption.width ?? 1;
+    this.height = depthTextureOption.height ?? 1;
+    this.format = depthTextureOption.format ?? 'depth24plus';
+    this.rendererInstance = depthTextureOption.renderer;
+    this.createDepthTexture();
+  }
+
+  private createDepthTexture() {
+    if (!this.rendererInstance?.device) throw new Error(errorMessages.missingDevice);
+
+    this.depthTexture = this.rendererInstance.device.createTexture({
+      size: [this.width, this.height],
+      format: this.format,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+
+    this.depthTextureView = this.depthTexture.createView();
+  }
+
+  destroy() {
+    this.depthTexture?.destroy();
+    this.depthTextureView = null;
+    this.depthTexture = null;
+  }
+
+  resize(width: number, height: number) {
+    this.width = width;
+    this.height = height;
+    this.destroy();
+    this.createDepthTexture();
+  }
+}
+
+export { DepthTexture };
