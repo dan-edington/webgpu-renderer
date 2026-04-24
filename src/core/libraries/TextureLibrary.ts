@@ -1,5 +1,5 @@
 import { Texture } from '../Texture';
-import { Renderer } from '../Renderer';
+import { Renderer } from '../renderer/Renderer';
 import { TextureKey } from '../types';
 
 class TextureLibrary {

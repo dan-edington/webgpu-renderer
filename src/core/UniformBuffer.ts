@@ -1,5 +1,5 @@
 import { errorMessages } from './constants/errorMessages';
-import { Renderer } from './Renderer';
+import { Renderer } from './renderer/Renderer';
 import { BufferAddressSpace, uuid } from './types';
 import {
   computeBufferLayout,

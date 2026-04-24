@@ -1,7 +1,7 @@
 import { Mat4, mat4 } from 'wgpu-matrix';
 import { Entity } from './Entity';
 import { UniformBuffer } from './UniformBuffer';
-import { Renderer } from './Renderer';
+import { Renderer } from './renderer/Renderer';
 import { errorMessages } from './constants/errorMessages';
 
 interface IPerspectiveCamera {

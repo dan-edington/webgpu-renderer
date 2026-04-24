@@ -1,7 +1,7 @@
 import './style.css';
 import { Geometry } from './core/Geometry';
 import { Mesh } from './core/Mesh';
-import { Renderer } from './core/Renderer';
+import { Renderer } from './core/renderer/Renderer';
 import { Scene } from './core/Scene';
 import { PerspectiveCamera } from './core/PerspectiveCamera';
 import { cube, sphere, torus } from 'primitive-geometry';
@@ -90,7 +90,7 @@ if (container) {
 
   // Render the scene
   function render() {
-    const t = renderer.elapsedTime;
+    const t = renderer.elapsedTime * 0.1;
     cubeMesh.setRotation(t * 0.001, 0, t * 0.002);
     torusMesh.setPosition(0, Math.sin(t * 0.001), 0);
     group.setRotation(0, t * -0.005, 0);

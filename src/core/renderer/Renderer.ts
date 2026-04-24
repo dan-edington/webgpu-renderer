@@ -1,20 +1,20 @@
-import { Mesh } from './Mesh';
-import type { Geometry } from './Geometry';
-import { PerspectiveCamera } from './PerspectiveCamera';
-import { MaterialLayoutRepository } from './materials/MaterialLayoutRepository';
-import type { Material } from './materials/Material';
-import { TextureLibrary } from './libraries/TextureLibrary';
-import { SamplerLibrary } from './libraries/SamplerLibrary';
-import { ShaderLibrary } from './libraries/ShaderLibrary';
-import { Scene } from './Scene';
-import { errorMessages } from './constants/errorMessages';
-import { constants } from './constants/constants';
-import type { MaterialType } from './types';
-import { DepthTexture } from './DepthTexture';
+import { Mesh } from '../Mesh';
+import type { Geometry } from '../Geometry';
+import { PerspectiveCamera } from '../PerspectiveCamera';
+import { MaterialLayoutRepository } from '../materials/MaterialLayoutRepository';
+import type { Material } from '../materials/Material';
+import { TextureLibrary } from '../libraries/TextureLibrary';
+import { SamplerLibrary } from '../libraries/SamplerLibrary';
+import { ShaderLibrary } from '../libraries/ShaderLibrary';
+import { Scene } from '../Scene';
+import { errorMessages } from '../constants/errorMessages';
+import { constants } from '../constants/constants';
+import type { MaterialType } from '../types';
+import { DepthTexture } from '../DepthTexture';
+import { CanvasManager } from './CanvasManager';
 
 interface IRenderer {
-  containerElement: HTMLElement;
-  canvasElement: HTMLCanvasElement | null;
+  canvasManager: CanvasManager;
   dpr: number;
   alpha: boolean;
   context: GPUCanvasContext | null;
@@ -49,8 +49,7 @@ type RendererOptions = {
 };
 
 class Renderer implements IRenderer {
-  containerElement: HTMLElement;
-  canvasElement: HTMLCanvasElement | null = null;
+  canvasManager: CanvasManager;
   dpr: number;
   alpha: boolean;
   context: GPUCanvasContext | null = null;
@@ -74,19 +73,18 @@ class Renderer implements IRenderer {
   private materialBindGroupLayoutCache: Map<MaterialType, GPUBindGroupLayout> = new Map();
   private meshPipelineCache: Map<string, GPURenderPipeline> = new Map();
 
-  constructor(rendererOptions: RendererOptions) {
-    const { containerElement } = rendererOptions;
-    this.containerElement = containerElement ?? document.body;
-    this.dpr = rendererOptions.dpr ?? window.devicePixelRatio;
-    this.alpha = rendererOptions.alpha ?? true;
+  constructor(options: RendererOptions) {
+    this.dpr = options.dpr ?? window.devicePixelRatio;
+    this.alpha = options.alpha ?? true;
     this.materialLayoutRepository = new MaterialLayoutRepository();
+    this.canvasManager = new CanvasManager({ renderer: this, containerElement: options.containerElement });
+  }
+  updateCanvasElementSize(): void {
+    throw new Error('Method not implemented.');
   }
 
   async init() {
-    this.canvasElement = document.createElement('canvas');
-    this.containerElement.appendChild(this.canvasElement);
-
-    const context = this.canvasElement.getContext('webgpu');
+    const context = this.canvasManager.canvasElement.getContext('webgpu');
     if (!context) throw new Error(errorMessages.contextRequest);
 
     const adapter = await navigator.gpu.requestAdapter();
@@ -115,11 +113,11 @@ class Renderer implements IRenderer {
 
     this.createCameraSceneEntityBindGroupLayouts();
 
-    this.updateCanvasElementSize();
+    this.canvasManager.updateCanvasSize();
 
     this.depthTexture = new DepthTexture({
-      width: this.canvasElement.width,
-      height: this.canvasElement.height,
+      width: this.canvasManager.canvasElement.width,
+      height: this.canvasManager.canvasElement.height,
       renderer: this,
     });
   }
@@ -327,14 +325,6 @@ class Renderer implements IRenderer {
     pass.end();
 
     this.device.queue.submit([commandEncoder.finish()]);
-  }
-
-  updateCanvasElementSize() {
-    if (!this.canvasElement) throw new Error(errorMessages.missingCanvasElement);
-
-    this.canvasElement.width = Math.floor(this.containerElement.clientWidth * this.dpr);
-    this.canvasElement.height = Math.floor(this.containerElement.clientHeight * this.dpr);
-    this.depthTexture?.resize(this.canvasElement.width, this.canvasElement.height);
   }
 }
 

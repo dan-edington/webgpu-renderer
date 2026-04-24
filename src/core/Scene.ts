@@ -1,6 +1,6 @@
 import { vec4, Vec4 } from 'wgpu-matrix';
 import { Entity, IEntity } from './Entity';
-import { Renderer } from './Renderer';
+import { Renderer } from './renderer/Renderer';
 import { errorMessages } from './constants/errorMessages';
 import { constants } from './constants/constants';
 import { UniformBuffer } from './UniformBuffer';

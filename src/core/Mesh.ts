@@ -1,4 +1,4 @@
-import type { Renderer } from './Renderer';
+import type { Renderer } from './renderer/Renderer';
 import { Entity, IEntity } from './Entity';
 import { Geometry } from './Geometry';
 import { Material } from './materials/Material';

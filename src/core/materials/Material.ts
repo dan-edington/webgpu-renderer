@@ -1,5 +1,5 @@
 import { errorMessages } from '../constants/errorMessages';
-import { Renderer } from '../Renderer';
+import { Renderer } from '../renderer/Renderer';
 import { MaterialType, UniformValue, UniformValueInput, uuid } from '../types';
 import { UniformBuffer } from '../UniformBuffer';
 
@@ -17,6 +17,7 @@ interface IMaterial {
     vertex: string;
     fragment: string;
   };
+  transparent: boolean;
   isInitialized: boolean;
   init(renderer: Renderer): void;
   getPipelineCacheKey(): string;
@@ -32,6 +33,7 @@ type MaterialOptions = {
   };
   name?: string;
   type: MaterialType;
+  transparent?: boolean;
 };
 
 class Material implements IMaterial {
@@ -49,6 +51,7 @@ class Material implements IMaterial {
     fragment: string;
   };
   isInitialized: boolean = false;
+  transparent: boolean;
   protected rendererInstance: Renderer | null = null;
 
   constructor(options: MaterialOptions) {
@@ -61,6 +64,7 @@ class Material implements IMaterial {
       vertex: 'vertex_shader',
       fragment: 'fragment_shader',
     };
+    this.transparent = options.transparent ?? false;
 
     if (this.materialUniforms) {
       this.materialUniformsBuffer = new UniformBuffer(this.materialUniforms);

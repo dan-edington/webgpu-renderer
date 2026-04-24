@@ -1,5 +1,5 @@
 import { Material } from './Material';
-import { Renderer } from '../Renderer';
+import { Renderer } from '../renderer/Renderer';
 import { Texture } from '../Texture';
 
 type LambertMaterialOptions = {
