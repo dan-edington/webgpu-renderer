@@ -1,18 +1,18 @@
-import { Mesh } from '../Mesh';
 import type { Geometry } from '../Geometry';
+import type { MaterialType } from '../types';
+import type { Material } from '../materials/Material';
 import { PerspectiveCamera } from '../PerspectiveCamera';
 import { MaterialLayoutRepository } from '../materials/MaterialLayoutRepository';
-import type { Material } from '../materials/Material';
 import { TextureLibrary } from './libraries/TextureLibrary';
 import { SamplerLibrary } from './libraries/SamplerLibrary';
 import { ShaderLibrary } from './libraries/ShaderLibrary';
 import { Scene } from '../Scene';
 import { errorMessages } from '../constants/errorMessages';
-import { constants } from '../constants/constants';
-import type { MaterialType } from '../types';
 import { DepthTexture } from '../DepthTexture';
 import { CanvasManager } from './CanvasManager';
 import { ContextManager } from './ContextManager';
+import { PassManager } from './PassManager';
+import { OpaquePass } from './passes/OpaquePass';
 
 interface IRenderer {
   canvasManager: CanvasManager;
@@ -37,6 +37,7 @@ interface IRenderer {
   samplerLibrary: SamplerLibrary | null;
   shaderLibrary: ShaderLibrary | null;
   depthTexture: DepthTexture | null;
+  passManager: PassManager | null;
   init(): Promise<void>;
   getMaterialBindGroupLayout(materialType: MaterialType): GPUBindGroupLayout;
   createMeshPipeline(material: Material, geometry: Geometry): GPURenderPipeline;
@@ -72,6 +73,7 @@ class Renderer implements IRenderer {
   textureLibrary: TextureLibrary | null = null;
   samplerLibrary: SamplerLibrary | null = null;
   shaderLibrary: ShaderLibrary | null = null;
+  passManager: PassManager | null = null;
   private materialBindGroupLayoutCache: Map<MaterialType, GPUBindGroupLayout> = new Map();
   private meshPipelineCache: Map<string, GPURenderPipeline> = new Map();
 
@@ -108,6 +110,13 @@ class Renderer implements IRenderer {
       height: this.canvasManager.canvasElement.height,
       renderer: this,
     });
+
+    this.configurePasses();
+  }
+
+  configurePasses() {
+    this.passManager = new PassManager(this);
+    this.passManager.registerPass('opaque', OpaquePass);
   }
 
   private createCameraSceneEntityBindGroupLayouts() {
@@ -267,50 +276,19 @@ class Renderer implements IRenderer {
     scene.updateRenderList();
     scene.updateLights();
 
+    if (!this.passManager) throw new Error('PassManager not initialized.');
     if (!this.device) throw new Error(errorMessages.missingDevice);
-    if (!this.context) throw new Error(errorMessages.missingContext);
-    if (!this.presentationFormat) throw new Error(errorMessages.missingPresentationFormat);
-    if (!this.depthTexture || !this.depthTexture.depthTextureView) throw new Error(errorMessages.missingDepthTexture);
     if (!camera.cameraUniformBuffer?.buffer) throw new Error(errorMessages.missingCameraBuffer);
-    if (!camera.cameraBindGroup) throw new Error(errorMessages.missingCameraBindGroup);
-    if (!scene.sceneUniformsBindGroup) throw new Error(errorMessages.missingSceneBindGroup);
 
     scene.sceneUniformsBuffer?.writeUpdatedBufferData();
     scene.lightUniformsBuffer?.writeUpdatedBufferData();
     camera.cameraUniformBuffer.writeUpdatedBufferData();
 
     const commandEncoder = this.device.createCommandEncoder();
-    const textureView = this.context.getCurrentTexture().createView();
 
-    const renderPassDescriptor: GPURenderPassDescriptor = {
-      colorAttachments: [
-        {
-          view: textureView,
-          clearValue: scene.clearColor,
-          loadOp: 'clear',
-          storeOp: 'store',
-        },
-      ],
-      depthStencilAttachment: {
-        view: this.depthTexture.depthTextureView,
-        depthLoadOp: 'clear',
-        depthClearValue: 1,
-        depthStoreOp: 'store',
-      },
-    };
-
-    const pass = commandEncoder.beginRenderPass(renderPassDescriptor);
-
-    pass.setBindGroup(constants.bindGroupIndices.CAMERA, camera.cameraBindGroup);
-    pass.setBindGroup(constants.bindGroupIndices.SCENE, scene.sceneUniformsBindGroup);
-
-    scene.renderList.forEach((entity) => {
-      if (entity instanceof Mesh) {
-        entity.draw(pass, this);
-      }
-    });
-
-    pass.end();
+    this.passManager.scene = scene;
+    this.passManager.camera = camera;
+    this.passManager.runPass('opaque', commandEncoder);
 
     this.device.queue.submit([commandEncoder.finish()]);
   }
