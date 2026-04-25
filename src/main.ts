@@ -7,6 +7,7 @@ import { PerspectiveCamera } from './core/PerspectiveCamera';
 import { cube, sphere, torus } from 'primitive-geometry';
 import { Group } from './core/Group';
 import { LambertMaterial } from './core/materials/LambertMaterial';
+import { NormalMaterial } from './core/materials/NormalMaterial';
 import { PointLight } from './core/lights/PointLight';
 
 const container = document.getElementById('app');
@@ -66,8 +67,10 @@ if (container) {
     color: [0, 1, 1, 1],
   });
 
+  const normalMaterial = new NormalMaterial();
+
   // Create meshes
-  const cubeMesh = new Mesh(cubeGeometry, material);
+  const cubeMesh = new Mesh(cubeGeometry, normalMaterial);
   cubeMesh.setPosition(-1.5, 0, 0);
   const sphereMesh = new Mesh(sphereGeometry, material);
   sphereMesh.setPosition(1.5, 0, 0);

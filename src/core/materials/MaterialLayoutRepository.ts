@@ -6,7 +6,29 @@ class MaterialLayoutRepository {
   constructor() {
     this.materialLayoutRepository = new Map<MaterialType, GPUBindGroupLayoutDescriptor>();
 
+    this.createNormalMaterialLayoutDescriptor();
     this.createLambertMaterialLayoutDescriptor();
+  }
+
+  createNormalMaterialLayoutDescriptor() {
+    const normalMaterialLayoutDescriptor: GPUBindGroupLayoutDescriptor = {
+      entries: [
+        // binding 0: material uniforms (color, etc.)
+        {
+          binding: 0,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: { sampleType: 'float' },
+        },
+        // binding 1: sampler for color textures
+        {
+          binding: 1,
+          visibility: GPUShaderStage.FRAGMENT,
+          sampler: { type: 'filtering' },
+        },
+      ],
+    };
+
+    this.materialLayoutRepository.set('normal', normalMaterialLayoutDescriptor);
   }
 
   createLambertMaterialLayoutDescriptor() {
