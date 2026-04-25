@@ -1,10 +1,12 @@
 const shaderIncludes: Record<string, string> = import.meta.glob('../../materials/shaders/includes/*.wgsl', {
-  query: 'raw',
+  query: '?raw',
   eager: true,
+  import: 'default',
 });
 const shaders: Record<string, string> = import.meta.glob('../../materials/shaders/*.wgsl', {
-  query: 'raw',
+  query: '?raw',
   eager: true,
+  import: 'default',
 });
 
 const INCLUDE_REGEX = /^\s*\/\/\s*#include\s*(['"])([a-z0-9/]+)\1\s*$/gm;
@@ -44,6 +46,7 @@ class ShaderLibrary {
     for (const key in shaders) {
       const shaderName = key.replace(basePath, '').replace('.wgsl', '');
       const shaderContent = shaders[key];
+      console.log(shaderContent);
       const resolvedShaderContent = this.resolveIncludes(shaderContent);
       this.shaders.set(shaderName, resolvedShaderContent);
     }
