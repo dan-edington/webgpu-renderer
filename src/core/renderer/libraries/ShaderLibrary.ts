@@ -1,5 +1,11 @@
-const shaderIncludes = import.meta.glob('../../materials/shaders/includes/*.wgsl', { as: 'raw', eager: true });
-const shaders = import.meta.glob('../../materials/shaders/*.wgsl', { as: 'raw', eager: true });
+const shaderIncludes: Record<string, string> = import.meta.glob('../../materials/shaders/includes/*.wgsl', {
+  query: 'raw',
+  eager: true,
+});
+const shaders: Record<string, string> = import.meta.glob('../../materials/shaders/*.wgsl', {
+  query: 'raw',
+  eager: true,
+});
 
 const INCLUDE_REGEX = /^\s*\/\/\s*#include\s*(['"])([a-z0-9/]+)\1\s*$/gm;
 
