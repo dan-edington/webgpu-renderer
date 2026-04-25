@@ -59,10 +59,6 @@ class LambertMaterial extends Material {
   }
 
   protected override getBindGroupEntries(renderer: Renderer): GPUBindGroupEntry[] {
-    if (!this.materialUniformsBuffer?.buffer) {
-      return [];
-    }
-
     const albedoTexture = this._albedoTexture ?? renderer.textureLibrary?.getFallback('white');
     const normalTexture = this._normalTexture ?? renderer.textureLibrary?.getFallback('normal');
     const sampler = renderer.samplerLibrary?.getSampler('linearRepeat');
@@ -70,6 +66,8 @@ class LambertMaterial extends Material {
     if (!albedoTexture || !normalTexture || !sampler) {
       throw new Error('Lambert material resources are missing.');
     }
+
+    if (!this.materialUniformsBuffer?.buffer) return [];
 
     return [
       { binding: 0, resource: { buffer: this.materialUniformsBuffer.buffer } },
