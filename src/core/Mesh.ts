@@ -48,7 +48,15 @@ class Mesh extends Entity implements IMesh {
 
   private createPipeline(renderer: Renderer) {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
-    this.pipeline = renderer.createMeshPipeline(this.material, this.geometry);
+    const pipelineName = this.material.transparent ? 'transparent' : 'opaque';
+    const Pipeline = renderer.pipelineLibrary?.getPipeline(pipelineName);
+    if (!Pipeline) throw new Error(errorMessages.missingPipeline);
+
+    this.pipeline = Pipeline.createPipeline({
+      renderer,
+      material: this.material,
+      geometry: this.geometry,
+    });
   }
 
   private createEntityBuffer(renderer: Renderer) {

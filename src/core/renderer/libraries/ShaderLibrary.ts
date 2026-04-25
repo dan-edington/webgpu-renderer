@@ -46,7 +46,6 @@ class ShaderLibrary {
     for (const key in shaders) {
       const shaderName = key.replace(basePath, '').replace('.wgsl', '');
       const shaderContent = shaders[key];
-      console.log(shaderContent);
       const resolvedShaderContent = this.resolveIncludes(shaderContent);
       this.shaders.set(shaderName, resolvedShaderContent);
     }

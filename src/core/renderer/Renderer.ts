@@ -1,6 +1,4 @@
-import type { Geometry } from '../Geometry';
 import type { MaterialType } from '../types';
-import type { Material } from '../materials/Material';
 import { PerspectiveCamera } from '../PerspectiveCamera';
 import { MaterialLayoutLibrary } from '../materials/libraries/MaterialLayoutLibrary';
 import { TextureLibrary } from './libraries/TextureLibrary';
@@ -13,6 +11,8 @@ import { CanvasManager } from './CanvasManager';
 import { ContextManager } from './ContextManager';
 import { PassManager } from './PassManager';
 import { OpaquePass } from './passes/OpaquePass';
+import { PipelineLibrary } from './libraries/PipelineLibrary';
+import { OpaquePipeline } from './pipelines/OpaquePipeline';
 
 interface IRenderer {
   canvasManager: CanvasManager;
@@ -40,7 +40,6 @@ interface IRenderer {
   passManager: PassManager | null;
   init(): Promise<void>;
   getMaterialBindGroupLayout(materialType: MaterialType): GPUBindGroupLayout;
-  createMeshPipeline(material: Material, geometry: Geometry): GPURenderPipeline;
   render(scene: Scene, camera: PerspectiveCamera): void;
 }
 
@@ -73,9 +72,9 @@ class Renderer implements IRenderer {
   textureLibrary: TextureLibrary | null = null;
   samplerLibrary: SamplerLibrary | null = null;
   shaderLibrary: ShaderLibrary | null = null;
+  pipelineLibrary: PipelineLibrary | null = null;
   passManager: PassManager | null = null;
   private materialBindGroupLayoutCache: Map<MaterialType, GPUBindGroupLayout> = new Map();
-  private meshPipelineCache: Map<string, GPURenderPipeline> = new Map();
 
   constructor(options: RendererOptions) {
     this.dpr = options.dpr ?? window.devicePixelRatio;
@@ -111,7 +110,13 @@ class Renderer implements IRenderer {
       renderer: this,
     });
 
+    this.configurePipelines();
     this.configurePasses();
+  }
+
+  private configurePipelines() {
+    this.pipelineLibrary = new PipelineLibrary();
+    this.pipelineLibrary.registerPipeline('opaque', OpaquePipeline);
   }
 
   private configurePasses() {
@@ -158,102 +163,6 @@ class Renderer implements IRenderer {
     });
   }
 
-  getMaterialBindGroupLayout(materialType: MaterialType): GPUBindGroupLayout {
-    if (!this.device) throw new Error(errorMessages.missingDevice);
-
-    const cachedLayout = this.materialBindGroupLayoutCache.get(materialType);
-    if (cachedLayout) return cachedLayout;
-
-    const layoutDescriptor = this.materialLayoutLibrary.getMaterialLayoutDescriptor(materialType);
-    if (!layoutDescriptor) throw new Error(`No material layout descriptor registered for '${materialType}'.`);
-
-    const layout = this.device.createBindGroupLayout(layoutDescriptor);
-    this.materialBindGroupLayoutCache.set(materialType, layout);
-
-    return layout;
-  }
-
-  createMeshPipeline(material: Material, geometry: Geometry): GPURenderPipeline {
-    if (!this.device) throw new Error(errorMessages.missingDevice);
-    if (!this.presentationFormat) throw new Error(errorMessages.missingPresentationFormat);
-    if (!this.cameraBindGroupLayout) throw new Error(errorMessages.missingCameraBufferLayout);
-    if (!this.sceneBindGroupLayout) throw new Error(errorMessages.missingSceneBindGroupLayout);
-    if (!this.entityBindGroupLayout) throw new Error(errorMessages.missingEntityBindGroupLayout);
-    if (!material.shaderModule) throw new Error(errorMessages.missingMaterialShaderModule);
-    if (!this.depthTexture) throw new Error(errorMessages.missingDepthTexture);
-
-    const materialBindGroupLayout = this.getMaterialBindGroupLayout(material.type);
-    const pipelineKey = `${material.getPipelineCacheKey()}:${geometry.topology}:${this.presentationFormat}`;
-    const cachedPipeline = this.meshPipelineCache.get(pipelineKey);
-
-    if (cachedPipeline) {
-      return cachedPipeline;
-    }
-
-    const pipelineLayout = this.device.createPipelineLayout({
-      bindGroupLayouts: [
-        this.cameraBindGroupLayout,
-        this.sceneBindGroupLayout,
-        materialBindGroupLayout,
-        this.entityBindGroupLayout,
-      ],
-    });
-
-    const pipelineDescriptor: GPURenderPipelineDescriptor = {
-      layout: pipelineLayout,
-      vertex: {
-        module: material.shaderModule,
-        entryPoint: material.shaderEntryPoints.vertex,
-        buffers: [
-          {
-            arrayStride: 3 * Float32Array.BYTES_PER_ELEMENT,
-            attributes: [
-              {
-                shaderLocation: 0,
-                offset: 0,
-                format: 'float32x3',
-              },
-            ],
-          },
-          {
-            arrayStride: 3 * Float32Array.BYTES_PER_ELEMENT,
-            attributes: [
-              {
-                shaderLocation: 1,
-                offset: 0,
-                format: 'float32x3',
-              },
-            ],
-          },
-        ],
-      },
-      fragment: {
-        module: material.shaderModule,
-        entryPoint: material.shaderEntryPoints.fragment,
-        targets: [
-          {
-            format: this.presentationFormat,
-          },
-        ],
-      },
-      primitive: {
-        topology: geometry.topology,
-        cullMode: 'back',
-      },
-      depthStencil: {
-        format: this.depthTexture.format,
-        depthWriteEnabled: true,
-        depthCompare: 'less',
-      },
-    };
-
-    const pipeline = this.device.createRenderPipeline(pipelineDescriptor);
-
-    this.meshPipelineCache.set(pipelineKey, pipeline);
-
-    return pipeline;
-  }
-
   private updateTimersAndFrameCounter() {
     this.currentFrame++;
     const currentTime = performance.now();
@@ -281,6 +190,21 @@ class Renderer implements IRenderer {
     scene.sceneUniformsBuffer.writeUpdatedBufferData();
     scene.lightUniformsBuffer.writeUpdatedBufferData();
     camera.cameraUniformBuffer.writeUpdatedBufferData();
+  }
+
+  getMaterialBindGroupLayout(materialType: MaterialType): GPUBindGroupLayout {
+    if (!this.device) throw new Error(errorMessages.missingDevice);
+
+    const cachedLayout = this.materialBindGroupLayoutCache.get(materialType);
+    if (cachedLayout) return cachedLayout;
+
+    const layoutDescriptor = this.materialLayoutLibrary.getMaterialLayoutDescriptor(materialType);
+    if (!layoutDescriptor) throw new Error(`No material layout descriptor registered for '${materialType}'.`);
+
+    const layout = this.device.createBindGroupLayout(layoutDescriptor);
+    this.materialBindGroupLayoutCache.set(materialType, layout);
+
+    return layout;
   }
 
   render(scene: Scene, camera: PerspectiveCamera) {
