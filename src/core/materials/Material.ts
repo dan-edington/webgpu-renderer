@@ -138,6 +138,10 @@ abstract class Material implements IMaterial {
 
     return [{ binding: 0, resource: { buffer: this.materialUniformsBuffer.buffer } }];
   }
+
+  static getMaterialLayoutDescriptor() {
+    throw new Error('getMaterialLayoutDescriptor must be implemented by subclasses of Material.');
+  }
 }
 
 export { Material };

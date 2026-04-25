@@ -76,6 +76,37 @@ class LambertMaterial extends Material {
       { binding: 3, resource: sampler },
     ];
   }
+
+  static override getMaterialLayoutDescriptor(): GPUBindGroupLayoutDescriptor {
+    return {
+      entries: [
+        // binding 0: material uniforms (color, etc.)
+        {
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: { type: 'uniform' },
+        },
+        // binding 1: albedo/color texture
+        {
+          binding: 1,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: { sampleType: 'float' },
+        },
+        // binding 2: normal map texture
+        {
+          binding: 2,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: { sampleType: 'float' },
+        },
+        // binding 3: sampler for color textures
+        {
+          binding: 3,
+          visibility: GPUShaderStage.FRAGMENT,
+          sampler: { type: 'filtering' },
+        },
+      ],
+    };
+  }
 }
 
 export { LambertMaterial };

@@ -2,7 +2,7 @@ import type { Geometry } from '../Geometry';
 import type { MaterialType } from '../types';
 import type { Material } from '../materials/Material';
 import { PerspectiveCamera } from '../PerspectiveCamera';
-import { MaterialLayoutRepository } from '../materials/MaterialLayoutRepository';
+import { MaterialLayoutLibrary } from '../materials/libraries/MaterialLayoutLibrary';
 import { TextureLibrary } from './libraries/TextureLibrary';
 import { SamplerLibrary } from './libraries/SamplerLibrary';
 import { ShaderLibrary } from './libraries/ShaderLibrary';
@@ -32,7 +32,7 @@ interface IRenderer {
   materialBindGroupLayout: GPUBindGroupLayout | null;
   entityBindGroupLayout: GPUBindGroupLayout | null;
   meshPipelineLayout: GPUPipelineLayout | null;
-  materialLayoutRepository: MaterialLayoutRepository;
+  materialLayoutLibrary: MaterialLayoutLibrary;
   textureLibrary: TextureLibrary | null;
   samplerLibrary: SamplerLibrary | null;
   shaderLibrary: ShaderLibrary | null;
@@ -68,7 +68,7 @@ class Renderer implements IRenderer {
   materialBindGroupLayout: GPUBindGroupLayout | null = null;
   entityBindGroupLayout: GPUBindGroupLayout | null = null;
   meshPipelineLayout: GPUPipelineLayout | null = null;
-  materialLayoutRepository: MaterialLayoutRepository;
+  materialLayoutLibrary: MaterialLayoutLibrary;
   depthTexture: DepthTexture | null = null;
   textureLibrary: TextureLibrary | null = null;
   samplerLibrary: SamplerLibrary | null = null;
@@ -80,7 +80,7 @@ class Renderer implements IRenderer {
   constructor(options: RendererOptions) {
     this.dpr = options.dpr ?? window.devicePixelRatio;
     this.alpha = options.alpha ?? true;
-    this.materialLayoutRepository = new MaterialLayoutRepository();
+    this.materialLayoutLibrary = new MaterialLayoutLibrary();
     this.canvasManager = new CanvasManager({ renderer: this, containerElement: options.containerElement });
     this.contextManager = new ContextManager({
       canvasElement: this.canvasManager.canvasElement,
@@ -164,7 +164,7 @@ class Renderer implements IRenderer {
     const cachedLayout = this.materialBindGroupLayoutCache.get(materialType);
     if (cachedLayout) return cachedLayout;
 
-    const layoutDescriptor = this.materialLayoutRepository.getMaterialLayoutDescriptor(materialType);
+    const layoutDescriptor = this.materialLayoutLibrary.getMaterialLayoutDescriptor(materialType);
     if (!layoutDescriptor) throw new Error(`No material layout descriptor registered for '${materialType}'.`);
 
     const layout = this.device.createBindGroupLayout(layoutDescriptor);

@@ -42,6 +42,25 @@ class NormalMaterial extends Material {
       { binding: 1, resource: sampler },
     ];
   }
+
+  static override getMaterialLayoutDescriptor(): GPUBindGroupLayoutDescriptor {
+    return {
+      entries: [
+        // binding 0: material uniforms (color, etc.)
+        {
+          binding: 0,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: { sampleType: 'float' },
+        },
+        // binding 1: sampler for color textures
+        {
+          binding: 1,
+          visibility: GPUShaderStage.FRAGMENT,
+          sampler: { type: 'filtering' },
+        },
+      ],
+    };
+  }
 }
 
 export { NormalMaterial };
