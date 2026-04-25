@@ -10,7 +10,7 @@ import { DepthTexture } from '../DepthTexture';
 import { CanvasManager } from './CanvasManager';
 import { ContextManager } from './ContextManager';
 import { PassManager } from './PassManager';
-import { OpaquePass } from './passes/OpaquePass';
+import { RenderPass } from './passes/RenderPass';
 import { PipelineLibrary } from './libraries/PipelineLibrary';
 import { OpaquePipeline } from './pipelines/OpaquePipeline';
 
@@ -121,7 +121,7 @@ class Renderer implements IRenderer {
 
   private configurePasses() {
     this.passManager = new PassManager(this);
-    this.passManager.registerPass('opaque', OpaquePass);
+    this.passManager.registerPass('render', RenderPass);
   }
 
   private createCameraSceneEntityBindGroupLayouts() {
@@ -218,7 +218,7 @@ class Renderer implements IRenderer {
 
     this.passManager.scene = scene;
     this.passManager.camera = camera;
-    this.passManager.runPass('opaque', commandEncoder);
+    this.passManager.runPass('render', commandEncoder);
 
     this.device.queue.submit([commandEncoder.finish()]);
   }

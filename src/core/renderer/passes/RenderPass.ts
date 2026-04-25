@@ -4,7 +4,7 @@ import { PerspectiveCamera } from '../../PerspectiveCamera';
 import { Scene } from '../../Scene';
 import { Pass, PassOptions } from './Pass';
 
-class OpaquePass extends Pass {
+class RenderPass extends Pass {
   constructor(options: PassOptions) {
     super(options);
   }
@@ -51,4 +51,4 @@ class OpaquePass extends Pass {
   }
 }
 
-export { OpaquePass };
+export { RenderPass };
