@@ -1,14 +1,14 @@
 import './style.css';
-import { Geometry } from './core/Geometry';
-import { Mesh } from './core/Mesh';
-import { Renderer } from './core/renderer/Renderer';
-import { Scene } from './core/Scene';
-import { PerspectiveCamera } from './core/PerspectiveCamera';
+import { Geometry } from '../src/core/Geometry';
+import { Mesh } from '../src/core/Mesh';
+import { Renderer } from '../src/core/renderer/Renderer';
+import { Scene } from '../src/core/Scene';
+import { PerspectiveCamera } from '../src/core/PerspectiveCamera';
 import { cube, sphere, torus } from 'primitive-geometry';
-import { Group } from './core/Group';
-import { LambertMaterial } from './core/materials/LambertMaterial';
-import { PointLight } from './core/lights/PointLight';
-import { UnlitMaterial } from './core/materials/UnlitMaterial';
+import { Group } from '../src/core/Group';
+import { LambertMaterial } from '../src/core/materials/LambertMaterial';
+import { PointLight } from '../src/core/lights/PointLight';
+import { UnlitMaterial } from '../src/core/materials/UnlitMaterial';
 
 const container = document.getElementById('app');
 

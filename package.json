@@ -1,23 +1,39 @@
 {
   "name": "tonygl",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./core/*": {
+      "import": "./dist/core/*.js",
+      "types": "./dist/core/*.d.ts"
+    }
+  },
+  "sideEffects": false,
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "test": "vitest"
   },
   "devDependencies": {
-    "@tweakpane/core": "^2.0.5",
+    "@types/node": "^25.6.0",
     "@webgpu/types": "^0.1.51",
     "typescript": "~5.6.2",
     "vite": "^8.0.9",
-    "vitest": "^4.1.4"
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^4.1.4",
+    "primitive-geometry": "^2.11.0"
   },
   "dependencies": {
-    "primitive-geometry": "^2.11.0",
-    "tweakpane": "^4.0.5",
     "wgpu-matrix": "^3.4.2"
   }
 }
