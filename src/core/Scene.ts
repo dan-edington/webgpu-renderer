@@ -1,4 +1,3 @@
-import { vec4, Vec4 } from 'wgpu-matrix';
 import { Entity, IEntity } from './Entity';
 import { Renderer } from './renderer/Renderer';
 import { errorMessages } from './constants/errorMessages';
@@ -15,7 +14,7 @@ interface IScene extends IEntity {
   isInitialized: boolean;
   clearColor: GPUColor;
   ambientLight: {
-    color: Vec4;
+    color: Float32Array;
     intensity: number;
   };
   lights: Light[];
@@ -23,8 +22,8 @@ interface IScene extends IEntity {
   init(renderer: Renderer): void;
   createSceneUniformsBuffer(): void;
   createSceneUniformsBindGroup(renderer: Renderer): void;
-  setClearColor(color: GPUColor | [number, number, number, number] | Vec4): void;
-  setAmbientLightColor(color: Vec4 | [number, number, number, number]): void;
+  setClearColor(color: GPUColor | [number, number, number, number] | Float32Array): void;
+  setAmbientLightColor(color: Float32Array | [number, number, number, number]): void;
   setAmbientLightIntensity(intensity: number): void;
   updateRenderList(): void;
 }
@@ -37,7 +36,7 @@ class Scene extends Entity implements IScene {
   sceneUniformsBindGroup: GPUBindGroup | null = null;
   isInitialized: boolean;
   clearColor: GPUColor;
-  ambientLight: { color: Vec4; intensity: number };
+  ambientLight: { color: Float32Array; intensity: number };
   lights: Light[];
   lightsNeedUpdate: boolean;
   private rendererInstance: Renderer | null = null;
@@ -49,7 +48,7 @@ class Scene extends Entity implements IScene {
     this.isInitialized = false;
     this.clearColor = { r: 0, g: 0, b: 0, a: 1 };
     this.ambientLight = {
-      color: vec4.create(1, 1, 1, 1),
+      color: new Float32Array([1, 1, 1, 1]),
       intensity: 0.1,
     };
     this.lights = [];
@@ -136,7 +135,7 @@ class Scene extends Entity implements IScene {
     }
   }
 
-  setClearColor(color: GPUColor | [number, number, number, number] | Vec4) {
+  setClearColor(color: GPUColor | [number, number, number, number] | Float32Array) {
     if (Array.isArray(color) || color instanceof Float32Array) {
       this.clearColor = { r: color[0], g: color[1], b: color[2], a: color[3] };
     } else {
@@ -144,9 +143,9 @@ class Scene extends Entity implements IScene {
     }
   }
 
-  setAmbientLightColor(color: Vec4 | [number, number, number, number]) {
+  setAmbientLightColor(color: Float32Array | [number, number, number, number]) {
     if (Array.isArray(color) || color instanceof Float32Array) {
-      this.ambientLight.color = vec4.fromValues(color[0], color[1], color[2], color[3]);
+      this.ambientLight.color = new Float32Array([color[0], color[1], color[2], color[3]]);
     } else {
       this.ambientLight.color = color;
     }
