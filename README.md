@@ -1,3 +1,18 @@
-# WebGPU Renderer
+# TonyGL
 
-Just a little library for rendering WebGPU. Very WIP.
+Just a little library for rendering WebGPU named after my dog.
+
+Currently supports:
+
+- Scene graph
+- Perspective camera
+- Depth writing (alpha is WIP)
+- Indexed and non indexed geometry
+- Lambertian material
+- Unlit material
+- Normal material
+- Point lights
+- Ambient light
+- Texture resource handling
+
+Full documentation to come.
