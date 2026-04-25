@@ -169,7 +169,7 @@ function writeComponentValues(
   count: number,
 ) {
   if (scalar === 'f16') {
-    const view = new Float16Array(bufferData, byteOffset, count);
+    const view = new (globalThis as any).Float16Array(bufferData, byteOffset, count);
     for (let i = 0; i < count; i++) {
       view[i] = source[sourceStart + i];
     }
@@ -200,7 +200,7 @@ function writeComponentValues(
 
 function writeScalar(bufferData: ArrayBuffer, scalar: ScalarType, byteOffset: number, value: number) {
   if (scalar === 'f16') {
-    new Float16Array(bufferData, byteOffset, 1)[0] = value;
+    new (globalThis as any).Float16Array(bufferData, byteOffset, 1)[0] = value;
     return;
   }
 

@@ -45,7 +45,7 @@ class PerspectiveCamera extends Entity implements IPerspectiveCamera {
     this._far = far;
     this._fov = fov;
     this._aspect = aspect;
-    this.projectionMatrix = mat4.perspective(this.fov, this.aspect, this.near, this.far);
+    this.projectionMatrix = mat4.perspective<Float32Array>(this.fov, this.aspect, this.near, this.far);
     this.viewMatrix = mat4.inverse(this.matrix);
     this.viewProjectionMatrix = mat4.multiply(this.projectionMatrix, this.viewMatrix);
     this.createCameraUniformBuffer();
@@ -123,7 +123,7 @@ class PerspectiveCamera extends Entity implements IPerspectiveCamera {
       return;
     }
 
-    this.projectionMatrix = mat4.perspective(this.fov, this.aspect, this.near, this.far);
+    this.projectionMatrix = mat4.perspective<Float32Array>(this.fov, this.aspect, this.near, this.far);
     this.viewProjectionMatrix = mat4.multiply(this.projectionMatrix, this.viewMatrix);
 
     if (this.cameraUniformBuffer) {
