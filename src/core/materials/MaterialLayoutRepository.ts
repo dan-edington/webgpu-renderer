@@ -8,6 +8,7 @@ class MaterialLayoutRepository {
 
     this.createNormalMaterialLayoutDescriptor();
     this.createLambertMaterialLayoutDescriptor();
+    this.createUnlitMaterialLayoutDescriptor();
   }
 
   createNormalMaterialLayoutDescriptor() {
@@ -62,6 +63,33 @@ class MaterialLayoutRepository {
     };
 
     this.materialLayoutRepository.set('lambert', lambertMaterialLayoutDescriptor);
+  }
+
+  createUnlitMaterialLayoutDescriptor() {
+    const unlitMaterialLayoutDescriptor: GPUBindGroupLayoutDescriptor = {
+      entries: [
+        // binding 0: material uniforms (color, etc.)
+        {
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: { type: 'uniform' },
+        },
+        // binding 1: alpha texture
+        {
+          binding: 1,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: { sampleType: 'float' },
+        },
+        // binding 2: sampler for color textures
+        {
+          binding: 2,
+          visibility: GPUShaderStage.FRAGMENT,
+          sampler: { type: 'filtering' },
+        },
+      ],
+    };
+
+    this.materialLayoutRepository.set('unlit', unlitMaterialLayoutDescriptor);
   }
 
   getMaterialLayoutDescriptor(materialType: MaterialType): GPUBindGroupLayoutDescriptor | undefined {
