@@ -58,16 +58,19 @@ if (container) {
 
   // Create a material
   const material = new LambertMaterial({
-    color: [1, 0, 1, 1],
+    color: [1, 0, 1, 0.9],
+    transparent: true,
   });
 
   // Create a second material with a different color
   const materialTwo = new LambertMaterial({
-    color: [0, 1, 1, 1],
+    color: [0, 1, 1, 0.1],
+    transparent: true,
   });
 
   const unlitMaterial = new UnlitMaterial({
-    color: [1, 1, 0, 1],
+    color: [1, 1, 0, 0.2],
+    transparent: true,
   });
 
   // Create meshes

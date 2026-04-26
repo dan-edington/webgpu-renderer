@@ -7,6 +7,7 @@ type LambertMaterialOptions = {
   color?: ArrayLike<number>;
   albedoTexture?: Texture | null;
   normalTexture?: Texture | null;
+  transparent?: boolean;
 };
 
 class LambertMaterial extends Material {
@@ -24,6 +25,7 @@ class LambertMaterial extends Material {
       uniforms: {
         uColor: { type: 'vec4<f32>', value: color },
       },
+      transparent: options.transparent ?? false,
     });
 
     this._color = color;

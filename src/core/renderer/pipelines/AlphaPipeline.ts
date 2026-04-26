@@ -4,18 +4,18 @@ import { Material } from '../../materials/Material';
 import { Renderer } from '../Renderer';
 import { Pipeline } from './Pipeline';
 
-type OpaquePipelineOptions = {
+type AlphaPipelineOptions = {
   renderer: Renderer;
   material: Material;
   geometry: Geometry;
 };
 
-class OpaquePipeline extends Pipeline {
+class AlphaPipeline extends Pipeline {
   constructor() {
     super();
   }
 
-  static createPipeline(options: OpaquePipelineOptions): GPURenderPipeline {
+  static createPipeline(options: AlphaPipelineOptions): GPURenderPipeline {
     const { renderer, material, geometry } = options;
 
     if (!renderer.depthTexture) throw new Error(errorMessages.missingDepthTexture);
@@ -37,7 +37,7 @@ class OpaquePipeline extends Pipeline {
     });
 
     const pipelineDescriptor: GPURenderPipelineDescriptor = {
-      label: `OpaquePipeline_${material.type}`,
+      label: `AlphaPipeline_${material.type}`,
       layout: pipelineLayout,
       vertex: {
         module: material.shaderModule,
@@ -71,6 +71,18 @@ class OpaquePipeline extends Pipeline {
         targets: [
           {
             format: renderer.presentationFormat,
+            blend: {
+              color: {
+                srcFactor: 'src-alpha',
+                dstFactor: 'one-minus-src-alpha',
+                operation: 'add',
+              },
+              alpha: {
+                srcFactor: 'one',
+                dstFactor: 'one-minus-src-alpha',
+                operation: 'add',
+              },
+            },
           },
         ],
       },
@@ -80,7 +92,7 @@ class OpaquePipeline extends Pipeline {
       },
       depthStencil: {
         format: renderer.depthTexture.format,
-        depthWriteEnabled: true,
+        depthWriteEnabled: false,
         depthCompare: 'less',
       },
     };
@@ -91,4 +103,4 @@ class OpaquePipeline extends Pipeline {
   }
 }
 
-export { OpaquePipeline };
+export { AlphaPipeline };

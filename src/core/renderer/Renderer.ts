@@ -16,6 +16,7 @@ import { cameraBindGroupLayoutDescriptor } from './bindGroupLayouts/camera';
 import { sceneBindGroupLayoutDescriptor } from './bindGroupLayouts/scene';
 import { entityBindGroupLayoutDescriptor } from './bindGroupLayouts/entity';
 import { materialBindGroupLayoutDescriptors } from './bindGroupLayouts/materials';
+import { AlphaPipeline } from './pipelines/AlphaPipeline';
 
 interface IRenderer {
   canvasManager: CanvasManager;
@@ -122,6 +123,7 @@ class Renderer implements IRenderer {
   private configurePipelines() {
     this.pipelineLibrary = new PipelineLibrary();
     this.pipelineLibrary.registerPipeline('opaque', OpaquePipeline);
+    this.pipelineLibrary.registerPipeline('alpha', AlphaPipeline);
   }
 
   private configurePasses() {

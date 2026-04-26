@@ -47,7 +47,7 @@ class Mesh extends Entity implements IMesh {
   }
 
   private createRenderPipeline(renderer: Renderer) {
-    const pipelineName = this.material.transparent ? 'transparent' : 'opaque';
+    const pipelineName = this.material.transparent ? 'alpha' : 'opaque';
     const Pipeline = renderer.pipelineLibrary?.getPipeline(pipelineName);
     if (!Pipeline) throw new Error(errorMessages.missingPipeline);
 

@@ -41,8 +41,17 @@ class RenderPass extends Pass {
     pass.setBindGroup(constants.bindGroupIndices.CAMERA, camera.cameraBindGroup);
     pass.setBindGroup(constants.bindGroupIndices.SCENE, scene.sceneUniformsBindGroup);
 
-    scene.renderList.forEach((entity) => {
-      if (entity instanceof Mesh && !entity.material.transparent) {
+    const opaqueEntities = scene.renderList.filter((entity) => entity instanceof Mesh && !entity.material.transparent);
+    const alphaEntities = scene.renderList.filter((entity) => entity instanceof Mesh && entity.material.transparent);
+
+    opaqueEntities.forEach((entity) => {
+      if (entity instanceof Mesh) {
+        entity.draw(pass, this.rendererInstance);
+      }
+    });
+
+    alphaEntities.forEach((entity) => {
+      if (entity instanceof Mesh) {
         entity.draw(pass, this.rendererInstance);
       }
     });

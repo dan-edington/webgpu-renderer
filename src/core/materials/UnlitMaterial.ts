@@ -6,6 +6,7 @@ type UnlitMaterialOptions = {
   name?: string;
   color?: ArrayLike<number>;
   alphaTexture?: Texture | null;
+  transparent?: boolean;
 };
 
 class UnlitMaterial extends Material {
@@ -22,6 +23,7 @@ class UnlitMaterial extends Material {
       uniforms: {
         uColor: { type: 'vec4<f32>', value: color },
       },
+      transparent: options.transparent ?? false,
     });
 
     this._color = color;
