@@ -121,8 +121,15 @@ abstract class Material implements IMaterial {
 
   protected createMaterialBindGroup(renderer: Renderer) {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
+    if (!renderer.materialBindGroupLayouts) throw new Error('Renderer material bind group layouts are missing.');
 
-    const materialBindGroupLayout = renderer.getMaterialBindGroupLayout(this.type);
+    const materialBindGroupLayout = renderer.materialBindGroupLayouts.get(this.type);
+
+    if (!materialBindGroupLayout)
+      throw new Error(
+        `No bind group layout found for material type '${this.type}'. Ensure the renderer has a bind group layout for this material type.`,
+      );
+
     const entries = this.getBindGroupEntries(renderer);
 
     if (entries.length > 0) {

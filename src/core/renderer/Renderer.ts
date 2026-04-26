@@ -1,6 +1,5 @@
 import type { MaterialType } from '../types';
 import { PerspectiveCamera } from '../PerspectiveCamera';
-import { MaterialLayoutLibrary } from '../materials/libraries/MaterialLayoutLibrary';
 import { TextureLibrary } from './libraries/TextureLibrary';
 import { SamplerLibrary } from './libraries/SamplerLibrary';
 import { ShaderLibrary } from './libraries/ShaderLibrary';
@@ -13,6 +12,10 @@ import { PassManager } from './PassManager';
 import { RenderPass } from './passes/RenderPass';
 import { PipelineLibrary } from './libraries/PipelineLibrary';
 import { OpaquePipeline } from './pipelines/OpaquePipeline';
+import { cameraBindGroupLayoutDescriptor } from './bindGroupLayouts/camera';
+import { sceneBindGroupLayoutDescriptor } from './bindGroupLayouts/scene';
+import { entityBindGroupLayoutDescriptor } from './bindGroupLayouts/entity';
+import { materialBindGroupLayoutDescriptors } from './bindGroupLayouts/materials';
 
 interface IRenderer {
   canvasManager: CanvasManager;
@@ -31,15 +34,14 @@ interface IRenderer {
   sceneBindGroupLayout: GPUBindGroupLayout | null;
   materialBindGroupLayout: GPUBindGroupLayout | null;
   entityBindGroupLayout: GPUBindGroupLayout | null;
+  materialBindGroupLayouts: Map<MaterialType, GPUBindGroupLayout> | null;
   meshPipelineLayout: GPUPipelineLayout | null;
-  materialLayoutLibrary: MaterialLayoutLibrary;
   textureLibrary: TextureLibrary | null;
   samplerLibrary: SamplerLibrary | null;
   shaderLibrary: ShaderLibrary | null;
   depthTexture: DepthTexture | null;
   passManager: PassManager | null;
   init(): Promise<void>;
-  getMaterialBindGroupLayout(materialType: MaterialType): GPUBindGroupLayout;
   render(scene: Scene, camera: PerspectiveCamera): void;
 }
 
@@ -66,20 +68,18 @@ class Renderer implements IRenderer {
   sceneBindGroupLayout: GPUBindGroupLayout | null = null;
   materialBindGroupLayout: GPUBindGroupLayout | null = null;
   entityBindGroupLayout: GPUBindGroupLayout | null = null;
+  materialBindGroupLayouts: Map<MaterialType, GPUBindGroupLayout> | null = null;
   meshPipelineLayout: GPUPipelineLayout | null = null;
-  materialLayoutLibrary: MaterialLayoutLibrary;
   depthTexture: DepthTexture | null = null;
   textureLibrary: TextureLibrary | null = null;
   samplerLibrary: SamplerLibrary | null = null;
   shaderLibrary: ShaderLibrary | null = null;
   pipelineLibrary: PipelineLibrary | null = null;
   passManager: PassManager | null = null;
-  private materialBindGroupLayoutCache: Map<MaterialType, GPUBindGroupLayout> = new Map();
 
   constructor(options: RendererOptions) {
     this.dpr = options.dpr ?? window.devicePixelRatio;
     this.alpha = options.alpha ?? true;
-    this.materialLayoutLibrary = new MaterialLayoutLibrary();
     this.canvasManager = new CanvasManager({ renderer: this, containerElement: options.containerElement });
     this.contextManager = new ContextManager({
       canvasElement: this.canvasManager.canvasElement,
@@ -100,7 +100,7 @@ class Renderer implements IRenderer {
     this.textureLibrary = new TextureLibrary(this);
     this.shaderLibrary = new ShaderLibrary();
 
-    this.createCameraSceneEntityBindGroupLayouts();
+    this.createBindGroupLayouts();
 
     this.canvasManager.updateCanvasSize();
 
@@ -124,43 +124,17 @@ class Renderer implements IRenderer {
     this.passManager.registerPass('render', RenderPass);
   }
 
-  private createCameraSceneEntityBindGroupLayouts() {
+  private createBindGroupLayouts() {
     if (!this.device) throw new Error(errorMessages.missingDevice);
+    this.cameraBindGroupLayout = this.device.createBindGroupLayout(cameraBindGroupLayoutDescriptor);
+    this.sceneBindGroupLayout = this.device.createBindGroupLayout(sceneBindGroupLayoutDescriptor);
+    this.entityBindGroupLayout = this.device.createBindGroupLayout(entityBindGroupLayoutDescriptor);
+    this.materialBindGroupLayouts = new Map<MaterialType, GPUBindGroupLayout>();
 
-    this.cameraBindGroupLayout = this.device.createBindGroupLayout({
-      entries: [
-        {
-          binding: 0,
-          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          buffer: { type: 'uniform' },
-        },
-      ],
-    });
-
-    this.sceneBindGroupLayout = this.device.createBindGroupLayout({
-      entries: [
-        {
-          binding: 0,
-          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          buffer: { type: 'uniform' },
-        },
-        {
-          binding: 1,
-          visibility: GPUShaderStage.FRAGMENT,
-          buffer: { type: 'read-only-storage' },
-        },
-      ],
-    });
-
-    this.entityBindGroupLayout = this.device.createBindGroupLayout({
-      entries: [
-        {
-          binding: 0,
-          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          buffer: { type: 'uniform' },
-        },
-      ],
-    });
+    for (const [materialType, layoutDescriptor] of materialBindGroupLayoutDescriptors.entries()) {
+      const layout = this.device.createBindGroupLayout(layoutDescriptor);
+      this.materialBindGroupLayouts.set(materialType, layout);
+    }
   }
 
   private updateTimersAndFrameCounter() {
@@ -190,21 +164,6 @@ class Renderer implements IRenderer {
     scene.sceneUniformsBuffer.writeUpdatedBufferData();
     scene.lightUniformsBuffer.writeUpdatedBufferData();
     camera.cameraUniformBuffer.writeUpdatedBufferData();
-  }
-
-  getMaterialBindGroupLayout(materialType: MaterialType): GPUBindGroupLayout {
-    if (!this.device) throw new Error(errorMessages.missingDevice);
-
-    const cachedLayout = this.materialBindGroupLayoutCache.get(materialType);
-    if (cachedLayout) return cachedLayout;
-
-    const layoutDescriptor = this.materialLayoutLibrary.getMaterialLayoutDescriptor(materialType);
-    if (!layoutDescriptor) throw new Error(`No material layout descriptor registered for '${materialType}'.`);
-
-    const layout = this.device.createBindGroupLayout(layoutDescriptor);
-    this.materialBindGroupLayoutCache.set(materialType, layout);
-
-    return layout;
   }
 
   render(scene: Scene, camera: PerspectiveCamera) {

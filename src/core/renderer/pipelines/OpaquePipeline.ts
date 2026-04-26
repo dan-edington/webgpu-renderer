@@ -20,12 +20,17 @@ class OpaquePipeline extends Pipeline {
     if (!renderer.device || !renderer.depthTexture || !renderer.presentationFormat)
       throw new Error('Renderer device is not initialized.');
     if (!material.shaderModule) throw new Error('Material shader module is not initialized.');
-
+    if (!renderer.materialBindGroupLayouts) throw new Error('Renderer material bind group layouts are missing.');
+    const materialBindGroupLayout = renderer.materialBindGroupLayouts.get(material.type);
+    if (!materialBindGroupLayout)
+      throw new Error(
+        `No bind group layout found for material type '${material.type}'. Ensure the renderer has a bind group layout for this material type.`,
+      );
     const pipelineLayout = renderer.device.createPipelineLayout({
       bindGroupLayouts: [
         renderer.cameraBindGroupLayout,
         renderer.sceneBindGroupLayout,
-        renderer.getMaterialBindGroupLayout(material.type),
+        materialBindGroupLayout,
         renderer.entityBindGroupLayout,
       ],
     });
