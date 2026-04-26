@@ -6,14 +6,13 @@ Currently supports:
 
 - Scene graph
 - Perspective camera
-- Depth writing (alpha is WIP)
 - Indexed and non indexed geometry
 - Lambertian material
 - Unlit material
 - Normal material
+- Sorted alpha blending
 - Point lights
 - Ambient light
 - Texture resource handling
-- Sorted alpha blending
 
 Full documentation to come.
