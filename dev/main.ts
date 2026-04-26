@@ -14,8 +14,7 @@ const container = document.getElementById('app');
 
 if (container) {
   // Create and init the renderer
-  const renderer = new Renderer({ containerElement: container });
-  await renderer.init();
+  const renderer = await Renderer.create({ containerElement: container, alpha: true });
 
   // Create a scene
   const scene = new Scene();

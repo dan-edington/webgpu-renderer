@@ -2,24 +2,24 @@ import { errorMessages } from '../constants/errorMessages';
 import { Renderer } from './Renderer';
 
 interface ICanvasManager {
-  rendererInstance: Renderer;
+  rendererInstance: Renderer | null;
   canvasElement: HTMLCanvasElement;
   containerElement: HTMLElement;
   updateCanvasSize(): void;
 }
 
 type CanvasManagerOptions = {
-  renderer: Renderer;
+  renderer?: Renderer;
   containerElement?: HTMLElement;
 };
 
 class CanvasManager implements ICanvasManager {
-  rendererInstance: Renderer;
+  rendererInstance: Renderer | null = null;
   containerElement: HTMLElement;
   canvasElement: HTMLCanvasElement;
 
   constructor(options: CanvasManagerOptions) {
-    this.rendererInstance = options.renderer;
+    this.rendererInstance = options.renderer ?? null;
     this.containerElement = options.containerElement ?? document.body;
 
     if (this.containerElement instanceof HTMLElement) {
@@ -34,6 +34,7 @@ class CanvasManager implements ICanvasManager {
 
   updateCanvasSize() {
     if (!this.canvasElement) throw new Error(errorMessages.missingCanvasElement);
+    if (!this.rendererInstance) throw new Error(errorMessages.missingRendererInstance);
 
     this.canvasElement.width = Math.floor(this.containerElement.clientWidth * this.rendererInstance.dpr);
     this.canvasElement.height = Math.floor(this.containerElement.clientHeight * this.rendererInstance.dpr);

@@ -1,4 +1,3 @@
-import { errorMessages } from './constants/errorMessages';
 import { Renderer } from './renderer/Renderer';
 import { uuid } from './types';
 import { padArrayToAlignmentBytes } from './utilities/padArrayToAlignmentBytes';
@@ -61,8 +60,6 @@ class Geometry implements IGeometry {
   }
 
   protected createBuffers(renderer: Renderer) {
-    if (!renderer.device) throw new Error(errorMessages.missingDevice);
-
     this.vertexBuffer = renderer.device.createBuffer({
       size: this.vertices.byteLength,
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,

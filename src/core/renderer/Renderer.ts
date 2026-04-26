@@ -22,10 +22,10 @@ interface IRenderer {
   contextManager: ContextManager;
   dpr: number;
   alpha: boolean;
-  context: GPUCanvasContext | null;
-  adapter: GPUAdapter | null;
-  device: GPUDevice | null;
-  presentationFormat: GPUTextureFormat | null;
+  context: GPUCanvasContext;
+  adapter: GPUAdapter;
+  device: GPUDevice;
+  presentationFormat: GPUTextureFormat;
   currentFrame: number;
   elapsedTime: number;
   previousTime: number;
@@ -56,10 +56,10 @@ class Renderer implements IRenderer {
   contextManager: ContextManager;
   dpr: number;
   alpha: boolean;
-  context: GPUCanvasContext | null = null;
-  adapter: GPUAdapter | null = null;
-  device: GPUDevice | null = null;
-  presentationFormat: GPUTextureFormat | null = null;
+  context: GPUCanvasContext;
+  adapter: GPUAdapter;
+  device: GPUDevice;
+  presentationFormat: GPUTextureFormat;
   currentFrame: number = 0;
   elapsedTime: number = 0;
   previousTime: number = 0;
@@ -77,25 +77,31 @@ class Renderer implements IRenderer {
   pipelineLibrary: PipelineLibrary | null = null;
   passManager: PassManager | null = null;
 
-  constructor(options: RendererOptions) {
+  private constructor(options: RendererOptions, canvasManager: CanvasManager, contextManager: ContextManager) {
     this.dpr = options.dpr ?? window.devicePixelRatio;
     this.alpha = options.alpha ?? true;
-    this.canvasManager = new CanvasManager({ renderer: this, containerElement: options.containerElement });
-    this.contextManager = new ContextManager({
-      canvasElement: this.canvasManager.canvasElement,
-      alpha: this.alpha,
-    });
-  }
-
-  async init() {
-    await this.contextManager.init();
+    this.canvasManager = canvasManager;
+    this.canvasManager.rendererInstance = this;
+    this.contextManager = contextManager;
     this.context = this.contextManager.context;
     this.adapter = this.contextManager.adapter;
     this.device = this.contextManager.device;
     this.presentationFormat = this.contextManager.presentationFormat;
+    console.log(this);
+  }
 
-    if (!this.device) throw new Error(errorMessages.missingDevice);
+  static async create(options: RendererOptions): Promise<Renderer> {
+    const canvasManager = new CanvasManager({ containerElement: options.containerElement });
+    const contextManager = await ContextManager.create({
+      canvasElement: canvasManager.canvasElement,
+      alpha: options.alpha ?? false,
+    });
+    const renderer = new Renderer(options, canvasManager, contextManager);
+    renderer.init();
+    return renderer;
+  }
 
+  async init() {
     this.samplerLibrary = new SamplerLibrary(this.device);
     this.textureLibrary = new TextureLibrary(this);
     this.shaderLibrary = new ShaderLibrary();

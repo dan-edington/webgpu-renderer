@@ -7,6 +7,8 @@ const errorMessages = {
   missingDevice: 'Renderer device is missing. Ensure the renderer is initialized before calling this method.',
   missingContext: 'WebGPU context is missing. Ensure the renderer is initialized before calling this method.',
   missingCanvasElement: 'Canvas element is missing. Ensure the renderer is initialized before calling this method.',
+  missingRendererInstance:
+    'Renderer instance is missing. Ensure the renderer is initialized before calling this method.',
   missingPipeline: 'Render pipeline is missing. Ensure the mesh is initialized before rendering.',
   missingCameraBuffer:
     'Camera uniform buffer is missing. Ensure the renderer is initialized before creating camera bind groups.',

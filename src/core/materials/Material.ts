@@ -74,8 +74,6 @@ abstract class Material implements IMaterial {
   init(renderer: Renderer) {
     if (this.isInitialized) return;
 
-    if (!renderer.device) throw new Error(errorMessages.missingDevice);
-
     this.rendererInstance = renderer;
 
     this.createShaderModule(renderer.device);
@@ -119,7 +117,6 @@ abstract class Material implements IMaterial {
   }
 
   protected createMaterialBindGroup(renderer: Renderer) {
-    if (!renderer.device) throw new Error(errorMessages.missingDevice);
     if (!renderer.materialBindGroupLayouts) throw new Error(errorMessages.missingRendererMaterialBindGroupLayouts);
 
     const materialBindGroupLayout = renderer.materialBindGroupLayouts.get(this.type);

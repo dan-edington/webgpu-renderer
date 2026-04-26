@@ -102,7 +102,6 @@ class PerspectiveCamera extends Entity implements IPerspectiveCamera {
   }
 
   private createCameraBindGroup(renderer: Renderer) {
-    if (!renderer.device) throw new Error(errorMessages.missingDevice);
     if (!renderer.cameraBindGroupLayout) throw new Error(errorMessages.missingCameraBufferLayout);
     if (!this.cameraUniformBuffer?.buffer) throw new Error(errorMessages.missingCameraBuffer);
 

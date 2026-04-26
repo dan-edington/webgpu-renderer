@@ -35,7 +35,7 @@ class Mesh extends Entity implements IMesh {
   init(renderer: Renderer) {
     this.geometry.init(renderer);
     this.material.init(renderer);
-    this.createEntityBuffer(renderer);
+    this.createEntityBuffer();
     this.createRenderPipeline(renderer);
 
     if (this.entityBuffer) {
@@ -47,7 +47,6 @@ class Mesh extends Entity implements IMesh {
   }
 
   private createRenderPipeline(renderer: Renderer) {
-    if (!renderer.device) throw new Error(errorMessages.missingDevice);
     const pipelineName = this.material.transparent ? 'transparent' : 'opaque';
     const Pipeline = renderer.pipelineLibrary?.getPipeline(pipelineName);
     if (!Pipeline) throw new Error(errorMessages.missingPipeline);
@@ -59,16 +58,13 @@ class Mesh extends Entity implements IMesh {
     });
   }
 
-  private createEntityBuffer(renderer: Renderer) {
-    if (!renderer.device) throw new Error(errorMessages.missingDevice);
-
+  private createEntityBuffer() {
     this.entityBuffer = new UniformBuffer({
       modelMatrix: { type: 'mat4x4<f32>', value: this.matrixWorld },
     });
   }
 
   private createEntityBindGroup(renderer: Renderer) {
-    if (!renderer.device) throw new Error(errorMessages.missingDevice);
     if (!renderer.entityBindGroupLayout) throw new Error(errorMessages.missingEntityBindGroupLayout);
 
     if (this.entityBuffer?.buffer && this.pipeline) {

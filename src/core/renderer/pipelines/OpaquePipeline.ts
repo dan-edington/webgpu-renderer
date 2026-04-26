@@ -18,13 +18,15 @@ class OpaquePipeline extends Pipeline {
   static createPipeline(options: OpaquePipelineOptions): GPURenderPipeline {
     const { renderer, material, geometry } = options;
 
-    if (!renderer.device || !renderer.depthTexture || !renderer.presentationFormat)
-      throw new Error('Renderer device is not initialized.');
+    if (!renderer.depthTexture) throw new Error(errorMessages.missingDepthTexture);
     if (!material.shaderModule) throw new Error(errorMessages.missingMaterialShaderModule);
     if (!renderer.materialBindGroupLayouts) throw new Error(errorMessages.missingRendererMaterialBindGroupLayouts);
+
     const materialBindGroupLayout = renderer.materialBindGroupLayouts.get(material.type);
+
     if (!materialBindGroupLayout)
       throw new Error(`${errorMessages.missingMaterialTypeBindGroupLayout} Material type: '${material.type}'.`);
+
     const pipelineLayout = renderer.device.createPipelineLayout({
       bindGroupLayouts: [
         renderer.cameraBindGroupLayout,

@@ -115,7 +115,6 @@ class Scene extends Entity implements IScene {
   }
 
   createSceneUniformsBindGroup(renderer: Renderer) {
-    if (!renderer.device) throw new Error(errorMessages.missingDevice);
     if (!renderer.sceneBindGroupLayout) throw new Error(errorMessages.missingSceneBindGroupLayout);
 
     if (this.sceneUniformsBuffer?.buffer && this.lightUniformsBuffer?.buffer) {
