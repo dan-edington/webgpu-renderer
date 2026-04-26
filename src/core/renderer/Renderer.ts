@@ -87,7 +87,6 @@ class Renderer implements IRenderer {
     this.adapter = this.contextManager.adapter;
     this.device = this.contextManager.device;
     this.presentationFormat = this.contextManager.presentationFormat;
-    console.log(this);
   }
 
   static async create(options: RendererOptions): Promise<Renderer> {
