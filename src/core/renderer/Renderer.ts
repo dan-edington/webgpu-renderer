@@ -170,7 +170,7 @@ class Renderer implements IRenderer {
     this.updateFrameTimers();
     this.synchronizeSceneAndCamera(scene, camera);
 
-    if (!this.passManager) throw new Error('PassManager not initialized.');
+    if (!this.passManager) throw new Error(errorMessages.missingPassManager);
     if (!this.device) throw new Error(errorMessages.missingDevice);
 
     const commandEncoder = this.device.createCommandEncoder();

@@ -58,7 +58,7 @@ class SamplerLibrary {
   }
 
   createSampler(key: SamplerDescriptorKey, config: SamplerConfig): GPUSampler {
-    if (!this.device) throw new Error('SamplerLibrary device not initialized');
+    if (!this.device) throw new Error(errorMessages.missingSamplerLibraryDevice);
 
     if (this.samplers.has(key)) throw new Error(`Sampler with key "${key}" already exists in the library`);
 

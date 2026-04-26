@@ -1,4 +1,5 @@
 import { Texture } from '../../Texture';
+import { errorMessages } from '../../constants/errorMessages';
 import { Renderer } from '../../renderer/Renderer';
 import { TextureKey } from '../../types';
 
@@ -21,7 +22,7 @@ class TextureLibrary {
 
   private initializeFallbackTextures(): void {
     if (!this.device || !this.queue) {
-      throw new Error('Device or queue not available in TextureLibrary');
+      throw new Error(errorMessages.missingTextureLibraryDeviceOrQueue);
     }
 
     this.fallbackTextures = {
@@ -45,7 +46,7 @@ class TextureLibrary {
       const imageBitmap = await createImageBitmap(blob);
 
       if (!this.device || !this.queue) {
-        throw new Error('Device or queue not available');
+        throw new Error(errorMessages.missingTextureLibraryDeviceOrQueue);
       }
 
       const texture = Texture.fromImageBitmap(imageBitmap, this.device, this.queue);
@@ -62,7 +63,7 @@ class TextureLibrary {
   }
 
   getFallback(textureName: 'white' | 'black' | 'normal'): Texture {
-    if (!this.fallbackTextures) throw new Error('Fallback textures not initialized');
+    if (!this.fallbackTextures) throw new Error(errorMessages.missingTextureLibraryFallbacks);
     return this.fallbackTextures[textureName];
   }
 

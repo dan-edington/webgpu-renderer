@@ -1,4 +1,5 @@
 import { Geometry } from '../../Geometry';
+import { errorMessages } from '../../constants/errorMessages';
 import { Material } from '../../materials/Material';
 import { Renderer } from '../Renderer';
 import { Pipeline } from './Pipeline';
@@ -19,13 +20,11 @@ class OpaquePipeline extends Pipeline {
 
     if (!renderer.device || !renderer.depthTexture || !renderer.presentationFormat)
       throw new Error('Renderer device is not initialized.');
-    if (!material.shaderModule) throw new Error('Material shader module is not initialized.');
-    if (!renderer.materialBindGroupLayouts) throw new Error('Renderer material bind group layouts are missing.');
+    if (!material.shaderModule) throw new Error(errorMessages.missingMaterialShaderModule);
+    if (!renderer.materialBindGroupLayouts) throw new Error(errorMessages.missingRendererMaterialBindGroupLayouts);
     const materialBindGroupLayout = renderer.materialBindGroupLayouts.get(material.type);
     if (!materialBindGroupLayout)
-      throw new Error(
-        `No bind group layout found for material type '${material.type}'. Ensure the renderer has a bind group layout for this material type.`,
-      );
+      throw new Error(`${errorMessages.missingMaterialTypeBindGroupLayout} Material type: '${material.type}'.`);
     const pipelineLayout = renderer.device.createPipelineLayout({
       bindGroupLayouts: [
         renderer.cameraBindGroupLayout,

@@ -100,8 +100,7 @@ abstract class Material implements IMaterial {
   }
 
   private createShaderModule(device: GPUDevice) {
-    if (!this.rendererInstance?.shaderLibrary)
-      throw new Error('Shader library is missing. Ensure the renderer is initialized before initializing materials.');
+    if (!this.rendererInstance?.shaderLibrary) throw new Error(errorMessages.missingShaderLibrary);
     const shaderCode = this.rendererInstance.shaderLibrary.getShader(this.shader);
     if (!shaderCode)
       throw new Error(
@@ -121,14 +120,12 @@ abstract class Material implements IMaterial {
 
   protected createMaterialBindGroup(renderer: Renderer) {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
-    if (!renderer.materialBindGroupLayouts) throw new Error('Renderer material bind group layouts are missing.');
+    if (!renderer.materialBindGroupLayouts) throw new Error(errorMessages.missingRendererMaterialBindGroupLayouts);
 
     const materialBindGroupLayout = renderer.materialBindGroupLayouts.get(this.type);
 
     if (!materialBindGroupLayout)
-      throw new Error(
-        `No bind group layout found for material type '${this.type}'. Ensure the renderer has a bind group layout for this material type.`,
-      );
+      throw new Error(`${errorMessages.missingMaterialTypeBindGroupLayout} Material type: '${this.type}'.`);
 
     const entries = this.getBindGroupEntries(renderer);
 

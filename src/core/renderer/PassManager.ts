@@ -1,5 +1,6 @@
 import { PerspectiveCamera } from '../PerspectiveCamera';
 import { Scene } from '../Scene';
+import { errorMessages } from '../constants/errorMessages';
 import { Pass, PassOptions } from './passes/Pass';
 import { Renderer } from './Renderer';
 
@@ -30,9 +31,9 @@ class PassManager {
   runPass(name: string, commandEncoder: GPUCommandEncoder) {
     const pass = this.passes.get(name);
 
-    if (!pass) throw new Error(`Pass with name "${name}" not found in PassManager.`);
-    if (!this.scene) throw new Error('Scene not set in PassManager.');
-    if (!this.camera) throw new Error('Camera not set in PassManager.');
+    if (!pass) throw new Error(`${errorMessages.missingPass} Pass name: "${name}".`);
+    if (!this.scene) throw new Error(errorMessages.missingPassScene);
+    if (!this.camera) throw new Error(errorMessages.missingPassCamera);
 
     pass.runPass(commandEncoder, this.scene, this.camera);
   }

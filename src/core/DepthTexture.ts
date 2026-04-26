@@ -26,11 +26,11 @@ class DepthTexture implements IDepthTexture {
   depthTextureView: GPUTextureView | null = null;
   rendererInstance: Renderer | null = null;
 
-  constructor(depthTextureOption: DepthTextureOptions) {
-    this.width = depthTextureOption.width ?? 1;
-    this.height = depthTextureOption.height ?? 1;
-    this.format = depthTextureOption.format ?? 'depth24plus';
-    this.rendererInstance = depthTextureOption.renderer;
+  constructor(depthTextureOptions: DepthTextureOptions) {
+    this.width = depthTextureOptions.width ?? 1;
+    this.height = depthTextureOptions.height ?? 1;
+    this.format = depthTextureOptions.format ?? 'depth24plus';
+    this.rendererInstance = depthTextureOptions.renderer;
     this.createDepthTexture();
   }
 
