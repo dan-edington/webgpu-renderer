@@ -18,11 +18,11 @@ class ShaderLibrary {
   constructor() {
     this.shaders = new Map();
     this.includeCache = new Map();
-    this.generateIncludeCache();
-    this.generateShaders();
+    this.buildIncludeCache();
+    this.buildShaderCache();
   }
 
-  private generateIncludeCache() {
+  private buildIncludeCache() {
     const basePath = '../../materials/shaders/includes/';
 
     for (const key in shaderIncludes) {
@@ -40,7 +40,7 @@ class ShaderLibrary {
     });
   }
 
-  private generateShaders() {
+  private buildShaderCache() {
     const basePath = '../../materials/shaders/';
 
     for (const key in shaders) {

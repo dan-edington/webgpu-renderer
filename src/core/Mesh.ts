@@ -36,17 +36,17 @@ class Mesh extends Entity implements IMesh {
     this.geometry.init(renderer);
     this.material.init(renderer);
     this.createEntityBuffer(renderer);
-    this.createPipeline(renderer);
+    this.createRenderPipeline(renderer);
 
     if (this.entityBuffer) {
       this.entityBuffer.init(renderer);
-      this.createEntityBufferBindGroup(renderer);
+      this.createEntityBindGroup(renderer);
     }
 
     this.isInitialized = true;
   }
 
-  private createPipeline(renderer: Renderer) {
+  private createRenderPipeline(renderer: Renderer) {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
     const pipelineName = this.material.transparent ? 'transparent' : 'opaque';
     const Pipeline = renderer.pipelineLibrary?.getPipeline(pipelineName);
@@ -67,7 +67,7 @@ class Mesh extends Entity implements IMesh {
     });
   }
 
-  private createEntityBufferBindGroup(renderer: Renderer) {
+  private createEntityBindGroup(renderer: Renderer) {
     if (!renderer.device) throw new Error(errorMessages.missingDevice);
     if (!renderer.entityBindGroupLayout) throw new Error(errorMessages.missingEntityBindGroupLayout);
 

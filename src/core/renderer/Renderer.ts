@@ -100,7 +100,7 @@ class Renderer implements IRenderer {
     this.textureLibrary = new TextureLibrary(this);
     this.shaderLibrary = new ShaderLibrary();
 
-    this.createBindGroupLayouts();
+    this.initializeBindGroupLayouts();
 
     this.canvasManager.updateCanvasSize();
 
@@ -124,7 +124,7 @@ class Renderer implements IRenderer {
     this.passManager.registerPass('render', RenderPass);
   }
 
-  private createBindGroupLayouts() {
+  private initializeBindGroupLayouts() {
     if (!this.device) throw new Error(errorMessages.missingDevice);
     this.cameraBindGroupLayout = this.device.createBindGroupLayout(cameraBindGroupLayoutDescriptor);
     this.sceneBindGroupLayout = this.device.createBindGroupLayout(sceneBindGroupLayoutDescriptor);
@@ -137,7 +137,7 @@ class Renderer implements IRenderer {
     }
   }
 
-  private updateTimersAndFrameCounter() {
+  private updateFrameTimers() {
     this.currentFrame++;
     const currentTime = performance.now();
 
@@ -150,7 +150,7 @@ class Renderer implements IRenderer {
     this.previousTime = currentTime;
   }
 
-  private updateSceneAndCamera(scene: Scene, camera: PerspectiveCamera) {
+  private synchronizeSceneAndCamera(scene: Scene, camera: PerspectiveCamera) {
     if (!scene.isInitialized) scene.init(this);
     if (!camera.isInitialized) camera.init(this);
 
@@ -167,8 +167,8 @@ class Renderer implements IRenderer {
   }
 
   render(scene: Scene, camera: PerspectiveCamera) {
-    this.updateTimersAndFrameCounter();
-    this.updateSceneAndCamera(scene, camera);
+    this.updateFrameTimers();
+    this.synchronizeSceneAndCamera(scene, camera);
 
     if (!this.passManager) throw new Error('PassManager not initialized.');
     if (!this.device) throw new Error(errorMessages.missingDevice);

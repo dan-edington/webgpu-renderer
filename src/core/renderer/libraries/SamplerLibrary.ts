@@ -16,10 +16,10 @@ class SamplerLibrary {
 
   constructor(device: GPUDevice) {
     this.device = device;
-    this.initializeDefaultSamplers();
+    this.createDefaultSamplers();
   }
 
-  private initializeDefaultSamplers() {
+  private createDefaultSamplers() {
     if (!this.device) throw new Error(errorMessages.missingDevice);
 
     // Linear interpolation, repeat wrapping

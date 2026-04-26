@@ -189,7 +189,7 @@ class Scene extends Entity implements IScene {
     }
   }
 
-  populateLightsArray() {
+  rebuildLightsArray() {
     this.lights = [];
 
     const traverse = (entity: Entity) => {
@@ -214,7 +214,7 @@ class Scene extends Entity implements IScene {
         return;
       }
 
-      this.populateLightsArray();
+      this.rebuildLightsArray();
       this.createLightUniformsBuffer();
       this.lightUniformsBuffer?.init(this.rendererInstance);
       this.createSceneUniformsBindGroup(this.rendererInstance);
