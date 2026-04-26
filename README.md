@@ -14,5 +14,6 @@ Currently supports:
 - Point lights
 - Ambient light
 - Texture resource handling
+- Sorted alpha blending
 
 Full documentation to come.
