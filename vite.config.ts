@@ -7,6 +7,7 @@ export default defineConfig((configEnv) => {
 
   return {
     root: isDev ? resolve(__dirname, 'dev') : undefined,
+    publicDir: resolve(__dirname, 'dev/public'),
     server: {
       open: 'index.html',
     },
