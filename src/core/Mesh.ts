@@ -94,6 +94,7 @@ class Mesh extends Entity implements IMesh {
 
     pass.setVertexBuffer(0, this.geometry.vertexBuffer);
     pass.setVertexBuffer(1, this.geometry.normalBuffer);
+    pass.setVertexBuffer(2, this.geometry.uvBuffer);
 
     if (this.material.materialUniformsBuffer) {
       this.material.materialUniformsBuffer.writeUpdatedBufferData();

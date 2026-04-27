@@ -16,12 +16,14 @@ struct VertexOutput {
   @builtin(position) position: vec4f,
   @location(0) worldPosition: vec3f,
   @location(1) normal: vec3f,
+  @location(2) uvs: vec3f,
 };
 
 @vertex
 fn vertex_shader(
   @location(0) pos: vec3<f32>,
-  @location(1) normal: vec3<f32>
+  @location(1) normal: vec3<f32>,
+  @location(2) uvs: vec3<f32>,
 ) -> VertexOutput {
 
   var out: VertexOutput;
@@ -29,6 +31,7 @@ fn vertex_shader(
   out.position = cameraUniforms.viewProjectionMatrix * entityUniforms.modelMatrix * vec4f(pos, 1.0);
   out.worldPosition = (entityUniforms.modelMatrix * vec4f(pos, 1.0)).xyz;
   out.normal = normalize((entityUniforms.modelMatrix * vec4f(normal, 0.0)).xyz);
+  out.uvs = uvs;
 
   return out;
 }

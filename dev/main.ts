@@ -34,47 +34,57 @@ if (container) {
   const cubePrimitive = cube({ sx: 1, sy: 1, sz: 1, nx: 1, ny: 1, nz: 1 });
   const cubeIndices = Uint16Array.from(cubePrimitive.cells); // CONVERT FROM UINT8 TO UINT16
   const cubeNormals = cubePrimitive.normals;
-  const cubeGeometry = new Geometry({ vertices: cubePrimitive.positions, indices: cubeIndices, normals: cubeNormals });
+  const cubeUVs = cubePrimitive.uvs;
+  const cubeGeometry = new Geometry({
+    vertices: cubePrimitive.positions,
+    indices: cubeIndices,
+    normals: cubeNormals,
+    uvs: cubeUVs,
+  });
 
   // Create sphere geometry
   const spherePrimitive = sphere({ radius: 0.5 });
   const sphereIndices = Uint16Array.from(spherePrimitive.cells); // CONVERT FROM UINT8 TO UINT16
   const sphereNormals = spherePrimitive.normals;
+  const sphereUVs = spherePrimitive.uvs;
   const sphereGeometry = new Geometry({
     vertices: spherePrimitive.positions,
     indices: sphereIndices,
     normals: sphereNormals,
+    uvs: sphereUVs,
   });
 
   // Create torus geometry
   const torusPrimitive = torus({ radius: 0.5, segments: 32 });
   const torusIndices = Uint16Array.from(torusPrimitive.cells); // CONVERT FROM UINT8 TO UINT16
   const torusNormals = torusPrimitive.normals;
+  const torusUVs = torusPrimitive.uvs;
   const torusGeometry = new Geometry({
     vertices: torusPrimitive.positions,
     indices: torusIndices,
     normals: torusNormals,
+    uvs: torusUVs,
   });
 
   // Create a material
-  const material = new LambertMaterial({
-    color: [1, 0, 1, 0.9],
-    transparent: true,
+  const material = new UnlitMaterial({
+    color: [1, 0, 1, 1],
+    transparent: false,
   });
 
   // Create a second material with a different color
   const materialTwo = new LambertMaterial({
-    color: [0, 1, 1, 0.1],
-    transparent: true,
+    color: [0, 1, 1, 1],
+    transparent: false,
   });
 
-  const unlitMaterial = new UnlitMaterial({
-    color: [1, 1, 0, 0.2],
-    transparent: true,
+  const materialThree = new LambertMaterial({
+    color: [1, 1, 0, 1],
+    transparent: false,
   });
 
   // Create meshes
-  const cubeMesh = new Mesh(cubeGeometry, unlitMaterial);
+  const cubeMesh = new Mesh(cubeGeometry, materialThree);
   cubeMesh.setPosition(-1.5, 0, 0);
   const sphereMesh = new Mesh(sphereGeometry, material);
   sphereMesh.setPosition(1.5, 0, 0);
