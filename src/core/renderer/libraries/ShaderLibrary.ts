@@ -9,7 +9,7 @@ const shaders: Record<string, string> = import.meta.glob('../../materials/shader
   import: 'default',
 });
 
-const INCLUDE_REGEX = /^\s*\/\/\s*#include\s*(['"])([a-z0-9/]+)\1\s*$/gm;
+const INCLUDE_REGEX = /^\s*\/\/\s*#include\s*(['"])([a-zA-Z0-9/]+)\1\s*$/gm;
 
 class ShaderLibrary {
   private shaders: Map<string, string>;
