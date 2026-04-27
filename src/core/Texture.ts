@@ -33,22 +33,18 @@ class Texture implements ITexture {
     this.format = options.format || 'rgba8unorm';
   }
 
-  static fromImageBitmap(imageBitmap: ImageBitmap, device: GPUDevice, queue: GPUQueue): Texture {
+  static fromImageBitmap(imageBitmap: ImageBitmap, device: GPUDevice): Texture {
     const texture = new Texture({
       width: imageBitmap.width,
       height: imageBitmap.height,
       format: 'rgba8unorm',
     });
 
-    texture.initFromImageBitmap(imageBitmap, device, queue);
+    texture.initFromImageBitmap(imageBitmap, device);
     return texture;
   }
 
-  static createSolidColor(
-    color: [r: number, g: number, b: number, a: number],
-    device: GPUDevice,
-    queue: GPUQueue,
-  ): Texture {
+  static createSolidColor(color: [r: number, g: number, b: number, a: number], device: GPUDevice): Texture {
     const texture = new Texture({
       width: 1,
       height: 1,
@@ -56,25 +52,28 @@ class Texture implements ITexture {
     });
 
     const data = new Uint8Array([color[0], color[1], color[2], color[3]]);
-    texture.initFromData(data, device, queue);
+    texture.initFromData(data, device);
     return texture;
   }
 
-  private initFromImageBitmap(imageBitmap: ImageBitmap, device: GPUDevice, queue: GPUQueue): void {
+  private initFromImageBitmap(imageBitmap: ImageBitmap, device: GPUDevice): void {
     this.gpuTexture = device.createTexture({
       size: { width: this.width, height: this.height },
       format: this.format,
-      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
       mipLevelCount: 1,
     });
 
-    queue.copyExternalImageToTexture({ source: imageBitmap }, { texture: this.gpuTexture }, [this.width, this.height]);
+    device.queue.copyExternalImageToTexture({ source: imageBitmap, flipY: true }, { texture: this.gpuTexture }, [
+      this.width,
+      this.height,
+    ]);
 
     this.gpuTextureView = this.gpuTexture.createView();
     this.isInitialized = true;
   }
 
-  private initFromData(data: Uint8Array, device: GPUDevice, queue: GPUQueue): void {
+  private initFromData(data: Uint8Array, device: GPUDevice): void {
     this.gpuTexture = device.createTexture({
       size: { width: this.width, height: this.height },
       format: this.format,
@@ -82,7 +81,7 @@ class Texture implements ITexture {
       mipLevelCount: 1,
     });
 
-    queue.writeTexture(
+    device.queue.writeTexture(
       { texture: this.gpuTexture },
       data,
       { bytesPerRow: this.width * 4 },

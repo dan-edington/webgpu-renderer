@@ -64,12 +64,12 @@ class OpaquePipeline extends Pipeline {
             ],
           },
           {
-            arrayStride: 3 * Float32Array.BYTES_PER_ELEMENT,
+            arrayStride: 2 * Float32Array.BYTES_PER_ELEMENT,
             attributes: [
               {
                 shaderLocation: 2,
                 offset: 0,
-                format: 'float32x3',
+                format: 'float32x2',
               },
             ],
           },

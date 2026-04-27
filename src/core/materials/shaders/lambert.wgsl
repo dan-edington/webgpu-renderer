@@ -16,14 +16,14 @@ struct VertexOutput {
   @builtin(position) position: vec4f,
   @location(0) worldPosition: vec3f,
   @location(1) normal: vec3f,
-  @location(2) uvs: vec3f,
+  @location(2) uvs: vec2f,
 };
 
 @vertex
 fn vertex_shader(
   @location(0) pos: vec3<f32>,
   @location(1) normal: vec3<f32>,
-  @location(2) uvs: vec3<f32>,
+  @location(2) uvs: vec2<f32>,
 ) -> VertexOutput {
 
   var out: VertexOutput;
@@ -48,9 +48,12 @@ fn fragment_shader(
     var color = lightUniforms.params[i].x * lightUniforms.colors[i].xyz * max(0, dot(lightVector, in.normal));
     accumulatedLight = accumulatedLight + vec4f(color, 1.0);
   }
+  
+  let fragmentColor = textureSample(albedoTexture, materialSampler, in.uvs.xy).rgba;
 
-  var ambientLight = sceneUniforms.ambientLightIntensity * sceneUniforms.ambientLightColor;
-  var finalColor = materialUniforms.uColor * accumulatedLight + ambientLight;
+  let ambientLight = sceneUniforms.ambientLightIntensity * sceneUniforms.ambientLightColor;
+  
+  let finalColor = fragmentColor * accumulatedLight + ambientLight;
 
   return finalColor;
 }

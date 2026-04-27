@@ -9,6 +9,7 @@ import { Group } from '../src/core/Group';
 import { LambertMaterial } from '../src/core/materials/LambertMaterial';
 import { PointLight } from '../src/core/lights/PointLight';
 import { UnlitMaterial } from '../src/core/materials/UnlitMaterial';
+import { Texture } from '../src';
 
 const container = document.getElementById('app');
 
@@ -66,27 +67,33 @@ if (container) {
     uvs: torusUVs,
   });
 
+  const response = await fetch('/uvtest.png');
+  const imageBitmap = await createImageBitmap(await response.blob());
+  const texture = Texture.fromImageBitmap(imageBitmap, renderer.device);
+
   // Create a material
   const material = new UnlitMaterial({
     color: [1, 0, 1, 1],
     transparent: false,
+    albedoTexture: texture,
   });
 
   // Create a second material with a different color
   const materialTwo = new LambertMaterial({
     color: [0, 1, 1, 1],
     transparent: false,
+    albedoTexture: texture,
   });
 
-  const materialThree = new LambertMaterial({
-    color: [1, 1, 0, 1],
-    transparent: false,
-  });
+  // const materialThree = new LambertMaterial({
+  //   color: [1, 1, 0, 1],
+  //   transparent: false,
+  // });
 
   // Create meshes
-  const cubeMesh = new Mesh(cubeGeometry, materialThree);
+  const cubeMesh = new Mesh(cubeGeometry, material);
   cubeMesh.setPosition(-1.5, 0, 0);
-  const sphereMesh = new Mesh(sphereGeometry, material);
+  const sphereMesh = new Mesh(sphereGeometry, materialTwo);
   sphereMesh.setPosition(1.5, 0, 0);
   const torusMesh = new Mesh(torusGeometry, materialTwo);
   torusMesh.setPosition(0, 1.5, 0);

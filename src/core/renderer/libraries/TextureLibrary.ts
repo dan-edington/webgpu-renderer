@@ -16,20 +16,19 @@ class TextureLibrary {
   constructor(renderer: Renderer) {
     this.textures = new Map();
     this.device = renderer.device;
-    this.queue = renderer.device?.queue || null;
     this.initializeFallbackTextures();
   }
 
   private initializeFallbackTextures(): void {
-    if (!this.device || !this.queue) {
+    if (!this.device) {
       throw new Error(errorMessages.missingTextureLibraryDeviceOrQueue);
     }
 
     this.fallbackTextures = {
-      white: Texture.createSolidColor([255, 255, 255, 255], this.device, this.queue),
-      black: Texture.createSolidColor([0, 0, 0, 255], this.device, this.queue),
+      white: Texture.createSolidColor([255, 255, 255, 255], this.device),
+      black: Texture.createSolidColor([0, 0, 0, 255], this.device),
       // Normal map pointing straight up (0, 0, 1) = (128, 128, 255) in RGB
-      normal: Texture.createSolidColor([128, 128, 255, 255], this.device, this.queue),
+      normal: Texture.createSolidColor([128, 128, 255, 255], this.device),
     };
   }
 
@@ -49,7 +48,7 @@ class TextureLibrary {
         throw new Error(errorMessages.missingTextureLibraryDeviceOrQueue);
       }
 
-      const texture = Texture.fromImageBitmap(imageBitmap, this.device, this.queue);
+      const texture = Texture.fromImageBitmap(imageBitmap, this.device);
       this.textures.set(key, texture);
       return texture;
     } catch (error) {
