@@ -1,10 +1,21 @@
 import { errorMessages } from '../constants/errorMessages';
 
-interface IContextManager {}
+interface IContextManager {
+  alpha: boolean;
+  canvasElement: HTMLCanvasElement;
+  context: GPUCanvasContext;
+  adapter: GPUAdapter;
+  device: GPUDevice;
+  presentationFormat: GPUTextureFormat;
+  canvasTexture: GPUTexture;
+  multiSampleTexture: GPUTexture;
+  resize(width: number, height: number, multiSampling: number): void;
+}
 
 type ContextManagerCreateOptions = {
   canvasElement: HTMLCanvasElement;
   alpha?: boolean;
+  multiSampling: number;
 };
 
 type ContextManagerOptions = ContextManagerCreateOptions & {
@@ -21,6 +32,8 @@ class ContextManager implements IContextManager {
   adapter: GPUAdapter;
   device: GPUDevice;
   presentationFormat: GPUTextureFormat;
+  canvasTexture: GPUTexture;
+  multiSampleTexture: GPUTexture;
 
   private constructor(options: ContextManagerOptions) {
     this.alpha = options.alpha ?? true;
@@ -34,6 +47,14 @@ class ContextManager implements IContextManager {
       device: this.device,
       format: this.presentationFormat,
       alphaMode: this.alpha ? 'premultiplied' : 'opaque',
+    });
+
+    this.canvasTexture = this.context.getCurrentTexture();
+    this.multiSampleTexture = this.device.createTexture({
+      format: this.canvasTexture.format,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+      size: [this.canvasTexture.width, this.canvasTexture.height],
+      sampleCount: options.multiSampling,
     });
   }
 
@@ -56,6 +77,18 @@ class ContextManager implements IContextManager {
       adapter,
       device,
       presentationFormat,
+    });
+  }
+
+  resize(width: number, height: number, multiSampling: number) {
+    this.canvasTexture = this.context.getCurrentTexture();
+
+    this.multiSampleTexture.destroy();
+    this.multiSampleTexture = this.device.createTexture({
+      format: this.presentationFormat,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+      size: [width, height],
+      sampleCount: multiSampling,
     });
   }
 }

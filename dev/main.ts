@@ -7,7 +7,7 @@ import { PerspectiveCamera } from '../src/core/PerspectiveCamera';
 import { cube } from 'primitive-geometry';
 import { LambertMaterial } from '../src/core/materials/LambertMaterial';
 import { PointLight } from '../src/core/lights/PointLight';
-import { Texture } from '../src';
+import { NormalMaterial, Texture, UnlitMaterial } from '../src';
 
 const container = document.getElementById('app');
 
@@ -58,23 +58,38 @@ if (container) {
     transparent: true,
   });
 
+  const normalMaterial = new NormalMaterial();
+
+  const unlitMaterial = new UnlitMaterial({
+    albedoTexture: albedoTexture,
+    transparent: false,
+  });
+
   // Create meshes
   const cubeMesh = new Mesh(cubeGeometry, testMaterial);
   cubeMesh.setPosition(0, 0, -2);
+  cubeMesh.setRotation(0.5, 0.5, 0);
 
   // Create a point light
-  const pointLight = new PointLight();
-  pointLight.setPosition(0, 2, 2);
+  const pointLight1 = new PointLight();
+  pointLight1.setPosition(0, 0, 0);
+  pointLight1.intensity = 25;
+
+  const pointLight2 = new PointLight();
+  pointLight2.setPosition(0, 0, 0);
+  pointLight2.intensity = 25;
 
   // Add objects to scene
-  scene.add([cubeMesh, camera, pointLight]);
+  scene.add([cubeMesh, camera, pointLight1, pointLight2]);
 
-  scene.setAmbientLightIntensity(0);
+  scene.setAmbientLightIntensity(0.1);
 
   // Render the scene
   function render() {
     const t = renderer.elapsedTime * 0.001;
-    cubeMesh.setRotation(t, t, 0);
+    pointLight1.setPosition(5 * Math.cos(t), 0, 5 * Math.sin(t));
+    pointLight2.setPosition(0, 5 * Math.cos(t + Math.PI), 5 * Math.sin(t + Math.PI));
+    // cubeMesh.setRotation(t, t, 0);
     renderer.render(scene, camera);
     requestAnimationFrame(render);
   }

@@ -115,6 +115,9 @@ class AlphaPipeline extends Pipeline {
         depthWriteEnabled: false,
         depthCompare: 'less',
       },
+      multisample: {
+        count: renderer.multiSampling,
+      },
     };
 
     const pipeline = renderer.device.createRenderPipeline(pipelineDescriptor);

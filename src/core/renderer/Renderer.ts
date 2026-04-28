@@ -22,6 +22,7 @@ interface IRenderer {
   canvasManager: CanvasManager;
   contextManager: ContextManager;
   dpr: number;
+  multiSampling: number;
   alpha: boolean;
   context: GPUCanvasContext;
   adapter: GPUAdapter;
@@ -50,12 +51,14 @@ type RendererOptions = {
   containerElement?: HTMLElement;
   dpr?: number;
   alpha?: boolean;
+  multiSampling?: number;
 };
 
 class Renderer implements IRenderer {
   canvasManager: CanvasManager;
   contextManager: ContextManager;
   dpr: number;
+  multiSampling: number;
   alpha: boolean;
   context: GPUCanvasContext;
   adapter: GPUAdapter;
@@ -80,6 +83,7 @@ class Renderer implements IRenderer {
 
   private constructor(options: RendererOptions, canvasManager: CanvasManager, contextManager: ContextManager) {
     this.dpr = options.dpr ?? window.devicePixelRatio;
+    this.multiSampling = options.multiSampling ?? 4;
     this.alpha = options.alpha ?? true;
     this.canvasManager = canvasManager;
     this.canvasManager.rendererInstance = this;
@@ -95,6 +99,7 @@ class Renderer implements IRenderer {
     const contextManager = await ContextManager.create({
       canvasElement: canvasManager.canvasElement,
       alpha: options.alpha ?? false,
+      multiSampling: options.multiSampling ?? 4,
     });
     const renderer = new Renderer(options, canvasManager, contextManager);
     renderer.init();

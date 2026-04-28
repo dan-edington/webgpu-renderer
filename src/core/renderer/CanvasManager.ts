@@ -38,6 +38,13 @@ class CanvasManager implements ICanvasManager {
 
     this.canvasElement.width = Math.floor(this.containerElement.clientWidth * this.rendererInstance.dpr);
     this.canvasElement.height = Math.floor(this.containerElement.clientHeight * this.rendererInstance.dpr);
+
+    this.rendererInstance.contextManager.resize(
+      this.canvasElement.width,
+      this.canvasElement.height,
+      this.rendererInstance.multiSampling,
+    );
+
     this.rendererInstance.depthTexture?.resize(this.canvasElement.width, this.canvasElement.height);
   }
 }

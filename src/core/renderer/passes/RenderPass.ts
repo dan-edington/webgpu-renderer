@@ -14,11 +14,18 @@ class RenderPass extends Pass {
     if (!this.rendererInstance.context) throw new Error(errorMessages.missingContext);
     if (!this.rendererInstance.depthTexture?.depthTexture) throw new Error(errorMessages.missingDepthTexture);
 
+    const msaaCount = this.rendererInstance.multiSampling;
+    const swapchainView = this.rendererInstance.context.getCurrentTexture().createView();
+    const colorView =
+      msaaCount > 1 ? this.rendererInstance.contextManager.multiSampleTexture.createView() : swapchainView;
+    const resolveTarget = msaaCount > 1 ? swapchainView : undefined;
+
     return {
       label: this.name,
       colorAttachments: [
         {
-          view: this.rendererInstance.context.getCurrentTexture().createView(),
+          view: colorView,
+          resolveTarget,
           loadOp: 'clear',
           storeOp: 'store',
           clearValue: scene.clearColor,
@@ -41,8 +48,12 @@ class RenderPass extends Pass {
     pass.setBindGroup(constants.bindGroupIndices.CAMERA, camera.cameraBindGroup);
     pass.setBindGroup(constants.bindGroupIndices.SCENE, scene.sceneUniformsBindGroup);
 
-    const opaqueEntities = scene.renderList.filter((entity) => entity instanceof Mesh && !entity.material.usesAlphaPipeline);
-    const alphaEntities = scene.renderList.filter((entity) => entity instanceof Mesh && entity.material.usesAlphaPipeline);
+    const opaqueEntities = scene.renderList.filter(
+      (entity) => entity instanceof Mesh && !entity.material.usesAlphaPipeline,
+    );
+    const alphaEntities = scene.renderList.filter(
+      (entity) => entity instanceof Mesh && entity.material.usesAlphaPipeline,
+    );
 
     opaqueEntities.forEach((entity) => {
       if (entity instanceof Mesh) {

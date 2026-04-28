@@ -41,6 +41,7 @@ class DepthTexture implements IDepthTexture {
       size: [this.width, this.height],
       format: this.format,
       usage: GPUTextureUsage.RENDER_ATTACHMENT,
+      sampleCount: this.rendererInstance.multiSampling,
     });
 
     this.depthTextureView = this.depthTexture.createView();

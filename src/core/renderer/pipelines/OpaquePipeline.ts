@@ -103,6 +103,9 @@ class OpaquePipeline extends Pipeline {
         depthWriteEnabled: true,
         depthCompare: 'less',
       },
+      multisample: {
+        count: renderer.multiSampling,
+      },
     };
 
     const pipeline = renderer.device.createRenderPipeline(pipelineDescriptor);
