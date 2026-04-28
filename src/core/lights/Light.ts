@@ -1,10 +1,16 @@
 import { Entity, IEntity } from '../Entity';
 
+export const enum LightFlag {
+  None = 0,
+  PointLight = 1 << 0,
+}
+
 interface ILight extends IEntity {
   intensity: number;
   color: Float32Array;
   range: number;
   isLight: boolean;
+  flags: LightFlag;
 }
 
 export type LightOptions = {
@@ -19,6 +25,7 @@ abstract class Light extends Entity implements ILight {
   color: Float32Array;
   range: number;
   isLight: boolean;
+  flags: LightFlag;
 
   constructor(options: LightOptions) {
     super(options.type);
@@ -26,6 +33,7 @@ abstract class Light extends Entity implements ILight {
     this.intensity = options.intensity ?? 1;
     this.color = options.color ?? new Float32Array([1, 1, 1, 1]);
     this.range = options.range ?? 10;
+    this.flags = LightFlag.None;
   }
 
   protected override onMatrixUpdated() {

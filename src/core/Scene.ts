@@ -81,6 +81,7 @@ class Scene extends Entity implements IScene {
     const positions = new Float32Array(maxLights * 4);
     const colors = new Float32Array(maxLights * 4);
     const params = new Float32Array(maxLights * 4);
+    const flags = new Uint32Array(maxLights);
 
     const activeLights = this.lights.slice(0, maxLights);
 
@@ -101,6 +102,8 @@ class Scene extends Entity implements IScene {
       params[base + 1] = light.range;
       params[base + 2] = 0;
       params[base + 3] = 0;
+
+      flags[index] = light.flags;
     });
 
     this.lightUniformsBuffer = new UniformBuffer(
@@ -109,6 +112,7 @@ class Scene extends Entity implements IScene {
         positions: { type: `array<vec4<f32>, ${maxLights}>`, value: positions },
         colors: { type: `array<vec4<f32>, ${maxLights}>`, value: colors },
         params: { type: `array<vec4<f32>, ${maxLights}>`, value: params },
+        flags: { type: `array<u32, ${maxLights}>`, value: flags },
       },
       { addressSpace: 'storage' },
     );
