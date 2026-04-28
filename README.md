@@ -6,13 +6,17 @@ Currently supports:
 
 - Scene graph
 - Perspective camera
-- Indexed and non indexed geometry
+- Indexed and non indexed geometry support
+- Geometry tangent generation
 - Lambertian material
 - Unlit material
 - Normal material
+- Alpha maps
+- Albedo texture maps
+- Multisampling
 - Sorted alpha blending
 - Point lights
-- Ambient light
+- Scene level ambient light
 - Texture resource handling
 
 Full documentation to come.
