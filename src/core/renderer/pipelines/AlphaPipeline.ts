@@ -73,6 +73,16 @@ class AlphaPipeline extends Pipeline {
               },
             ],
           },
+          {
+            arrayStride: 4 * Float32Array.BYTES_PER_ELEMENT,
+            attributes: [
+              {
+                shaderLocation: 3,
+                offset: 0,
+                format: 'float32x4',
+              },
+            ],
+          },
         ],
       },
       fragment: {

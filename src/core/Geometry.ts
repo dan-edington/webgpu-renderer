@@ -1,6 +1,7 @@
 import { Renderer } from './renderer/Renderer';
 import { uuid } from './types';
 import { padArrayToAlignmentBytes } from './utilities/padArrayToAlignmentBytes';
+import { generateTangents } from 'mikktspace';
 
 interface IGeometry {
   id: uuid;
@@ -30,6 +31,7 @@ class Geometry implements IGeometry {
   indices: Uint16Array | Uint32Array | undefined;
   normals: Float32Array;
   uvs: Float32Array;
+  tangents: Float32Array;
   isIndexed: boolean;
   indexCount: number = 0;
   indexFormat: GPUIndexFormat = 'uint16';
@@ -37,6 +39,7 @@ class Geometry implements IGeometry {
   vertexBuffer: GPUBuffer | null = null;
   indexBuffer: GPUBuffer | null = null;
   normalBuffer: GPUBuffer | null = null;
+  tangentBuffer: GPUBuffer | null = null;
   uvBuffer: GPUBuffer | null = null;
 
   constructor(options: GeometryOptions) {
@@ -58,6 +61,8 @@ class Geometry implements IGeometry {
     this.vertices = padArrayToAlignmentBytes<Float32Array>(options.vertices, { alignmentBytes: 4 }).paddedArray;
     this.normals = padArrayToAlignmentBytes<Float32Array>(options.normals, { alignmentBytes: 4 }).paddedArray;
     this.uvs = padArrayToAlignmentBytes<Float32Array>(options.uvs, { alignmentBytes: 4 }).paddedArray;
+    this.tangents = generateTangents(this.vertices, this.normals, this.uvs);
+    console.log(this.tangents);
     this.topology = options.topology ?? 'triangle-list';
   }
 
@@ -95,6 +100,13 @@ class Geometry implements IGeometry {
     });
 
     renderer.device.queue.writeBuffer(this.uvBuffer, 0, this.uvs.buffer);
+
+    this.tangentBuffer = renderer.device.createBuffer({
+      size: this.tangents ? this.tangents.byteLength : 0,
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    });
+
+    renderer.device.queue.writeBuffer(this.tangentBuffer, 0, this.tangents.buffer);
   }
 }
 

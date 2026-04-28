@@ -47,7 +47,7 @@ class Mesh extends Entity implements IMesh {
   }
 
   private createRenderPipeline(renderer: Renderer) {
-    const pipelineName = this.material.transparent ? 'alpha' : 'opaque';
+    const pipelineName = this.material.usesAlphaPipeline ? 'alpha' : 'opaque';
     const Pipeline = renderer.pipelineLibrary?.getPipeline(pipelineName);
     if (!Pipeline) throw new Error(errorMessages.missingPipeline);
 
@@ -95,6 +95,7 @@ class Mesh extends Entity implements IMesh {
     pass.setVertexBuffer(0, this.geometry.vertexBuffer);
     pass.setVertexBuffer(1, this.geometry.normalBuffer);
     pass.setVertexBuffer(2, this.geometry.uvBuffer);
+    pass.setVertexBuffer(3, this.geometry.tangentBuffer);
 
     if (this.material.materialUniformsBuffer) {
       this.material.materialUniformsBuffer.writeUpdatedBufferData();

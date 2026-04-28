@@ -1,18 +1,16 @@
-import { Material } from './Material';
+import { Material, MaterialFlag } from './Material';
 import { Renderer } from '../renderer/Renderer';
 import { Texture } from '../Texture';
 
 type UnlitMaterialOptions = {
   name?: string;
   color?: ArrayLike<number>;
-  alphaTexture?: Texture | null;
   albedoTexture?: Texture | null;
   transparent?: boolean;
 };
 
 class UnlitMaterial extends Material {
   private _color: Float32Array;
-  private _alphaTexture: Texture | null;
   private _albedoTexture: Texture | null;
 
   constructor(options: UnlitMaterialOptions = {}) {
@@ -29,8 +27,9 @@ class UnlitMaterial extends Material {
     });
 
     this._color = color;
-    this._alphaTexture = options.alphaTexture ?? null;
     this._albedoTexture = options.albedoTexture ?? null;
+
+    if (this._albedoTexture) this.materialFlag |= MaterialFlag.Albedo;
   }
 
   get color(): Float32Array {
@@ -51,21 +50,11 @@ class UnlitMaterial extends Material {
     this.recreateMaterialBindGroup();
   }
 
-  get alphaTexture(): Texture | null {
-    return this._alphaTexture;
-  }
-
-  set alphaTexture(value: Texture | null) {
-    this._alphaTexture = value;
-    this.recreateMaterialBindGroup();
-  }
-
   protected override getBindGroupEntries(renderer: Renderer): GPUBindGroupEntry[] {
     const albedoTexture = this._albedoTexture ?? renderer.textureLibrary?.getFallback('white');
-    const alphaTexture = this._alphaTexture ?? renderer.textureLibrary?.getFallback('white');
     const sampler = renderer.samplerLibrary?.getSampler('linearRepeat');
 
-    if (!alphaTexture || !albedoTexture || !sampler) {
+    if (!albedoTexture || !sampler) {
       throw new Error('Unlit material resources are missing.');
     }
 
@@ -74,8 +63,7 @@ class UnlitMaterial extends Material {
     return [
       { binding: 0, resource: { buffer: this.materialUniformsBuffer.buffer } },
       { binding: 1, resource: albedoTexture.getView() },
-      { binding: 2, resource: alphaTexture.getView() },
-      { binding: 3, resource: sampler },
+      { binding: 2, resource: sampler },
     ];
   }
 
@@ -94,15 +82,9 @@ class UnlitMaterial extends Material {
           visibility: GPUShaderStage.FRAGMENT,
           texture: { sampleType: 'float' },
         },
-        // binding 2: alpha texture
-        {
-          binding: 2,
-          visibility: GPUShaderStage.FRAGMENT,
-          texture: { sampleType: 'float' },
-        },
         // binding 2: sampler for color textures
         {
-          binding: 3,
+          binding: 2,
           visibility: GPUShaderStage.FRAGMENT,
           sampler: { type: 'filtering' },
         },

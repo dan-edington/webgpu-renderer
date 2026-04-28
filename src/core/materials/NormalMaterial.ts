@@ -1,6 +1,6 @@
 import { Renderer } from '../renderer/Renderer';
 import { Texture } from '../Texture';
-import { Material } from './Material';
+import { Material, MaterialFlag } from './Material';
 
 type LambertMaterialOptions = {
   name?: string;
@@ -18,6 +18,8 @@ class NormalMaterial extends Material {
     });
 
     this._normalTexture = options.normalTexture ?? null;
+
+    if (this._normalTexture) this.materialFlag |= MaterialFlag.Normal;
   }
 
   get normalTexture(): Texture | null {

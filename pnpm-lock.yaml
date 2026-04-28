@@ -8,25 +8,22 @@ importers:
 
   .:
     dependencies:
-      primitive-geometry:
-        specifier: ^2.11.0
-        version: 2.11.0
-      tweakpane:
-        specifier: ^4.0.5
-        version: 4.0.5
+      mikktspace:
+        specifier: ^1.1.1
+        version: 1.1.1
       wgpu-matrix:
         specifier: ^3.4.2
         version: 3.4.2
     devDependencies:
-      '@tweakpane/core':
-        specifier: ^2.0.5
-        version: 2.0.5
       '@types/node':
         specifier: ^25.6.0
         version: 25.6.0
       '@webgpu/types':
         specifier: ^0.1.51
         version: 0.1.59
+      primitive-geometry:
+        specifier: ^2.11.0
+        version: 2.11.0
       typescript:
         specifier: ~5.6.2
         version: 5.6.3
@@ -36,6 +33,9 @@ importers:
       vite-plugin-dts:
         specifier: ^4.5.4
         version: 4.5.4(@types/node@25.6.0)(typescript@5.6.3)(vite@8.0.9(@types/node@25.6.0))
+      vite-plugin-wasm:
+        specifier: ^3.6.0
+        version: 3.6.0(vite@8.0.9(@types/node@25.6.0))
       vitest:
         specifier: ^4.1.4
         version: 4.1.4(@types/node@25.6.0)(vite@8.0.9(@types/node@25.6.0))
@@ -232,9 +232,6 @@ packages:
 
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
-
-  '@tweakpane/core@2.0.5':
-    resolution: {integrity: sha512-punBgD5rKCF5vcNo6BsSOXiDR/NSs9VM7SG65QSLJIxfRaGgj54ree9zQW6bO3pNFf3AogiGgaNODUVQRk9YqQ==}
 
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
@@ -566,6 +563,9 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
+  mikktspace@1.1.1:
+    resolution: {integrity: sha512-w+n5O2YLFsv/aRi3QUF0jxR+mEsl2J08ZkRItJHE08MWqiDIy8amyZN9vetBfbLhlWGMb8G3mzSPwtKHvBF7hQ==}
+
   minimatch@10.2.3:
     resolution: {integrity: sha512-Rwi3pnapEqirPSbWbrZaa6N3nmqq4Xer/2XooiOKyV3q12ML06f7MOuc5DVH8ONZIFhwIYQ3yzPH4nt7iWHaTg==}
     engines: {node: 18 || 20 || >=22}
@@ -693,9 +693,6 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
-  tweakpane@4.0.5:
-    resolution: {integrity: sha512-rxEXdSI+ArlG1RyO6FghC4ZUX8JkEfz8F3v1JuteXSV0pEtHJzyo07fcDG+NsJfN5L39kSbCYbB9cBGHyuI/tQ==}
-
   typescript@5.6.3:
     resolution: {integrity: sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw==}
     engines: {node: '>=14.17'}
@@ -724,6 +721,11 @@ packages:
     peerDependenciesMeta:
       vite:
         optional: true
+
+  vite-plugin-wasm@3.6.0:
+    resolution: {integrity: sha512-mL/QPziiIA4RAA6DkaZZzOstdwbW5jO4Vz7Zenj0wieKWBlNvIvX5L5ljum9lcUX0ShNfBgCNLKTjNkRVVqcsw==}
+    peerDependencies:
+      vite: ^2 || ^3 || ^4 || ^5 || ^6 || ^7 || ^8
 
   vite@8.0.9:
     resolution: {integrity: sha512-t7g7GVRpMXjNpa67HaVWI/8BWtdVIQPCL2WoozXXA7LBGEFK4AkkKkHx2hAQf5x1GZSlcmEDPkVLSGahxnEEZw==}
@@ -994,8 +996,6 @@ snapshots:
       - '@types/node'
 
   '@standard-schema/spec@1.1.0': {}
-
-  '@tweakpane/core@2.0.5': {}
 
   '@tybys/wasm-util@0.10.1':
     dependencies:
@@ -1284,6 +1284,8 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
+  mikktspace@1.1.1: {}
+
   minimatch@10.2.3:
     dependencies:
       brace-expansion: 5.0.5
@@ -1405,8 +1407,6 @@ snapshots:
   tslib@2.8.1:
     optional: true
 
-  tweakpane@4.0.5: {}
-
   typescript@5.6.3: {}
 
   typescript@5.9.3: {}
@@ -1435,6 +1435,10 @@ snapshots:
       - '@types/node'
       - rollup
       - supports-color
+
+  vite-plugin-wasm@3.6.0(vite@8.0.9(@types/node@25.6.0)):
+    dependencies:
+      vite: 8.0.9(@types/node@25.6.0)
 
   vite@8.0.9(@types/node@25.6.0):
     dependencies:

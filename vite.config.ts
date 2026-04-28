@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
+import wasm from 'vite-plugin-wasm';
 import { resolve } from 'node:path';
 
 export default defineConfig((configEnv) => {
@@ -16,6 +17,7 @@ export default defineConfig((configEnv) => {
         entryRoot: resolve(__dirname, 'src'),
         insertTypesEntry: true,
       }),
+      wasm(),
     ],
     build: {
       outDir: resolve(__dirname, 'dist'),

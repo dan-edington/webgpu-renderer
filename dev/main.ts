@@ -4,11 +4,9 @@ import { Mesh } from '../src/core/Mesh';
 import { Renderer } from '../src/core/renderer/Renderer';
 import { Scene } from '../src/core/Scene';
 import { PerspectiveCamera } from '../src/core/PerspectiveCamera';
-import { cube, sphere, torus } from 'primitive-geometry';
-import { Group } from '../src/core/Group';
+import { cube } from 'primitive-geometry';
 import { LambertMaterial } from '../src/core/materials/LambertMaterial';
 import { PointLight } from '../src/core/lights/PointLight';
-import { UnlitMaterial } from '../src/core/materials/UnlitMaterial';
 import { Texture } from '../src';
 
 const container = document.getElementById('app');
@@ -43,81 +41,40 @@ if (container) {
     uvs: cubeUVs,
   });
 
-  // Create sphere geometry
-  const spherePrimitive = sphere({ radius: 0.5 });
-  const sphereIndices = Uint16Array.from(spherePrimitive.cells); // CONVERT FROM UINT8 TO UINT16
-  const sphereNormals = spherePrimitive.normals;
-  const sphereUVs = spherePrimitive.uvs;
-  const sphereGeometry = new Geometry({
-    vertices: spherePrimitive.positions,
-    indices: sphereIndices,
-    normals: sphereNormals,
-    uvs: sphereUVs,
+  async function loadTexture(url: string) {
+    const response = await fetch(url);
+    const imageBitmap = await createImageBitmap(await response.blob());
+    return Texture.fromImageBitmap(imageBitmap, renderer.device);
+  }
+
+  const albedoTexture = await loadTexture('/uvtest.png');
+  const normalTexture = await loadTexture('/normal.png');
+  // const alphaTexture = await loadTexture('/alpha.jpg');
+
+  const testMaterial = new LambertMaterial({
+    albedoTexture: albedoTexture,
+    normalTexture: normalTexture,
+    // alphaTexture: alphaTexture,
+    transparent: true,
   });
-
-  // Create torus geometry
-  const torusPrimitive = torus({ radius: 0.5, segments: 32 });
-  const torusIndices = Uint16Array.from(torusPrimitive.cells); // CONVERT FROM UINT8 TO UINT16
-  const torusNormals = torusPrimitive.normals;
-  const torusUVs = torusPrimitive.uvs;
-  const torusGeometry = new Geometry({
-    vertices: torusPrimitive.positions,
-    indices: torusIndices,
-    normals: torusNormals,
-    uvs: torusUVs,
-  });
-
-  const response = await fetch('/uvtest.png');
-  const imageBitmap = await createImageBitmap(await response.blob());
-  const texture = Texture.fromImageBitmap(imageBitmap, renderer.device);
-
-  // Create a material
-  const material = new UnlitMaterial({
-    color: [1, 0, 1, 1],
-    transparent: false,
-    albedoTexture: texture,
-  });
-
-  // Create a second material with a different color
-  const materialTwo = new LambertMaterial({
-    color: [0, 1, 1, 1],
-    transparent: false,
-    albedoTexture: texture,
-  });
-
-  // const materialThree = new LambertMaterial({
-  //   color: [1, 1, 0, 1],
-  //   transparent: false,
-  // });
 
   // Create meshes
-  const cubeMesh = new Mesh(cubeGeometry, material);
-  cubeMesh.setPosition(-1.5, 0, 0);
-  const sphereMesh = new Mesh(sphereGeometry, materialTwo);
-  sphereMesh.setPosition(1.5, 0, 0);
-  const torusMesh = new Mesh(torusGeometry, materialTwo);
-  torusMesh.setPosition(0, 1.5, 0);
-
-  // Create a group
-  const group = new Group();
-  group.add([cubeMesh, sphereMesh, torusMesh]);
-  group.setPosition(0, 0, -10);
+  const cubeMesh = new Mesh(cubeGeometry, testMaterial);
+  cubeMesh.setPosition(0, 0, -2);
 
   // Create a point light
   const pointLight = new PointLight();
   pointLight.setPosition(0, 2, 2);
 
   // Add objects to scene
-  scene.add([group, camera, pointLight]);
+  scene.add([cubeMesh, camera, pointLight]);
 
   scene.setAmbientLightIntensity(0);
 
   // Render the scene
   function render() {
-    const t = renderer.elapsedTime * 0.1;
-    cubeMesh.setRotation(t * 0.001, 0, t * 0.002);
-    torusMesh.setPosition(0, Math.sin(t * 0.001), 0);
-    group.setRotation(0, t * -0.005, 0);
+    const t = renderer.elapsedTime * 0.001;
+    cubeMesh.setRotation(t, t, 0);
     renderer.render(scene, camera);
     requestAnimationFrame(render);
   }

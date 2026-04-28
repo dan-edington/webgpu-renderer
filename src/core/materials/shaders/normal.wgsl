@@ -3,6 +3,7 @@
 // #include "entity"
 
 struct MaterialUniforms {
+  materialFlag: u32,
   uColor: vec4f,
 };
 
