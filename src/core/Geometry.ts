@@ -62,7 +62,6 @@ class Geometry implements IGeometry {
     this.normals = padArrayToAlignmentBytes<Float32Array>(options.normals, { alignmentBytes: 4 }).paddedArray;
     this.uvs = padArrayToAlignmentBytes<Float32Array>(options.uvs, { alignmentBytes: 4 }).paddedArray;
     this.tangents = generateTangents(this.vertices, this.normals, this.uvs);
-    console.log(this.tangents);
     this.topology = options.topology ?? 'triangle-list';
   }
 

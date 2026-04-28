@@ -9,8 +9,8 @@ struct MaterialUniforms {
 };
 
 @group(2) @binding(0) var<uniform> materialUniforms: MaterialUniforms;
-@group(2) @binding(1) var albedoTexture: texture_2d<f32>;
-@group(2) @binding(2) var alphaTexture: texture_2d<f32>;
+@group(2) @binding(1) var alphaTexture: texture_2d<f32>;
+@group(2) @binding(2) var albedoTexture: texture_2d<f32>;
 @group(2) @binding(3) var materialSampler: sampler;
 
 struct VertexOutput {
@@ -37,6 +37,8 @@ fn vertex_shader(
 fn fragment_shader(
   in: VertexOutput
 ) -> @location(0) vec4f {
+
+  // #include "materialFlags"
 
   let finalColor = textureSample(albedoTexture, materialSampler, in.uvs.xy).rgba;
 
