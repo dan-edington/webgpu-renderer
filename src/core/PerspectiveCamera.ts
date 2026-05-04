@@ -92,6 +92,18 @@ class PerspectiveCamera extends Entity implements IPerspectiveCamera {
     this.updateProjectionMatrix();
   }
 
+  lookAt(target: Float32Array, up: Float32Array = new Float32Array([0, 1, 0])) {
+    mat4.lookAt(this.position, target, up, this.viewMatrix);
+    mat4.inverse(this.viewMatrix, this.matrix);
+    this.viewProjectionMatrix = mat4.multiply(this.projectionMatrix!, this.viewMatrix);
+
+    if (this.cameraUniformBuffer) {
+      this.cameraUniformBuffer.updateUniform({
+        viewProjectionMatrix: this.viewProjectionMatrix,
+      });
+    }
+  }
+
   init(renderer: Renderer) {
     if (this.cameraUniformBuffer) {
       this.cameraUniformBuffer.init(renderer);
