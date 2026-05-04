@@ -8,6 +8,7 @@ import { cube } from 'primitive-geometry';
 import { LambertMaterial } from '../src/core/materials/LambertMaterial';
 import { PointLight } from '../src/core/lights/PointLight';
 import { NormalMaterial, Texture, UnlitMaterial } from '../src';
+import { OrbitControls } from '../src/core/OrbitControls';
 
 const container = document.getElementById('app');
 
@@ -67,16 +68,16 @@ if (container) {
 
   // Create meshes
   const cubeMesh = new Mesh(cubeGeometry, testMaterial);
-  cubeMesh.setPosition(0, 0, -2);
+  cubeMesh.setPosition(0, 0, 0);
   cubeMesh.setRotation(0.5, 0.5, 0);
 
   // Create a point light
   const pointLight1 = new PointLight();
-  pointLight1.setPosition(0, 0, 0);
+  pointLight1.setPosition(0, 5, 0);
   pointLight1.intensity = 25;
 
   const pointLight2 = new PointLight();
-  pointLight2.setPosition(0, 0, 0);
+  pointLight2.setPosition(0, 0, 5);
   pointLight2.intensity = 25;
 
   // Add objects to scene
@@ -84,12 +85,13 @@ if (container) {
 
   scene.setAmbientLightIntensity(0.1);
 
+  camera.setPosition(0, 0, 5);
+  new OrbitControls({ camera, domElement: renderer.canvasManager.canvasElement });
+
   // Render the scene
   function render() {
     const t = renderer.elapsedTime * 0.001;
-    pointLight1.setPosition(5 * Math.cos(t), 0, 5 * Math.sin(t));
-    pointLight2.setPosition(0, 5 * Math.cos(t + Math.PI), 5 * Math.sin(t + Math.PI));
-    // cubeMesh.setRotation(t, t, 0);
+
     renderer.render(scene, camera);
     requestAnimationFrame(render);
   }
