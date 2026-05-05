@@ -18,5 +18,8 @@ Currently supports:
 - Point lights
 - Scene level ambient light
 - Texture resource handling
+- Multipass rendering
+- Linear -> sRGB workflow
+- ACES Tonemapping
 
 Full documentation to come.
