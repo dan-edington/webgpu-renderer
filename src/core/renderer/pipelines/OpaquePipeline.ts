@@ -1,10 +1,11 @@
 import { Geometry } from '../../Geometry';
 import { errorMessages } from '../../constants/errorMessages';
+import { constants } from '../../constants/constants';
 import { Material } from '../../materials/Material';
 import { Renderer } from '../Renderer';
 import { Pipeline } from './Pipeline';
 
-type OpaquePipelineOptions = {
+export type OpaquePipelineOptions = {
   renderer: Renderer;
   material: Material;
   geometry: Geometry;
@@ -90,7 +91,7 @@ class OpaquePipeline extends Pipeline {
         entryPoint: material.shaderEntryPoints.fragment,
         targets: [
           {
-            format: renderer.presentationFormat,
+            format: constants.INTERNAL_COLOR_FORMAT,
           },
         ],
       },

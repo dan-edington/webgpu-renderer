@@ -45,12 +45,15 @@ class Geometry implements IGeometry {
   constructor(options: GeometryOptions) {
     this.id = crypto.randomUUID();
     this.type = 'Geometry';
+
     if (options.indices) {
       this.isIndexed = true;
+
       const { paddedArray: paddedIndices, unpaddedLength } = padArrayToAlignmentBytes<Uint16Array | Uint32Array>(
         options.indices,
         { alignmentBytes: 4 },
       );
+
       this.indices = paddedIndices;
       this.indexCount = unpaddedLength;
       this.indexFormat = options.indices instanceof Uint16Array ? 'uint16' : 'uint32';

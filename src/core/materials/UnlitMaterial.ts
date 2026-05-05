@@ -1,6 +1,7 @@
 import { Material, MaterialFlag } from './Material';
 import { Renderer } from '../renderer/Renderer';
 import { Texture } from '../Texture';
+import { colorToLinear } from '../utilities/colorUtilities';
 
 type UnlitMaterialOptions = {
   name?: string;
@@ -23,7 +24,7 @@ class UnlitMaterial extends Material {
       type: 'unlit',
       shader: 'unlit',
       uniforms: {
-        uColor: { type: 'vec4<f32>', value: color },
+        uColor: { type: 'vec4<f32>', value: colorToLinear(color) },
       },
       transparent: options.transparent ?? false,
     });
@@ -42,7 +43,7 @@ class UnlitMaterial extends Material {
 
   set color(value: ArrayLike<number>) {
     this._color = new Float32Array(value);
-    this.updateUniforms({ uColor: this._color });
+    this.updateUniforms({ uColor: colorToLinear(this._color) });
   }
 
   get albedoTexture(): Texture | null {

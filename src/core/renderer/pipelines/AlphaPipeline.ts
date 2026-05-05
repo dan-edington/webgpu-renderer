@@ -1,10 +1,11 @@
 import { Geometry } from '../../Geometry';
+import { constants } from '../../constants/constants';
 import { errorMessages } from '../../constants/errorMessages';
 import { Material } from '../../materials/Material';
 import { Renderer } from '../Renderer';
 import { Pipeline } from './Pipeline';
 
-type AlphaPipelineOptions = {
+export type AlphaPipelineOptions = {
   renderer: Renderer;
   material: Material;
   geometry: Geometry;
@@ -90,7 +91,7 @@ class AlphaPipeline extends Pipeline {
         entryPoint: material.shaderEntryPoints.fragment,
         targets: [
           {
-            format: renderer.presentationFormat,
+            format: constants.INTERNAL_COLOR_FORMAT,
             blend: {
               color: {
                 srcFactor: 'src-alpha',

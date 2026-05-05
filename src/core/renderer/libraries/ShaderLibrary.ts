@@ -1,9 +1,9 @@
-const shaderIncludes: Record<string, string> = import.meta.glob('../../materials/shaders/includes/*.wgsl', {
+const shaderIncludes: Record<string, string> = import.meta.glob('../../shaders/includes/*.wgsl', {
   query: '?raw',
   eager: true,
   import: 'default',
 });
-const shaders: Record<string, string> = import.meta.glob('../../materials/shaders/*.wgsl', {
+const shaders: Record<string, string> = import.meta.glob('../../shaders/*.wgsl', {
   query: '?raw',
   eager: true,
   import: 'default',
@@ -23,7 +23,7 @@ class ShaderLibrary {
   }
 
   private buildIncludeCache() {
-    const basePath = '../../materials/shaders/includes/';
+    const basePath = '../../shaders/includes/';
 
     for (const key in shaderIncludes) {
       const includeContent = shaderIncludes[key];
@@ -41,7 +41,7 @@ class ShaderLibrary {
   }
 
   private buildShaderCache() {
-    const basePath = '../../materials/shaders/';
+    const basePath = '../../shaders/';
 
     for (const key in shaders) {
       const shaderName = key.replace(basePath, '').replace('.wgsl', '');

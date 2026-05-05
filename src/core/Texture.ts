@@ -11,11 +11,13 @@ interface ITexture {
   getView(): GPUTextureView;
 }
 
-type TextureOptions = {
+export type TextureOptions = {
   width: number;
   height: number;
-  format?: GPUTextureFormat;
+  colorSpace?: TextureColorSpace;
 };
+
+export type TextureColorSpace = 'srgb' | 'linear' | 'data';
 
 class Texture implements ITexture {
   id: uuid;
@@ -24,31 +26,37 @@ class Texture implements ITexture {
   width: number;
   height: number;
   format: GPUTextureFormat;
+  colorSpace: TextureColorSpace;
   isInitialized: boolean = false;
 
   constructor(options: TextureOptions) {
     this.id = crypto.randomUUID();
     this.width = options.width;
     this.height = options.height;
-    this.format = options.format || 'rgba8unorm';
+    this.colorSpace = options.colorSpace || 'srgb';
+    this.format = this.colorSpace === 'srgb' ? 'rgba8unorm-srgb' : 'rgba8unorm';
   }
 
-  static fromImageBitmap(imageBitmap: ImageBitmap, device: GPUDevice): Texture {
+  static fromImageBitmap(imageBitmap: ImageBitmap, device: GPUDevice, colorSpace: TextureColorSpace = 'srgb'): Texture {
     const texture = new Texture({
       width: imageBitmap.width,
       height: imageBitmap.height,
-      format: 'rgba8unorm',
+      colorSpace,
     });
 
     texture.initFromImageBitmap(imageBitmap, device);
     return texture;
   }
 
-  static createSolidColor(color: [r: number, g: number, b: number, a: number], device: GPUDevice): Texture {
+  static createSolidColor(
+    color: [r: number, g: number, b: number, a: number],
+    device: GPUDevice,
+    colorSpace: TextureColorSpace = 'srgb',
+  ): Texture {
     const texture = new Texture({
       width: 1,
       height: 1,
-      format: 'rgba8unorm',
+      colorSpace,
     });
 
     const data = new Uint8Array([color[0], color[1], color[2], color[3]]);
@@ -109,4 +117,3 @@ class Texture implements ITexture {
 }
 
 export { Texture };
-export type { ITexture };

@@ -6,6 +6,7 @@ const constants = {
     ENTITY: 3,
   },
   MAX_LIGHTS: 64,
+  INTERNAL_COLOR_FORMAT: 'rgba16float' as GPUTextureFormat,
 } as const;
 
 export { constants };

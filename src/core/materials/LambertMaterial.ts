@@ -1,6 +1,7 @@
 import { Material, MaterialFlag } from './Material';
 import { Renderer } from '../renderer/Renderer';
 import { Texture } from '../Texture';
+import { colorToLinear } from '../utilities/colorUtilities';
 
 type LambertMaterialOptions = {
   name?: string;
@@ -30,7 +31,7 @@ class LambertMaterial extends Material {
       type: 'lambert',
       shader: 'lambert',
       uniforms: {
-        uColor: { type: 'vec4<f32>', value: color },
+        uColor: { type: 'vec4<f32>', value: colorToLinear(color) },
       },
       transparent: options.transparent ?? false,
       initialFlags,
@@ -52,7 +53,7 @@ class LambertMaterial extends Material {
 
   set color(value: ArrayLike<number>) {
     this._color = new Float32Array(value);
-    this.updateUniforms({ uColor: this._color });
+    this.updateUniforms({ uColor: colorToLinear(this._color) });
   }
 
   get albedoTexture(): Texture | null {

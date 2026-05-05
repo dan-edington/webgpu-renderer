@@ -17,6 +17,8 @@ import { sceneBindGroupLayoutDescriptor } from './bindGroupLayouts/scene';
 import { entityBindGroupLayoutDescriptor } from './bindGroupLayouts/entity';
 import { materialBindGroupLayoutDescriptors } from './bindGroupLayouts/materials';
 import { AlphaPipeline } from './pipelines/AlphaPipeline';
+import { PostProcessingPass } from './passes/PostProcessingPass';
+import { PostProcessingPipeline } from './pipelines/PostProcessingPipeline';
 
 interface IRenderer {
   canvasManager: CanvasManager;
@@ -96,13 +98,17 @@ class Renderer implements IRenderer {
 
   static async create(options: RendererOptions): Promise<Renderer> {
     const canvasManager = new CanvasManager({ containerElement: options.containerElement });
+
     const contextManager = await ContextManager.create({
       canvasElement: canvasManager.canvasElement,
       alpha: options.alpha ?? false,
       multiSampling: options.multiSampling ?? 4,
     });
+
     const renderer = new Renderer(options, canvasManager, contextManager);
+
     renderer.init();
+
     return renderer;
   }
 
@@ -129,11 +135,23 @@ class Renderer implements IRenderer {
     this.pipelineLibrary = new PipelineLibrary();
     this.pipelineLibrary.registerPipeline('opaque', OpaquePipeline);
     this.pipelineLibrary.registerPipeline('alpha', AlphaPipeline);
+    this.pipelineLibrary.registerPipeline('postprocessing', PostProcessingPipeline);
   }
 
   private configurePasses() {
     this.passManager = new PassManager(this);
-    this.passManager.registerPass('render', RenderPass);
+
+    this.passManager.registerPass('render', RenderPass, {
+      input: null,
+      output: 'scene',
+      renderToSwapchain: false,
+    });
+
+    this.passManager.registerPass('postprocessing', PostProcessingPass, {
+      input: 'scene',
+      output: 'postprocess',
+      renderToSwapchain: true,
+    });
   }
 
   private initializeBindGroupLayouts() {
@@ -190,6 +208,7 @@ class Renderer implements IRenderer {
     this.passManager.scene = scene;
     this.passManager.camera = camera;
     this.passManager.runPass('render', commandEncoder);
+    this.passManager.runPass('postprocessing', commandEncoder);
 
     this.device.queue.submit([commandEncoder.finish()]);
   }

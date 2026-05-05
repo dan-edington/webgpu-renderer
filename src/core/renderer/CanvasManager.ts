@@ -46,6 +46,7 @@ class CanvasManager implements ICanvasManager {
     );
 
     this.rendererInstance.depthTexture?.resize(this.canvasElement.width, this.canvasElement.height);
+    this.rendererInstance.passManager?.resizeRenderTargets(this.canvasElement.width, this.canvasElement.height);
   }
 }
 

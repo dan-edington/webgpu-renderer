@@ -38,6 +38,8 @@ const errorMessages = {
     'Fallback textures are missing. Ensure the texture library initializes fallback textures before requesting fallback textures.',
   missingSamplerLibraryDevice:
     'Sampler library device is missing. Ensure the renderer is initialized before creating samplers.',
+  missingShaderCode:
+    'Could not find shader code for material. Ensure the shader name is correct and the shader is included in the shader library.',
 };
 
 export { errorMessages };

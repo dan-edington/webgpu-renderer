@@ -4,6 +4,7 @@ import { errorMessages } from './constants/errorMessages';
 import { constants } from './constants/constants';
 import { UniformBuffer } from './UniformBuffer';
 import { Light } from './lights/Light';
+import { colorToLinear, srgbToLinear } from './utilities/colorUtilities';
 
 interface IScene extends IEntity {
   renderList: Entity[];
@@ -36,6 +37,7 @@ class Scene extends Entity implements IScene {
   sceneUniformsBindGroup: GPUBindGroup | null = null;
   isInitialized: boolean;
   clearColor: GPUColor;
+  clearColorSRGB: GPUColor;
   ambientLight: { color: Float32Array; intensity: number };
   lights: Light[];
   lightsNeedUpdate: boolean;
@@ -46,6 +48,7 @@ class Scene extends Entity implements IScene {
     this.renderList = [];
     this.renderListNeedsUpdate = false;
     this.isInitialized = false;
+    this.clearColorSRGB = { r: 0, g: 0, b: 0, a: 1 };
     this.clearColor = { r: 0, g: 0, b: 0, a: 1 };
     this.ambientLight = {
       color: new Float32Array([1, 1, 1, 1]),
@@ -71,7 +74,7 @@ class Scene extends Entity implements IScene {
 
   createSceneUniformsBuffer() {
     this.sceneUniformsBuffer = new UniformBuffer({
-      ambientLightColor: { type: 'vec4<f32>', value: this.ambientLight.color },
+      ambientLightColor: { type: 'vec4<f32>', value: colorToLinear(this.ambientLight.color) },
       ambientLightIntensity: { type: 'f32', value: this.ambientLight.intensity },
     });
   }
@@ -93,9 +96,9 @@ class Scene extends Entity implements IScene {
       positions[base + 2] = light.position[2];
       positions[base + 3] = 1;
 
-      colors[base + 0] = light.color[0];
-      colors[base + 1] = light.color[1];
-      colors[base + 2] = light.color[2];
+      colors[base + 0] = srgbToLinear(light.color[0]);
+      colors[base + 1] = srgbToLinear(light.color[1]);
+      colors[base + 2] = srgbToLinear(light.color[2]);
       colors[base + 3] = light.color[3];
 
       params[base + 0] = light.intensity;
@@ -140,21 +143,23 @@ class Scene extends Entity implements IScene {
 
   setClearColor(color: GPUColor | [number, number, number, number] | Float32Array) {
     if (Array.isArray(color) || color instanceof Float32Array) {
-      this.clearColor = { r: color[0], g: color[1], b: color[2], a: color[3] };
+      this.clearColorSRGB = { r: color[0], g: color[1], b: color[2], a: color[3] };
     } else {
-      this.clearColor = color;
+      this.clearColorSRGB = color;
     }
+    this.clearColor = {
+      r: srgbToLinear(this.clearColorSRGB.r as number),
+      g: srgbToLinear(this.clearColorSRGB.g as number),
+      b: srgbToLinear(this.clearColorSRGB.b as number),
+      a: this.clearColorSRGB.a,
+    };
   }
 
   setAmbientLightColor(color: Float32Array | [number, number, number, number]) {
-    if (Array.isArray(color) || color instanceof Float32Array) {
-      this.ambientLight.color = new Float32Array([color[0], color[1], color[2], color[3]]);
-    } else {
-      this.ambientLight.color = color;
-    }
+    this.ambientLight.color = new Float32Array([color[0], color[1], color[2], color[3]]);
 
     this.sceneUniformsBuffer?.updateUniform({
-      ambientLightColor: this.ambientLight.color,
+      ambientLightColor: colorToLinear(this.ambientLight.color),
     });
   }
 

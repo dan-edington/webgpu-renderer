@@ -3,6 +3,7 @@ import { errorMessages } from '../../constants/errorMessages';
 import { Mesh } from '../../Mesh';
 import { PerspectiveCamera } from '../../PerspectiveCamera';
 import { Scene } from '../../Scene';
+import { PassContext } from '../PassManager';
 import { Pass, PassOptions } from './Pass';
 
 class RenderPass extends Pass {
@@ -10,15 +11,27 @@ class RenderPass extends Pass {
     super(options);
   }
 
-  private buildRenderPassDescriptor(scene: Scene): GPURenderPassDescriptor {
+  private buildRenderPassDescriptor(scene: Scene, passContext: PassContext): GPURenderPassDescriptor {
     if (!this.rendererInstance.context) throw new Error(errorMessages.missingContext);
     if (!this.rendererInstance.depthTexture?.depthTexture) throw new Error(errorMessages.missingDepthTexture);
 
-    const msaaCount = this.rendererInstance.multiSampling;
-    const swapchainView = this.rendererInstance.context.getCurrentTexture().createView();
-    const colorView =
-      msaaCount > 1 ? this.rendererInstance.contextManager.multiSampleTexture.createView() : swapchainView;
-    const resolveTarget = msaaCount > 1 ? swapchainView : undefined;
+    const outputName = passContext.route.output;
+    if (!outputName) throw new Error('RenderPass route.output is not defined.');
+
+    const msaaEnabled = this.rendererInstance.multiSampling > 1;
+
+    const outputTarget = passContext.validateRenderTarget(
+      outputName,
+      passContext.width,
+      passContext.height,
+      constants.INTERNAL_COLOR_FORMAT,
+    );
+
+    const colorView = msaaEnabled
+      ? this.rendererInstance.contextManager.multiSampleTexture.createView()
+      : outputTarget.view;
+
+    const resolveTarget = msaaEnabled ? outputTarget.view : undefined;
 
     return {
       label: this.name,
@@ -40,8 +53,13 @@ class RenderPass extends Pass {
     };
   }
 
-  override runPass(commandEncoder: GPUCommandEncoder, scene: Scene, camera: PerspectiveCamera) {
-    const renderPassDescriptor = this.buildRenderPassDescriptor(scene);
+  override runPass(
+    commandEncoder: GPUCommandEncoder,
+    scene: Scene,
+    camera: PerspectiveCamera,
+    passContext: PassContext,
+  ) {
+    const renderPassDescriptor = this.buildRenderPassDescriptor(scene, passContext);
 
     const pass = commandEncoder.beginRenderPass(renderPassDescriptor);
 

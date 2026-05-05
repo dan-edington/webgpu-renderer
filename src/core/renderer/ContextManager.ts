@@ -1,3 +1,4 @@
+import { constants } from '../constants/constants';
 import { errorMessages } from '../constants/errorMessages';
 
 interface IContextManager {
@@ -50,8 +51,9 @@ class ContextManager implements IContextManager {
     });
 
     this.canvasTexture = this.context.getCurrentTexture();
+
     this.multiSampleTexture = this.device.createTexture({
-      format: this.canvasTexture.format,
+      format: constants.INTERNAL_COLOR_FORMAT,
       usage: GPUTextureUsage.RENDER_ATTACHMENT,
       size: [this.canvasTexture.width, this.canvasTexture.height],
       sampleCount: options.multiSampling,
@@ -85,7 +87,7 @@ class ContextManager implements IContextManager {
 
     this.multiSampleTexture.destroy();
     this.multiSampleTexture = this.device.createTexture({
-      format: this.presentationFormat,
+      format: constants.INTERNAL_COLOR_FORMAT,
       usage: GPUTextureUsage.RENDER_ATTACHMENT,
       size: [width, height],
       sampleCount: multiSampling,
