@@ -24,6 +24,7 @@ interface IScene extends IEntity {
   createSceneUniformsBuffer(): void;
   createSceneUniformsBindGroup(renderer: Renderer): void;
   setClearColor(color: GPUColor | [number, number, number, number] | Float32Array): void;
+  setAmbientLight(ambientLight: { color: Float32Array | [number, number, number, number]; intensity: number }): void;
   setAmbientLightColor(color: Float32Array | [number, number, number, number]): void;
   setAmbientLightIntensity(intensity: number): void;
   updateRenderList(): void;
@@ -52,7 +53,7 @@ class Scene extends Entity implements IScene {
     this.clearColor = { r: 0, g: 0, b: 0, a: 1 };
     this.ambientLight = {
       color: new Float32Array([1, 1, 1, 1]),
-      intensity: 0.1,
+      intensity: 0.0,
     };
     this.lights = [];
     this.lightsNeedUpdate = false;
@@ -153,6 +154,11 @@ class Scene extends Entity implements IScene {
       b: srgbToLinear(this.clearColorSRGB.b as number),
       a: this.clearColorSRGB.a,
     };
+  }
+
+  setAmbientLight(ambientLight: { color: Float32Array | [number, number, number, number]; intensity: number }) {
+    this.setAmbientLightColor(ambientLight.color);
+    this.setAmbientLightIntensity(ambientLight.intensity);
   }
 
   setAmbientLightColor(color: Float32Array | [number, number, number, number]) {
