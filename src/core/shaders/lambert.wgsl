@@ -19,7 +19,8 @@ struct VertexOutput {
   @location(0) worldPosition: vec3f,
   @location(1) normal: vec3f,
   @location(2) uvs: vec2f,
-  @location(3) tangents: vec4f,
+  @location(3) tangent: vec3f,
+  @location(4) bitangent: vec3f,
 };
 
 @vertex
@@ -27,16 +28,21 @@ fn vertex_shader(
   @location(0) pos: vec3<f32>,
   @location(1) normal: vec3<f32>,
   @location(2) uvs: vec2<f32>,
-  @location(3) tangents: vec4<f32>,
+  @location(3) tangent: vec4<f32>,
 ) -> VertexOutput {
 
   var out: VertexOutput;
 
+  let t = normalize((entityUniforms.modelMatrix * vec4f(tangent.xyz, 0.0)).xyz);
+  let n = normalize((entityUniforms.modelMatrix * vec4f(normal, 0.0)).xyz);
+  let b = cross(n, t) * tangent.w;
+
   out.position = cameraUniforms.viewProjectionMatrix * entityUniforms.modelMatrix * vec4f(pos, 1.0);
   out.worldPosition = (entityUniforms.modelMatrix * vec4f(pos, 1.0)).xyz;
-  out.normal = normalize((entityUniforms.modelMatrix * vec4f(normal, 0.0)).xyz);
+  out.normal = n;
+  out.tangent = t;
+  out.bitangent = b;
   out.uvs = uvs;
-  out.tangents = tangents;
 
   return out;
 }
@@ -48,10 +54,10 @@ fn fragment_shader(
 
   // #include "materialFlags"
   // #include "fragmentColorAndAlpha"
+  // #include "normals"
   // #include "ambientLight"
 
   var accumulatedLight = ambientLight;
-  let n = normalize(in.normal);
 
   // Loop through all lights
   for (var i = 0u; i < lightUniforms.count; i = i + 1) {
@@ -66,7 +72,7 @@ fn fragment_shader(
     let lightDir = normalize(lightVector);
     
     // Lambert diffuse
-    let diffuse = max(0.0, dot(lightDir, n));
+    let diffuse = max(0.0, dot(lightDir, normal));
     
     // 1/distance² falloff
     let distSq = distance * distance;

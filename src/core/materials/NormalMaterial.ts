@@ -2,7 +2,7 @@ import { Renderer } from '../renderer/Renderer';
 import { Texture } from '../Texture';
 import { Material, MaterialFlag } from './Material';
 
-type LambertMaterialOptions = {
+type NormalMaterialOptions = {
   name?: string;
   normalTexture?: Texture | null;
 };
@@ -10,16 +10,18 @@ type LambertMaterialOptions = {
 class NormalMaterial extends Material {
   private _normalTexture: Texture | null;
 
-  constructor(options: LambertMaterialOptions = {}) {
+  constructor(options: NormalMaterialOptions = {}) {
+    let initialFlags = MaterialFlag.None;
+    if (options.normalTexture) initialFlags |= MaterialFlag.Normal;
+
     super({
       name: options.name,
       type: 'normal',
       shader: 'normal',
+      initialFlags,
     });
 
     this._normalTexture = options.normalTexture ?? null;
-
-    if (this._normalTexture) this.materialFlag |= MaterialFlag.Normal;
   }
 
   get normalTexture(): Texture | null {
@@ -39,9 +41,12 @@ class NormalMaterial extends Material {
       throw new Error('Normal material resources are missing.');
     }
 
+    if (!this.materialUniformsBuffer?.buffer) return [];
+
     return [
-      { binding: 0, resource: normalTexture.getView() },
-      { binding: 1, resource: sampler },
+      { binding: 0, resource: { buffer: this.materialUniformsBuffer.buffer } },
+      { binding: 1, resource: normalTexture.getView() },
+      { binding: 2, resource: sampler },
     ];
   }
 
@@ -51,12 +56,18 @@ class NormalMaterial extends Material {
         // binding 0: material uniforms (color, etc.)
         {
           binding: 0,
-          visibility: GPUShaderStage.FRAGMENT,
-          texture: { sampleType: 'float' },
+          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+          buffer: { type: 'uniform' },
         },
         // binding 1: sampler for color textures
         {
           binding: 1,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: { sampleType: 'float' },
+        },
+        // binding 2: sampler for color textures
+        {
+          binding: 2,
           visibility: GPUShaderStage.FRAGMENT,
           sampler: { type: 'filtering' },
         },
