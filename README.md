@@ -13,6 +13,7 @@ Currently supports:
 - Normal material
 - Alpha maps
 - Albedo texture maps
+- Normal maps
 - Multisampling
 - Sorted alpha blending
 - Point lights
