@@ -39,8 +39,9 @@ fn fragment_shader(
 ) -> @location(0) vec4f {
 
   // #include "materialFlags"
+  // #include "fragmentColorAndAlpha"
 
-  let finalColor = textureSample(albedoTexture, materialSampler, in.uvs.xy).rgba;
+  var finalColor = vec4f(fragmentColor, fragmentAlpha);
 
   return finalColor;
 }
