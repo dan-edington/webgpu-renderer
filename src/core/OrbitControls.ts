@@ -15,6 +15,7 @@ class OrbitControls {
   radius: number = 0;
   rotationSpeed: number = 0.005;
   currentRotation: Float32Array = new Float32Array([0, 0]);
+  abortController: AbortController | null = null;
 
   constructor(options: OrbitControlsOptions) {
     this.camera = options.camera;
@@ -25,29 +26,38 @@ class OrbitControls {
     this.initEventListeners();
   }
 
-  calculateCurrentRadiusAndRotation() {
+  private updateCurrentRadiusAndRotation() {
     const cameraToTargetVector = vec3.sub(this.camera.position, this.target);
     this.radius = vec3.len(cameraToTargetVector);
     this.currentRotation[0] = Math.atan2(cameraToTargetVector[0], cameraToTargetVector[2]);
     this.currentRotation[1] = Math.asin(Math.max(-1, Math.min(1, cameraToTargetVector[1] / this.radius)));
   }
 
-  initEventListeners() {
-    this.domElement.addEventListener('pointerdown', () => this.handleDragStart.call(this));
-    this.domElement.addEventListener('pointerup', () => this.handleDragEnd.call(this));
+  private initEventListeners() {
+    this.abortController = new AbortController();
+    this.domElement.addEventListener('pointerdown', () => this.handleDragStart.call(this), {
+      signal: this.abortController.signal,
+    });
+    this.domElement.addEventListener('pointerup', () => this.handleDragEnd.call(this), {
+      signal: this.abortController.signal,
+    });
   }
 
-  handleDragStart() {
+  destroy() {
+    this.abortController?.abort();
+  }
+
+  private handleDragStart() {
     this.isDragging = true;
-    this.calculateCurrentRadiusAndRotation();
-    this.domElement.addEventListener('pointermove', this.handleDrag);
+    this.updateCurrentRadiusAndRotation();
+    this.domElement.addEventListener('pointermove', this.handleDrag, { signal: this.abortController?.signal });
   }
 
-  handleDragEnd() {
+  private handleDragEnd() {
     this.isDragging = false;
   }
 
-  handleDrag = (event: PointerEvent) => {
+  private handleDrag = (event: PointerEvent) => {
     if (!this.isDragging) {
       this.domElement.removeEventListener('pointermove', this.handleDrag);
       return;
