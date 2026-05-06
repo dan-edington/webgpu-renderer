@@ -19,6 +19,10 @@ class UnlitMaterial extends Material {
   constructor(options: UnlitMaterialOptions = {}) {
     const color = new Float32Array(options.color ?? [1, 1, 1, 1]);
 
+    let initialFlags = MaterialFlags.None;
+    if (options.alphaTexture) initialFlags |= MaterialFlags.Alpha;
+    if (options.albedoTexture) initialFlags |= MaterialFlags.Albedo;
+
     super({
       name: options.name,
       type: 'unlit',
@@ -27,14 +31,12 @@ class UnlitMaterial extends Material {
         color: { type: 'vec4<f32>', value: colorToLinear(color) },
       },
       transparent: options.transparent ?? false,
+      initialFlags,
     });
 
     this._color = color;
     this._albedoTexture = options.albedoTexture ?? null;
     this._alphaTexture = options.alphaTexture ?? null;
-
-    if (this._albedoTexture) this.materialFlags |= MaterialFlags.Albedo;
-    if (this._alphaTexture) this.materialFlags |= MaterialFlags.Alpha;
   }
 
   get color(): Float32Array {
