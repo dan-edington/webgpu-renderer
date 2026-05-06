@@ -35,7 +35,7 @@ class PostProcessingPass extends Pass {
   }
 
   private createPipeline() {
-    const Pipeline = this.rendererInstance.pipelineLibrary?.getPipeline('postprocessing');
+    const Pipeline = this.rendererInstance.pipelineLibrary?.getPipelineContructor('postprocessing');
     if (!Pipeline) throw new Error(errorMessages.missingPipeline);
 
     this.pipeline = Pipeline.createPipeline({

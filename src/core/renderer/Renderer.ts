@@ -133,9 +133,9 @@ class Renderer implements IRenderer {
 
   private configurePipelines() {
     this.pipelineLibrary = new PipelineLibrary();
-    this.pipelineLibrary.registerPipeline('opaque', OpaquePipeline);
-    this.pipelineLibrary.registerPipeline('alpha', AlphaPipeline);
-    this.pipelineLibrary.registerPipeline('postprocessing', PostProcessingPipeline);
+    this.pipelineLibrary.registerPipelineConstructor('opaque', OpaquePipeline);
+    this.pipelineLibrary.registerPipelineConstructor('alpha', AlphaPipeline);
+    this.pipelineLibrary.registerPipelineConstructor('postprocessing', PostProcessingPipeline);
   }
 
   private configurePasses() {
