@@ -29,7 +29,7 @@ interface IScene extends IEntity {
   updateRenderList(): void;
 }
 
-class Scene extends Entity implements IScene {
+abstract class Scene extends Entity implements IScene {
   renderList: Entity[];
   renderListNeedsUpdate: boolean;
   sceneUniformsBuffer: UniformBuffer | null = null;
