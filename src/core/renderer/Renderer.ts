@@ -193,7 +193,8 @@ class Renderer implements IRenderer {
 
     scene.sceneUniformsBuffer.writeUpdatedBufferData();
     scene.lightUniformsBuffer.writeUpdatedBufferData();
-    camera.cameraUniformsBuffer.writeUpdatedBufferData();
+
+    camera.updateCameraUniforms();
   }
 
   render(scene: Scene, camera: PerspectiveCamera) {
