@@ -1,6 +1,6 @@
 import { Entity } from './Entity';
 
-class Group extends Entity {
+abstract class Group extends Entity {
   constructor() {
     super('Group');
   }

@@ -18,6 +18,7 @@ interface IUniformBuffer {
   init(renderer: Renderer): void;
   updateUniform(updatedUniforms: Record<string, UniformValueInput>): void;
   writeUpdatedBufferData(): void;
+  destroy(): void;
 }
 
 type UniformBufferOptions = {
@@ -124,6 +125,13 @@ class UniformBuffer implements IUniformBuffer {
     if (!this.bufferData) throw new Error('Buffer data not computed');
 
     writeUniformValuesToBuffer(this.uniforms, this.bufferData, this.layoutEntries);
+  }
+
+  destroy() {
+    if (this.buffer) {
+      this.buffer.destroy();
+      this.buffer = null;
+    }
   }
 }
 

@@ -29,7 +29,15 @@ class CanvasManager implements ICanvasManager {
       throw new Error('Invalid container element');
     }
 
-    window.addEventListener('resize', () => this.updateCanvasSize.call(this));
+    this.initEventListeners();
+  }
+
+  initEventListeners() {
+    const onResize = () => {
+      this.updateCanvasSize();
+    };
+
+    window.addEventListener('resize', onResize);
   }
 
   updateCanvasSize() {

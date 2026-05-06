@@ -11,6 +11,7 @@ class PostProcessingPass extends Pass {
   pipeline?: GPURenderPipeline;
   bindGroup: GPUBindGroup | null = null;
   boundInputView: GPUTextureView | null = null;
+  sampler: GPUSampler;
 
   constructor(options: PassOptions) {
     super(options);
@@ -23,11 +24,18 @@ class PostProcessingPass extends Pass {
 
     this.geometry = new Geometry({ vertices, indices, uvs, normals });
     this.geometry.init(this.rendererInstance);
+    this.sampler =
+      this.rendererInstance.samplerLibrary?.getSampler('linear') ||
+      this.rendererInstance.device.createSampler({
+        magFilter: 'linear',
+        minFilter: 'linear',
+      });
+
     this.createPipeline();
   }
 
   private createPipeline() {
-    const Pipeline = this.rendererInstance.pipelineLibrary?.getPipeline('postprocessing');
+    const Pipeline = this.rendererInstance.pipelineLibrary?.getPipelineContructor('postprocessing');
     if (!Pipeline) throw new Error(errorMessages.missingPipeline);
 
     this.pipeline = Pipeline.createPipeline({
@@ -38,15 +46,10 @@ class PostProcessingPass extends Pass {
   private buildBindGroup(inputView: GPUTextureView): GPUBindGroup {
     if (!this.pipeline) throw new Error(errorMessages.missingPipeline);
 
-    const sampler = this.rendererInstance.device.createSampler({
-      magFilter: 'linear',
-      minFilter: 'linear',
-    });
-
     return this.rendererInstance.device.createBindGroup({
       layout: this.pipeline.getBindGroupLayout(constants.bindGroupIndices.POSTPROCESSING),
       entries: [
-        { binding: 0, resource: sampler },
+        { binding: 0, resource: this.sampler },
         { binding: 1, resource: inputView },
       ],
     });

@@ -225,6 +225,14 @@ class Geometry implements IGeometry {
 
     renderer.device.queue.writeBuffer(this.tangentBuffer, 0, this.tangents.buffer);
   }
+
+  destroy() {
+    this.vertexBuffer?.destroy();
+    this.indexBuffer?.destroy();
+    this.normalBuffer?.destroy();
+    this.uvBuffer?.destroy();
+    this.tangentBuffer?.destroy();
+  }
 }
 
 export { Geometry };

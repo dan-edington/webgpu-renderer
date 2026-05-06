@@ -21,9 +21,10 @@ export interface IEntity {
   setScale(x: number, y: number, z: number): void;
   setRotation(x: number, y: number, z: number): void;
   setQuaternion(x: number, y: number, z: number, w: number): void;
+  destroy(): void;
 }
 
-class Entity implements IEntity {
+abstract class Entity implements IEntity {
   type: string;
   id: uuid;
   name?: string;
@@ -88,6 +89,7 @@ class Entity implements IEntity {
     }
 
     entity.parent = null;
+    entity.destroy();
   }
 
   public setPosition(x: number, y: number, z: number) {
@@ -156,8 +158,6 @@ class Entity implements IEntity {
     return this._visible;
   }
 
-  protected onMatrixUpdated(): void {}
-
   private isLightEntity(entity: Entity): boolean {
     return entity.isLight;
   }
@@ -179,6 +179,10 @@ class Entity implements IEntity {
       currentNode = currentNode.parent;
     }
   }
+
+  protected onMatrixUpdated(): void {}
+
+  abstract destroy(): void;
 }
 
 export { Entity };

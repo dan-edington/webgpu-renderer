@@ -170,6 +170,10 @@ abstract class Material implements IMaterial {
   static getMaterialLayoutDescriptor() {
     throw new Error('getMaterialLayoutDescriptor must be implemented by subclasses of Material.');
   }
+
+  destroy() {
+    this.materialUniformsBuffer?.destroy();
+  }
 }
 
 export { Material };
