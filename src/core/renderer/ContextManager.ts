@@ -10,6 +10,7 @@ interface IContextManager {
   presentationFormat: GPUTextureFormat;
   canvasTexture: GPUTexture;
   multiSampleTexture: GPUTexture;
+  multiSampleTextureView: GPUTextureView;
   resize(width: number, height: number, multiSampling: number): void;
 }
 
@@ -35,6 +36,7 @@ class ContextManager implements IContextManager {
   presentationFormat: GPUTextureFormat;
   canvasTexture: GPUTexture;
   multiSampleTexture: GPUTexture;
+  multiSampleTextureView: GPUTextureView;
 
   private constructor(options: ContextManagerOptions) {
     this.alpha = options.alpha ?? true;
@@ -58,6 +60,8 @@ class ContextManager implements IContextManager {
       size: [this.canvasTexture.width, this.canvasTexture.height],
       sampleCount: options.multiSampling,
     });
+
+    this.multiSampleTextureView = this.multiSampleTexture.createView();
   }
 
   static async create(options: ContextManagerCreateOptions): Promise<ContextManager> {
@@ -86,12 +90,15 @@ class ContextManager implements IContextManager {
     this.canvasTexture = this.context.getCurrentTexture();
 
     this.multiSampleTexture.destroy();
+
     this.multiSampleTexture = this.device.createTexture({
       format: constants.INTERNAL_COLOR_FORMAT,
       usage: GPUTextureUsage.RENDER_ATTACHMENT,
       size: [width, height],
       sampleCount: multiSampling,
     });
+
+    this.multiSampleTextureView = this.multiSampleTexture.createView();
   }
 }
 

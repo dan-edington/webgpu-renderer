@@ -13,7 +13,7 @@ class RenderPass extends Pass {
 
   private buildRenderPassDescriptor(scene: Scene, passContext: PassContext): GPURenderPassDescriptor {
     if (!this.rendererInstance.context) throw new Error(errorMessages.missingContext);
-    if (!this.rendererInstance.depthTexture?.gpuTexture) throw new Error(errorMessages.missingDepthTexture);
+    if (!this.rendererInstance.depthTexture?.gpuTextureView) throw new Error(errorMessages.missingDepthTexture);
 
     const outputName = passContext.route.output;
     if (!outputName) throw new Error('RenderPass route.output is not defined.');
@@ -27,9 +27,7 @@ class RenderPass extends Pass {
       constants.INTERNAL_COLOR_FORMAT,
     );
 
-    const colorView = msaaEnabled
-      ? this.rendererInstance.contextManager.multiSampleTexture.createView()
-      : outputTarget.view;
+    const colorView = msaaEnabled ? this.rendererInstance.contextManager.multiSampleTextureView : outputTarget.view;
 
     const resolveTarget = msaaEnabled ? outputTarget.view : undefined;
 
@@ -45,7 +43,7 @@ class RenderPass extends Pass {
         },
       ],
       depthStencilAttachment: {
-        view: this.rendererInstance.depthTexture.gpuTexture.createView(),
+        view: this.rendererInstance.depthTexture.gpuTextureView,
         depthClearValue: 1.0,
         depthLoadOp: 'clear',
         depthStoreOp: 'store',
