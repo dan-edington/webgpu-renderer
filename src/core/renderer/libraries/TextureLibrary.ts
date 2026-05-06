@@ -5,7 +5,6 @@ import { TextureKey } from '../../types';
 
 class TextureLibrary {
   private device: GPUDevice | null = null;
-  private queue: GPUQueue | null = null;
   private textures: Map<TextureKey, Texture>;
   private fallbackTextures: {
     white: Texture;
@@ -44,7 +43,7 @@ class TextureLibrary {
       const blob = await response.blob();
       const imageBitmap = await createImageBitmap(blob);
 
-      if (!this.device || !this.queue) {
+      if (!this.device) {
         throw new Error(errorMessages.missingTextureLibraryDeviceOrQueue);
       }
 

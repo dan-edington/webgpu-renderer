@@ -3,7 +3,7 @@ import { Renderer } from '../renderer/Renderer';
 import { MaterialType, UniformValue, UniformValueInput, uuid } from '../types';
 import { UniformBuffer } from '../UniformBuffer';
 
-export const enum MaterialFlag {
+export const enum MaterialFlags {
   None = 0,
   Alpha = 1 << 0,
   Normal = 1 << 1,
@@ -27,7 +27,7 @@ interface IMaterial {
   transparent: boolean;
   readonly usesAlphaPipeline: boolean;
   isInitialized: boolean;
-  materialFlag: MaterialFlag;
+  materialFlags: MaterialFlags;
   init(renderer: Renderer): void;
   getPipelineCacheKey(): string;
   updateUniforms(updatedUniforms: Record<string, UniformValueInput>): void;
@@ -43,7 +43,7 @@ type MaterialOptions = {
   name?: string;
   type: MaterialType;
   transparent?: boolean;
-  initialFlags?: MaterialFlag;
+  initialFlags?: MaterialFlags;
 };
 
 abstract class Material implements IMaterial {
@@ -63,7 +63,7 @@ abstract class Material implements IMaterial {
   isInitialized: boolean = false;
   transparent: boolean;
   protected rendererInstance: Renderer | null = null;
-  materialFlag: MaterialFlag;
+  materialFlags: MaterialFlags;
 
   constructor(options: MaterialOptions) {
     this.id = crypto.randomUUID();
@@ -76,11 +76,11 @@ abstract class Material implements IMaterial {
       fragment: 'fragment_shader',
     };
     this.transparent = options.transparent ?? false;
-    this.materialFlag = options.initialFlags ?? MaterialFlag.None;
+    this.materialFlags = options.initialFlags ?? MaterialFlags.None;
 
     // materialFlag must be first to match the WGSL struct memory layout!
     this.materialUniforms = {
-      materialFlag: { type: 'u32', value: this.materialFlag },
+      materialFlags: { type: 'u32', value: this.materialFlags },
       ...(options.uniforms ?? {}),
     };
 
@@ -117,13 +117,13 @@ abstract class Material implements IMaterial {
     this.materialUniformsBuffer?.updateUniform(updatedUniforms);
   }
 
-  protected setMaterialFlag(flag: MaterialFlag, enabled: boolean) {
-    const nextFlags = enabled ? this.materialFlag | flag : this.materialFlag & ~flag;
+  protected setMaterialFlags(flag: MaterialFlags, enabled: boolean) {
+    const nextFlags = enabled ? this.materialFlags | flag : this.materialFlags & ~flag;
 
-    if (nextFlags === this.materialFlag) return;
+    if (nextFlags === this.materialFlags) return;
 
-    this.materialFlag = nextFlags as MaterialFlag;
-    this.updateUniforms({ materialFlag: this.materialFlag });
+    this.materialFlags = nextFlags as MaterialFlags;
+    this.updateUniforms({ materialFlags: this.materialFlags });
   }
 
   private createShaderModule(device: GPUDevice) {

@@ -1,6 +1,6 @@
 import { Renderer } from '../renderer/Renderer';
 import { Texture } from '../Texture';
-import { Material, MaterialFlag } from './Material';
+import { Material, MaterialFlags } from './Material';
 
 type NormalMaterialOptions = {
   name?: string;
@@ -11,8 +11,8 @@ class NormalMaterial extends Material {
   private _normalTexture: Texture | null;
 
   constructor(options: NormalMaterialOptions = {}) {
-    let initialFlags = MaterialFlag.None;
-    if (options.normalTexture) initialFlags |= MaterialFlag.Normal;
+    let initialFlags = MaterialFlags.None;
+    if (options.normalTexture) initialFlags |= MaterialFlags.Normal;
 
     super({
       name: options.name,
@@ -59,7 +59,7 @@ class NormalMaterial extends Material {
           visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
           buffer: { type: 'uniform' },
         },
-        // binding 1: sampler for color textures
+        // binding 1: texture
         {
           binding: 1,
           visibility: GPUShaderStage.FRAGMENT,

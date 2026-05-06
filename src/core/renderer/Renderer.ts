@@ -189,11 +189,11 @@ class Renderer implements IRenderer {
 
     if (!scene.sceneUniformsBuffer) throw new Error(errorMessages.missingSceneUniformsBuffer);
     if (!scene.lightUniformsBuffer) throw new Error(errorMessages.missingLightUniformsBuffer);
-    if (!camera.cameraUniformBuffer?.buffer) throw new Error(errorMessages.missingCameraBuffer);
+    if (!camera.cameraUniformsBuffer?.buffer) throw new Error(errorMessages.missingCameraBuffer);
 
     scene.sceneUniformsBuffer.writeUpdatedBufferData();
     scene.lightUniformsBuffer.writeUpdatedBufferData();
-    camera.cameraUniformBuffer.writeUpdatedBufferData();
+    camera.cameraUniformsBuffer.writeUpdatedBufferData();
   }
 
   render(scene: Scene, camera: PerspectiveCamera) {

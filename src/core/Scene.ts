@@ -22,7 +22,6 @@ interface IScene extends IEntity {
   lightsNeedUpdate: boolean;
   init(renderer: Renderer): void;
   createSceneUniformsBuffer(): void;
-  createSceneUniformsBindGroup(renderer: Renderer): void;
   setClearColor(color: GPUColor | [number, number, number, number] | Float32Array): void;
   setAmbientLight(ambientLight: { color: Float32Array | [number, number, number, number]; intensity: number }): void;
   setAmbientLightColor(color: Float32Array | [number, number, number, number]): void;
@@ -122,7 +121,7 @@ class Scene extends Entity implements IScene {
     );
   }
 
-  createSceneUniformsBindGroup(renderer: Renderer) {
+  private createSceneUniformsBindGroup(renderer: Renderer) {
     if (!renderer.sceneBindGroupLayout) throw new Error(errorMessages.missingSceneBindGroupLayout);
 
     if (this.sceneUniformsBuffer?.buffer && this.lightUniformsBuffer?.buffer) {

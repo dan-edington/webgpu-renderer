@@ -63,7 +63,7 @@ class RenderPass extends Pass {
 
     const pass = commandEncoder.beginRenderPass(renderPassDescriptor);
 
-    pass.setBindGroup(constants.bindGroupIndices.CAMERA, camera.cameraBindGroup);
+    pass.setBindGroup(constants.bindGroupIndices.CAMERA, camera.cameraUniformsBindGroup);
     pass.setBindGroup(constants.bindGroupIndices.SCENE, scene.sceneUniformsBindGroup);
 
     const opaqueEntities = scene.renderList.filter(

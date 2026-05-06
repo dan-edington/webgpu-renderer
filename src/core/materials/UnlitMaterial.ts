@@ -1,4 +1,4 @@
-import { Material, MaterialFlag } from './Material';
+import { Material, MaterialFlags } from './Material';
 import { Renderer } from '../renderer/Renderer';
 import { Texture } from '../Texture';
 import { colorToLinear } from '../utilities/colorUtilities';
@@ -24,7 +24,7 @@ class UnlitMaterial extends Material {
       type: 'unlit',
       shader: 'unlit',
       uniforms: {
-        uColor: { type: 'vec4<f32>', value: colorToLinear(color) },
+        color: { type: 'vec4<f32>', value: colorToLinear(color) },
       },
       transparent: options.transparent ?? false,
     });
@@ -33,8 +33,8 @@ class UnlitMaterial extends Material {
     this._albedoTexture = options.albedoTexture ?? null;
     this._alphaTexture = options.alphaTexture ?? null;
 
-    if (this._albedoTexture) this.materialFlag |= MaterialFlag.Albedo;
-    if (this._alphaTexture) this.materialFlag |= MaterialFlag.Alpha;
+    if (this._albedoTexture) this.materialFlags |= MaterialFlags.Albedo;
+    if (this._alphaTexture) this.materialFlags |= MaterialFlags.Alpha;
   }
 
   get color(): Float32Array {
@@ -43,7 +43,7 @@ class UnlitMaterial extends Material {
 
   set color(value: ArrayLike<number>) {
     this._color = new Float32Array(value);
-    this.updateUniforms({ uColor: colorToLinear(this._color) });
+    this.updateUniforms({ color: colorToLinear(this._color) });
   }
 
   get albedoTexture(): Texture | null {
@@ -61,7 +61,7 @@ class UnlitMaterial extends Material {
 
   set alphaTexture(value: Texture | null) {
     this._alphaTexture = value;
-    this.setMaterialFlag(MaterialFlag.Alpha, value !== null);
+    this.setMaterialFlags(MaterialFlags.Alpha, value !== null);
     this.recreateMaterialBindGroup();
   }
 

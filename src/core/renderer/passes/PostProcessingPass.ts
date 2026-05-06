@@ -1,3 +1,4 @@
+import { constants } from '../../constants/constants';
 import { errorMessages } from '../../constants/errorMessages';
 import { Geometry } from '../../Geometry';
 import { PerspectiveCamera } from '../../PerspectiveCamera';
@@ -15,11 +16,8 @@ class PostProcessingPass extends Pass {
     super(options);
 
     const vertices = new Float32Array([-1, -1, 0, 1, -1, 0, -1, 1, 0, 1, 1, 0]);
-    const uvs = new Float32Array([0, 0, 1, 0, 0, 1, 1, 1]);
-    // flip uvs to match WebGPU texture coordinate system
-    for (let i = 1; i < uvs.length; i += 2) {
-      uvs[i] = 1 - uvs[i];
-    }
+    const uvs = new Float32Array([0, 1, 1, 1, 0, 0, 1, 0]);
+
     const indices = new Uint16Array([0, 1, 2, 2, 1, 3]);
     const normals = new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
 
@@ -29,10 +27,10 @@ class PostProcessingPass extends Pass {
   }
 
   private createPipeline() {
-    const PipeLine = this.rendererInstance.pipelineLibrary?.getPipeline('postprocessing');
-    if (!PipeLine) throw new Error(errorMessages.missingPipeline);
+    const Pipeline = this.rendererInstance.pipelineLibrary?.getPipeline('postprocessing');
+    if (!Pipeline) throw new Error(errorMessages.missingPipeline);
 
-    this.pipeline = PipeLine.createPipeline({
+    this.pipeline = Pipeline.createPipeline({
       renderer: this.rendererInstance,
     });
   }
@@ -46,7 +44,7 @@ class PostProcessingPass extends Pass {
     });
 
     return this.rendererInstance.device.createBindGroup({
-      layout: this.pipeline.getBindGroupLayout(0),
+      layout: this.pipeline.getBindGroupLayout(constants.bindGroupIndices.POSTPROCESSING),
       entries: [
         { binding: 0, resource: sampler },
         { binding: 1, resource: inputView },
@@ -94,7 +92,7 @@ class PostProcessingPass extends Pass {
 
     const pass = commandEncoder.beginRenderPass(renderPassDescriptor);
     pass.setPipeline(this.pipeline);
-    pass.setBindGroup(0, this.bindGroup);
+    pass.setBindGroup(constants.bindGroupIndices.POSTPROCESSING, this.bindGroup);
 
     pass.setVertexBuffer(0, this.geometry.vertexBuffer);
     pass.setVertexBuffer(1, this.geometry.normalBuffer);

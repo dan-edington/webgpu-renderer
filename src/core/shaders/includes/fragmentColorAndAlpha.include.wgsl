@@ -1,5 +1,5 @@
-var fragmentColor = materialUniforms.uColor.rgb;
-var fragmentAlpha = materialUniforms.uColor.a;
+var fragmentColor = materialUniforms.color.rgb;
+var fragmentAlpha = materialUniforms.color.a;
 
 if (hasAlbedoMap) {
   fragmentColor = textureSample(albedoTexture, materialSampler, in.uvs.xy).rgb;

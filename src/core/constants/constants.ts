@@ -4,6 +4,7 @@ const constants = {
     SCENE: 1,
     MATERIAL: 2,
     ENTITY: 3,
+    POSTPROCESSING: 0,
   },
   MAX_LIGHTS: 64,
   INTERNAL_COLOR_FORMAT: 'rgba16float' as GPUTextureFormat,

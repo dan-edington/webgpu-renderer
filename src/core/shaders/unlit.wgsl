@@ -5,7 +5,7 @@
 
 struct MaterialUniforms {
   materialFlag: u32,
-  uColor: vec4f,
+  color: vec4f,
 };
 
 @group(2) @binding(0) var<uniform> materialUniforms: MaterialUniforms;

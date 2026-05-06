@@ -11,7 +11,7 @@ interface IMesh extends IEntity {
   material: Material;
   pipeline: GPURenderPipeline | null;
   isInitialized: boolean;
-  entityBuffer: UniformBuffer | null;
+  entityUniformsBuffer: UniformBuffer | null;
   entityUniformsBindGroup: GPUBindGroup | null;
   init(renderer: Renderer): void;
   draw(pass: GPURenderPassEncoder, renderer: Renderer): void;
@@ -22,7 +22,7 @@ class Mesh extends Entity implements IMesh {
   material: Material;
   pipeline: GPURenderPipeline | null = null;
   isInitialized: boolean;
-  entityBuffer: UniformBuffer | null = null;
+  entityUniformsBuffer: UniformBuffer | null = null;
   entityUniformsBindGroup: GPUBindGroup | null = null;
 
   constructor(geometry: Geometry, material: Material) {
@@ -38,8 +38,8 @@ class Mesh extends Entity implements IMesh {
     this.createEntityBuffer();
     this.createRenderPipeline(renderer);
 
-    if (this.entityBuffer) {
-      this.entityBuffer.init(renderer);
+    if (this.entityUniformsBuffer) {
+      this.entityUniformsBuffer.init(renderer);
       this.createEntityBindGroup(renderer);
     }
 
@@ -59,7 +59,7 @@ class Mesh extends Entity implements IMesh {
   }
 
   private createEntityBuffer() {
-    this.entityBuffer = new UniformBuffer({
+    this.entityUniformsBuffer = new UniformBuffer({
       modelMatrix: { type: 'mat4x4<f32>', value: this.matrixWorld },
     });
   }
@@ -67,17 +67,17 @@ class Mesh extends Entity implements IMesh {
   private createEntityBindGroup(renderer: Renderer) {
     if (!renderer.entityBindGroupLayout) throw new Error(errorMessages.missingEntityBindGroupLayout);
 
-    if (this.entityBuffer?.buffer && this.pipeline) {
+    if (this.entityUniformsBuffer?.buffer && this.pipeline) {
       this.entityUniformsBindGroup = renderer.device.createBindGroup({
         layout: renderer.entityBindGroupLayout,
-        entries: [{ binding: 0, resource: { buffer: this.entityBuffer.buffer } }],
+        entries: [{ binding: 0, resource: { buffer: this.entityUniformsBuffer.buffer } }],
       });
     }
   }
 
   protected override onMatrixUpdated() {
-    if (this.entityBuffer) {
-      this.entityBuffer.updateUniform({
+    if (this.entityUniformsBuffer) {
+      this.entityUniformsBuffer.updateUniform({
         modelMatrix: this.matrixWorld,
       });
     }
@@ -101,8 +101,8 @@ class Mesh extends Entity implements IMesh {
       this.material.materialUniformsBuffer.writeUpdatedBufferData();
     }
 
-    if (this.entityBuffer) {
-      this.entityBuffer.writeUpdatedBufferData();
+    if (this.entityUniformsBuffer) {
+      this.entityUniformsBuffer.writeUpdatedBufferData();
     }
 
     if (this.entityUniformsBindGroup) {

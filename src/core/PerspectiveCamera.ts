@@ -12,8 +12,8 @@ interface IPerspectiveCamera {
   projectionMatrix: Mat4 | null;
   viewMatrix: Mat4;
   viewProjectionMatrix: Mat4;
-  cameraUniformBuffer: UniformBuffer | null;
-  cameraBindGroup: GPUBindGroup | null;
+  cameraUniformsBuffer: UniformBuffer | null;
+  cameraUniformsBindGroup: GPUBindGroup | null;
   isInitialized: boolean;
   init(renderer: Renderer): void;
   updateProjectionMatrix(): void;
@@ -34,8 +34,8 @@ class PerspectiveCamera extends Entity implements IPerspectiveCamera {
   projectionMatrix: Mat4 | null = null;
   viewMatrix: Mat4;
   viewProjectionMatrix: Mat4;
-  cameraUniformBuffer: UniformBuffer | null = null;
-  cameraBindGroup: GPUBindGroup | null = null;
+  cameraUniformsBuffer: UniformBuffer | null = null;
+  cameraUniformsBindGroup: GPUBindGroup | null = null;
   isInitialized: boolean;
 
   constructor(options: PerspectiveCameraOptions) {
@@ -97,16 +97,16 @@ class PerspectiveCamera extends Entity implements IPerspectiveCamera {
     mat4.inverse(this.viewMatrix, this.matrix);
     this.viewProjectionMatrix = mat4.multiply(this.projectionMatrix!, this.viewMatrix);
 
-    if (this.cameraUniformBuffer) {
-      this.cameraUniformBuffer.updateUniform({
+    if (this.cameraUniformsBuffer) {
+      this.cameraUniformsBuffer.updateUniform({
         viewProjectionMatrix: this.viewProjectionMatrix,
       });
     }
   }
 
   init(renderer: Renderer) {
-    if (this.cameraUniformBuffer) {
-      this.cameraUniformBuffer.init(renderer);
+    if (this.cameraUniformsBuffer) {
+      this.cameraUniformsBuffer.init(renderer);
       this.createCameraBindGroup(renderer);
     }
 
@@ -115,16 +115,16 @@ class PerspectiveCamera extends Entity implements IPerspectiveCamera {
 
   private createCameraBindGroup(renderer: Renderer) {
     if (!renderer.cameraBindGroupLayout) throw new Error(errorMessages.missingCameraBufferLayout);
-    if (!this.cameraUniformBuffer?.buffer) throw new Error(errorMessages.missingCameraBuffer);
+    if (!this.cameraUniformsBuffer?.buffer) throw new Error(errorMessages.missingCameraBuffer);
 
-    this.cameraBindGroup = renderer.device.createBindGroup({
+    this.cameraUniformsBindGroup = renderer.device.createBindGroup({
       layout: renderer.cameraBindGroupLayout,
-      entries: [{ binding: 0, resource: { buffer: this.cameraUniformBuffer.buffer } }],
+      entries: [{ binding: 0, resource: { buffer: this.cameraUniformsBuffer.buffer } }],
     });
   }
 
   private createCameraUniformBuffer() {
-    this.cameraUniformBuffer = new UniformBuffer({
+    this.cameraUniformsBuffer = new UniformBuffer({
       viewProjectionMatrix: { type: 'mat4x4<f32>', value: this.viewProjectionMatrix },
     });
   }
@@ -137,8 +137,8 @@ class PerspectiveCamera extends Entity implements IPerspectiveCamera {
     this.projectionMatrix = mat4.perspective<Float32Array>(this.fov, this.aspect, this.near, this.far);
     this.viewProjectionMatrix = mat4.multiply(this.projectionMatrix, this.viewMatrix);
 
-    if (this.cameraUniformBuffer) {
-      this.cameraUniformBuffer.updateUniform({
+    if (this.cameraUniformsBuffer) {
+      this.cameraUniformsBuffer.updateUniform({
         viewProjectionMatrix: this.viewProjectionMatrix,
       });
     }
@@ -152,8 +152,8 @@ class PerspectiveCamera extends Entity implements IPerspectiveCamera {
     this.viewMatrix = mat4.inverse(this.matrix);
     this.viewProjectionMatrix = mat4.multiply(this.projectionMatrix, this.viewMatrix);
 
-    if (this.cameraUniformBuffer) {
-      this.cameraUniformBuffer.updateUniform({
+    if (this.cameraUniformsBuffer) {
+      this.cameraUniformsBuffer.updateUniform({
         viewProjectionMatrix: this.viewProjectionMatrix,
       });
     }

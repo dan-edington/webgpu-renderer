@@ -1,4 +1,4 @@
-import { Material, MaterialFlag } from './Material';
+import { Material, MaterialFlags } from './Material';
 import { Renderer } from '../renderer/Renderer';
 import { Texture } from '../Texture';
 import { colorToLinear } from '../utilities/colorUtilities';
@@ -21,17 +21,17 @@ class LambertMaterial extends Material {
   constructor(options: LambertMaterialOptions = {}) {
     const color = new Float32Array(options.color ?? [1, 1, 1, 1]);
 
-    let initialFlags = MaterialFlag.None;
-    if (options.alphaTexture) initialFlags |= MaterialFlag.Alpha;
-    if (options.normalTexture) initialFlags |= MaterialFlag.Normal;
-    if (options.albedoTexture) initialFlags |= MaterialFlag.Albedo;
+    let initialFlags = MaterialFlags.None;
+    if (options.alphaTexture) initialFlags |= MaterialFlags.Alpha;
+    if (options.normalTexture) initialFlags |= MaterialFlags.Normal;
+    if (options.albedoTexture) initialFlags |= MaterialFlags.Albedo;
 
     super({
       name: options.name,
       type: 'lambert',
       shader: 'lambert',
       uniforms: {
-        uColor: { type: 'vec4<f32>', value: colorToLinear(color) },
+        color: { type: 'vec4<f32>', value: colorToLinear(color) },
       },
       transparent: options.transparent ?? false,
       initialFlags,
@@ -53,7 +53,7 @@ class LambertMaterial extends Material {
 
   set color(value: ArrayLike<number>) {
     this._color = new Float32Array(value);
-    this.updateUniforms({ uColor: colorToLinear(this._color) });
+    this.updateUniforms({ color: colorToLinear(this._color) });
   }
 
   get albedoTexture(): Texture | null {
@@ -62,7 +62,7 @@ class LambertMaterial extends Material {
 
   set albedoTexture(value: Texture | null) {
     this._albedoTexture = value;
-    this.setMaterialFlag(MaterialFlag.Albedo, value !== null);
+    this.setMaterialFlags(MaterialFlags.Albedo, value !== null);
     this.recreateMaterialBindGroup();
   }
 
@@ -72,7 +72,7 @@ class LambertMaterial extends Material {
 
   set normalTexture(value: Texture | null) {
     this._normalTexture = value;
-    this.setMaterialFlag(MaterialFlag.Normal, value !== null);
+    this.setMaterialFlags(MaterialFlags.Normal, value !== null);
     this.recreateMaterialBindGroup();
   }
 
@@ -82,7 +82,7 @@ class LambertMaterial extends Material {
 
   set alphaTexture(value: Texture | null) {
     this._alphaTexture = value;
-    this.setMaterialFlag(MaterialFlag.Alpha, value !== null);
+    this.setMaterialFlags(MaterialFlags.Alpha, value !== null);
     this.recreateMaterialBindGroup();
   }
 
