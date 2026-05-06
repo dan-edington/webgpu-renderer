@@ -120,6 +120,12 @@ class Mesh extends Entity implements IMesh {
       pass.draw(this.geometry.vertices.length / 3);
     }
   }
+
+  destroy() {
+    this.geometry.destroy();
+    this.material.destroy();
+    this.entityUniformsBuffer?.destroy();
+  }
 }
 
 export { Mesh };
