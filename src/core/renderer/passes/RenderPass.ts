@@ -13,7 +13,7 @@ class RenderPass extends Pass {
 
   private buildRenderPassDescriptor(scene: Scene, passContext: PassContext): GPURenderPassDescriptor {
     if (!this.rendererInstance.context) throw new Error(errorMessages.missingContext);
-    if (!this.rendererInstance.depthTexture?.depthTexture) throw new Error(errorMessages.missingDepthTexture);
+    if (!this.rendererInstance.depthTexture?.gpuTexture) throw new Error(errorMessages.missingDepthTexture);
 
     const outputName = passContext.route.output;
     if (!outputName) throw new Error('RenderPass route.output is not defined.');
@@ -45,7 +45,7 @@ class RenderPass extends Pass {
         },
       ],
       depthStencilAttachment: {
-        view: this.rendererInstance.depthTexture.depthTexture.createView(),
+        view: this.rendererInstance.depthTexture.gpuTexture.createView(),
         depthClearValue: 1.0,
         depthLoadOp: 'clear',
         depthStoreOp: 'store',

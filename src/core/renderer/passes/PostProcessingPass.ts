@@ -56,7 +56,7 @@ class PostProcessingPass extends Pass {
 
   private buildPostProcessingPassDescriptor(scene: Scene, passContext: PassContext): GPURenderPassDescriptor {
     if (!this.rendererInstance.context) throw new Error(errorMessages.missingContext);
-    if (!this.rendererInstance.depthTexture?.depthTexture) throw new Error(errorMessages.missingDepthTexture);
+    if (!this.rendererInstance.depthTexture?.gpuTexture) throw new Error(errorMessages.missingDepthTexture);
 
     return {
       label: this.name,
