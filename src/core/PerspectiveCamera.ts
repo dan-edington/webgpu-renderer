@@ -113,6 +113,25 @@ class PerspectiveCamera extends Entity implements IPerspectiveCamera {
     this.isInitialized = true;
   }
 
+  destroy() {
+    this.cameraUniformsBuffer?.destroy();
+  }
+
+  updateProjectionMatrix() {
+    if (!this.projectionMatrix) {
+      return;
+    }
+
+    mat4.perspective<Float32Array>(this.fov, this.aspect, this.near, this.far, this.projectionMatrix);
+    mat4.multiply(this.projectionMatrix, this.viewMatrix, this.viewProjectionMatrix);
+
+    if (this.cameraUniformsBuffer) {
+      this.cameraUniformsBuffer.updateUniform({
+        viewProjectionMatrix: this.viewProjectionMatrix,
+      });
+    }
+  }
+
   private createCameraBindGroup(renderer: Renderer) {
     if (!renderer.cameraBindGroupLayout) throw new Error(errorMessages.missingCameraBufferLayout);
     if (!this.cameraUniformsBuffer?.buffer) throw new Error(errorMessages.missingCameraBuffer);
@@ -129,28 +148,13 @@ class PerspectiveCamera extends Entity implements IPerspectiveCamera {
     });
   }
 
-  updateProjectionMatrix() {
-    if (!this.projectionMatrix) {
-      return;
-    }
-
-    this.projectionMatrix = mat4.perspective<Float32Array>(this.fov, this.aspect, this.near, this.far);
-    this.viewProjectionMatrix = mat4.multiply(this.projectionMatrix, this.viewMatrix);
-
-    if (this.cameraUniformsBuffer) {
-      this.cameraUniformsBuffer.updateUniform({
-        viewProjectionMatrix: this.viewProjectionMatrix,
-      });
-    }
-  }
-
   protected override onMatrixUpdated() {
     if (!this.projectionMatrix) {
       return;
     }
 
-    this.viewMatrix = mat4.inverse(this.matrix);
-    this.viewProjectionMatrix = mat4.multiply(this.projectionMatrix, this.viewMatrix);
+    mat4.inverse(this.matrix, this.viewMatrix);
+    mat4.multiply(this.projectionMatrix, this.viewMatrix, this.viewProjectionMatrix);
 
     if (this.cameraUniformsBuffer) {
       this.cameraUniformsBuffer.updateUniform({
