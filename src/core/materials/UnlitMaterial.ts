@@ -54,6 +54,7 @@ class UnlitMaterial extends Material {
 
   set albedoTexture(value: Texture | null) {
     this._albedoTexture = value;
+    this.setMaterialFlags(MaterialFlags.Albedo, value !== null);
     this.recreateMaterialBindGroup();
   }
 
