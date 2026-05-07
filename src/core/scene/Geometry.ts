@@ -1,6 +1,6 @@
-import { Renderer } from './renderer/Renderer';
-import { uuid } from './types';
-import { padArrayToAlignmentBytes } from './utilities/padArrayToAlignmentBytes';
+import { Renderer } from '../renderer/Renderer';
+import { uuid } from '../types';
+import { padArrayToAlignmentBytes } from '../utilities/padArrayToAlignmentBytes';
 
 interface IGeometry {
   id: uuid;

@@ -1,15 +1,15 @@
 import { Renderer } from './core/renderer/Renderer';
-import { Scene } from './core/Scene';
-import { Mesh } from './core/Mesh';
-import { Geometry } from './core/Geometry';
-import { Group } from './core/Group';
-import { Texture } from './core/Texture';
+import { Scene } from './core/scene/Scene';
+import { Mesh } from './core/scene/Mesh';
+import { Geometry } from './core/scene/Geometry';
+import { Group } from './core/scene/Group';
+import { Texture } from './core/textures/Texture';
 
 // Lights
 import { PointLight } from './core/lights/PointLight';
 
 // Cameras
-import { PerspectiveCamera } from './core/PerspectiveCamera';
+import { PerspectiveCamera } from './core/camera/PerspectiveCamera';
 
 // Materials
 import { LambertMaterial } from './core/materials/LambertMaterial';

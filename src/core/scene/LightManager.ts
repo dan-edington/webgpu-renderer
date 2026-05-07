@@ -1,9 +1,9 @@
-import { constants } from './constants/constants';
+import { constants } from '../constants/constants';
 import { Entity } from './Entity';
-import { Light } from './lights/Light';
-import { Renderer } from './renderer/Renderer';
-import { UniformBuffer } from './UniformBuffer';
-import { colorToLinear, srgbToLinear } from './utilities/colorUtilities';
+import { Light } from '../lights/Light';
+import { Renderer } from '../renderer/Renderer';
+import { UniformBuffer } from '../renderer/UniformBuffer';
+import { colorToLinear, srgbToLinear } from '../utilities/colorUtilities';
 
 interface ILightManager {
   rendererInstance: Renderer | null;

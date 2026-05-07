@@ -1,4 +1,4 @@
-import { Entity, IEntity } from '../Entity';
+import { Entity, IEntity } from '../scene/Entity';
 
 export const enum LightFlag {
   None = 0,

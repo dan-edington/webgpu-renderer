@@ -1,9 +1,9 @@
 import { Entity, IEntity } from './Entity';
-import { Renderer } from './renderer/Renderer';
-import { errorMessages } from './constants/errorMessages';
-import { UniformBuffer } from './UniformBuffer';
+import { Renderer } from '../renderer/Renderer';
+import { errorMessages } from '../constants/errorMessages';
+import { UniformBuffer } from '../renderer/UniformBuffer';
 import { LightManager } from './LightManager';
-import { srgbToLinear } from './utilities/colorUtilities';
+import { srgbToLinear } from '../utilities/colorUtilities';
 
 interface IScene extends IEntity {
   renderList: Entity[];

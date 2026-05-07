@@ -1,5 +1,5 @@
-import { PerspectiveCamera } from '../../PerspectiveCamera';
-import { Scene } from '../../Scene';
+import { PerspectiveCamera } from '../../camera/PerspectiveCamera';
+import { Scene } from '../../scene/Scene';
 import { PassContext } from '../PassManager';
 import { Renderer } from '../Renderer';
 

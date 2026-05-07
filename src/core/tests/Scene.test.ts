@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { Entity } from '../Entity';
-import { Scene } from '../Scene';
+import { Entity } from '../scene/Entity';
+import { Scene } from '../scene/Scene';
 
 function createEntity(name: string, options?: { visible?: boolean }): Entity & { destroy: () => void } {
   class TestEntity extends Entity {

@@ -1,10 +1,10 @@
-import type { Renderer } from './renderer/Renderer';
+import type { Renderer } from '../renderer/Renderer';
 import { Entity, IEntity } from './Entity';
 import { Geometry } from './Geometry';
-import { Material } from './materials/Material';
-import { constants } from './constants/constants';
-import { errorMessages } from './constants/errorMessages';
-import { UniformBuffer } from './UniformBuffer';
+import { Material } from '../materials/Material';
+import { constants } from '../constants/constants';
+import { errorMessages } from '../constants/errorMessages';
+import { UniformBuffer } from '../renderer/UniformBuffer';
 
 interface IMesh extends IEntity {
   geometry: Geometry;

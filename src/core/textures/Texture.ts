@@ -1,4 +1,4 @@
-import { uuid } from './types';
+import { uuid } from '../types';
 
 interface ITexture {
   id: uuid;

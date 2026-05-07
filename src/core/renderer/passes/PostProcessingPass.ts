@@ -1,8 +1,8 @@
 import { constants } from '../../constants/constants';
 import { errorMessages } from '../../constants/errorMessages';
-import { Geometry } from '../../Geometry';
-import { PerspectiveCamera } from '../../PerspectiveCamera';
-import { Scene } from '../../Scene';
+import { Geometry } from '../../scene/Geometry';
+import { PerspectiveCamera } from '../../camera/PerspectiveCamera';
+import { Scene } from '../../scene/Scene';
 import { PassContext } from '../PassManager';
 import { Pass, PassOptions } from './Pass';
 

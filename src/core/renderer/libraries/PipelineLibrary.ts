@@ -4,7 +4,7 @@ import type { AlphaPipelineOptions } from '../pipelines/AlphaPipeline';
 import type { PostProcessingPipelineOptions } from '../pipelines/PostProcessingPipeline';
 import { Renderer } from '../Renderer';
 import { Material } from '../../materials/Material';
-import { Geometry } from '../../Geometry';
+import { Geometry } from '../../scene/Geometry';
 
 type PipelineOptionsMap = {
   opaque: OpaquePipelineOptions;

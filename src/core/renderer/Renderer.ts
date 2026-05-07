@@ -1,11 +1,11 @@
 import type { MaterialType } from '../types';
-import { PerspectiveCamera } from '../PerspectiveCamera';
+import { PerspectiveCamera } from '../camera/PerspectiveCamera';
 import { TextureLibrary } from './libraries/TextureLibrary';
 import { SamplerLibrary } from './libraries/SamplerLibrary';
 import { ShaderLibrary } from './libraries/ShaderLibrary';
-import { Scene } from '../Scene';
+import { Scene } from '../scene/Scene';
 import { errorMessages } from '../constants/errorMessages';
-import { DepthTexture } from '../DepthTexture';
+import { DepthTexture } from '../textures/DepthTexture';
 import { CanvasManager } from './CanvasManager';
 import { ContextManager } from './ContextManager';
 import { PassManager } from './PassManager';

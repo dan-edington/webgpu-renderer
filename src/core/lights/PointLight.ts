@@ -4,11 +4,13 @@ interface IPointLight {}
 
 type PointLightOptions = {} & LightOptions;
 
-abstract class PointLight extends Light implements IPointLight {
+class PointLight extends Light implements IPointLight {
   constructor(options?: PointLightOptions) {
     super(options ?? { type: 'PointLight' });
     this.flags |= LightFlag.PointLight;
   }
+
+  destroy() {}
 }
 
 export { PointLight };

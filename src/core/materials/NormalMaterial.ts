@@ -1,5 +1,5 @@
 import { Renderer } from '../renderer/Renderer';
-import { Texture } from '../Texture';
+import { Texture } from '../textures/Texture';
 import { Material, MaterialFlags } from './Material';
 
 type NormalMaterialOptions = {

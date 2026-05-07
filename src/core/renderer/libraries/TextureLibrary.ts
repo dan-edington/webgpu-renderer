@@ -1,4 +1,4 @@
-import { Texture } from '../../Texture';
+import { Texture } from '../../textures/Texture';
 import { errorMessages } from '../../constants/errorMessages';
 import { Renderer } from '../../renderer/Renderer';
 import { TextureKey } from '../../types';

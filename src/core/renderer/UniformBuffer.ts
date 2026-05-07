@@ -1,13 +1,13 @@
-import { errorMessages } from './constants/errorMessages';
-import { Renderer } from './renderer/Renderer';
-import { BufferAddressSpace, uuid } from './types';
+import { errorMessages } from '../constants/errorMessages';
+import { Renderer } from './Renderer';
+import { BufferAddressSpace, uuid } from '../types';
 import {
   computeBufferLayout,
   writeUniformValuesToBuffer,
   type UniformEntryMeta,
   type UniformValue,
   type UniformValueInput,
-} from './utilities/computeBufferLayout';
+} from '../utilities/computeBufferLayout';
 
 interface IUniformBuffer {
   id: uuid;

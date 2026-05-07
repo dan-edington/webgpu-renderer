@@ -1,4 +1,4 @@
-import { Geometry } from '../../Geometry';
+import { Geometry } from '../../scene/Geometry';
 import { errorMessages } from '../../constants/errorMessages';
 import { constants } from '../../constants/constants';
 import { Material } from '../../materials/Material';

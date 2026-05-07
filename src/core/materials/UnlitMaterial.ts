@@ -1,6 +1,6 @@
 import { Material, MaterialFlags } from './Material';
 import { Renderer } from '../renderer/Renderer';
-import { Texture } from '../Texture';
+import { Texture } from '../textures/Texture';
 import { colorToLinear } from '../utilities/colorUtilities';
 
 type UnlitMaterialOptions = {

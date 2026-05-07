@@ -1,7 +1,7 @@
 import { errorMessages } from '../constants/errorMessages';
 import { Renderer } from '../renderer/Renderer';
 import { MaterialType, UniformValue, UniformValueInput, uuid } from '../types';
-import { UniformBuffer } from '../UniformBuffer';
+import { UniformBuffer } from '../renderer/UniformBuffer';
 
 export const enum MaterialFlags {
   None = 0,

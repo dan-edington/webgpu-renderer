@@ -1,5 +1,5 @@
 import { Mat4, Quat, Vec3, vec3, quat, mat4 } from 'wgpu-matrix';
-import type { uuid } from './types';
+import type { uuid } from '../types';
 import type { Scene } from './Scene';
 
 export interface IEntity {
