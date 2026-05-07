@@ -10,6 +10,7 @@ const errorMessages = {
   missingRendererInstance:
     'Renderer instance is missing. Ensure the renderer is initialized before calling this method.',
   missingPipeline: 'Render pipeline is missing. Ensure the mesh is initialized before rendering.',
+  meshNotInitialized: 'Mesh.draw() was called before initialization. This is a renderer bug.',
   missingCameraBuffer:
     'Camera uniform buffer is missing. Ensure the renderer is initialized before creating camera bind groups.',
   missingCameraBufferLayout:

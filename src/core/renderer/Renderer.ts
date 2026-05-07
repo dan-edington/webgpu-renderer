@@ -4,6 +4,7 @@ import { TextureLibrary } from './libraries/TextureLibrary';
 import { SamplerLibrary } from './libraries/SamplerLibrary';
 import { ShaderLibrary } from './libraries/ShaderLibrary';
 import { Scene } from '../scene/Scene';
+import { Mesh } from '../scene/Mesh';
 import { errorMessages } from '../constants/errorMessages';
 import { DepthTexture } from '../textures/DepthTexture';
 import { CanvasManager } from './CanvasManager';
@@ -180,12 +181,18 @@ class Renderer implements IRenderer {
     this.previousTime = currentTime;
   }
 
-  private synchronizeSceneAndCamera(scene: Scene, camera: PerspectiveCamera) {
+  private prepareFrame(scene: Scene, camera: PerspectiveCamera) {
     if (!scene.isInitialized) scene.init(this);
     if (!camera.isInitialized) camera.init(this);
 
     scene.updateRenderList();
     scene.updateLights();
+
+    scene.renderList.forEach((entity) => {
+      if (entity instanceof Mesh && !entity.isInitialized) {
+        entity.init(this);
+      }
+    });
 
     if (!scene.sceneUniformsBuffer) throw new Error(errorMessages.missingSceneUniformsBuffer);
     if (!scene.lightManager.lightUniformsBuffer) throw new Error(errorMessages.missingLightUniformsBuffer);
@@ -199,7 +206,7 @@ class Renderer implements IRenderer {
 
   render(scene: Scene, camera: PerspectiveCamera) {
     this.updateFrameTimers();
-    this.synchronizeSceneAndCamera(scene, camera);
+    this.prepareFrame(scene, camera);
 
     if (!this.passManager) throw new Error(errorMessages.missingPassManager);
     if (!this.device) throw new Error(errorMessages.missingDevice);

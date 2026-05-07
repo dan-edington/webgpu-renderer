@@ -77,10 +77,8 @@ class Mesh extends Entity implements IMesh {
     }
   }
 
-  draw(pass: GPURenderPassEncoder, renderer: Renderer) {
-    if (!this.isInitialized) {
-      this.init(renderer);
-    }
+  draw(pass: GPURenderPassEncoder, _renderer: Renderer) {
+    if (!this.isInitialized) throw new Error(errorMessages.meshNotInitialized);
 
     if (!this.pipeline) throw new Error(errorMessages.missingPipeline);
 
