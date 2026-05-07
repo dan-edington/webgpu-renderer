@@ -10,6 +10,7 @@ import { PointLight } from './core/lights/PointLight';
 
 // Cameras
 import { PerspectiveCamera } from './core/camera/PerspectiveCamera';
+import { OrbitControls } from './core/camera/OrbitControls';
 
 // Materials
 import { LambertMaterial } from './core/materials/LambertMaterial';
@@ -28,4 +29,5 @@ export {
   LambertMaterial,
   NormalMaterial,
   UnlitMaterial,
+  OrbitControls,
 };
