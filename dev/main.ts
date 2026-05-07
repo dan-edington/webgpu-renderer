@@ -1,14 +1,17 @@
 import './style.css';
-import { Geometry } from '../src/core/scene/Geometry';
-import { Mesh } from '../src/core/scene/Mesh';
-import { Renderer } from '../src/core/renderer/Renderer';
-import { Scene } from '../src/core/scene/Scene';
-import { PerspectiveCamera } from '../src/core/camera/PerspectiveCamera';
 import { cube } from 'primitive-geometry';
-import { LambertMaterial } from '../src/core/materials/LambertMaterial';
-import { PointLight } from '../src/core/lights/PointLight';
-import { Texture } from '../src/core/textures/Texture';
-import { OrbitControls } from '../src/core/camera/OrbitControls';
+
+import {
+  Geometry,
+  Mesh,
+  Renderer,
+  Scene,
+  PerspectiveCamera,
+  LambertMaterial,
+  PointLight,
+  Texture,
+  OrbitControls,
+} from '../dist/index';
 
 const container = document.getElementById('app');
 
