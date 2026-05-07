@@ -20,7 +20,7 @@ interface ILightManager {
   setAmbientLightIntensity(intensity: number): void;
   setAmbientLight(ambientLight: { color: Float32Array | [number, number, number, number]; intensity: number }): void;
   rebuildLightsArray(rootEntity: Entity): void;
-  updateLights(): void;
+  updateLights(rootEntity: Entity): void;
   createSceneUniformsBindGroup(renderer: Renderer): void;
   destroy(): void;
 }
@@ -176,8 +176,9 @@ class LightManager implements ILightManager {
     });
   }
 
-  updateLights() {
+  updateLights(rootEntity: Entity) {
     if (this.lightsNeedUpdate) {
+      this.rebuildLightsArray(rootEntity);
       this.updateLightUniformsData();
     }
 

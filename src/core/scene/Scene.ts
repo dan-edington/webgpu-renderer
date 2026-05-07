@@ -133,8 +133,7 @@ class Scene extends Entity implements IScene {
   }
 
   updateLights() {
-    this.lightManager.rebuildLightsArray(this);
-    this.lightManager.updateLights();
+    this.lightManager.updateLights(this);
   }
 
   destroy() {
