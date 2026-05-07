@@ -165,11 +165,11 @@ abstract class Entity implements IEntity {
   protected markSceneAsDirty(dirtyType: 'lights' | 'renderlist'): void {
     let currentNode: Entity | Scene | null = this;
 
-    // Walk back up the scene graph to the Scene and set renderListNeedsUpdate to true
+    // Walk back up the scene graph to the Scene and set appropriate dirty flags
     while (currentNode) {
-      if (currentNode.type === 'Scene' && 'renderListNeedsUpdate' in currentNode) {
+      if (currentNode.type === 'Scene' && 'lightManager' in currentNode) {
         if (dirtyType === 'lights') {
-          currentNode.lightsNeedUpdate = true;
+          (currentNode as any).lightManager.lightsNeedUpdate = true;
         } else if (dirtyType === 'renderlist') {
           currentNode.renderListNeedsUpdate = true;
         }

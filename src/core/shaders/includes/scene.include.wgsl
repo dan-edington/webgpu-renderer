@@ -1,6 +1,7 @@
+// Nothing here yet so it's just padded
+
 struct SceneUniforms {
-  ambientLightColor: vec4f,
-  ambientLightIntensity: f32,
+  _padding: u32,
 };
 
 @group(1) @binding(0) var<uniform> sceneUniforms: SceneUniforms;
