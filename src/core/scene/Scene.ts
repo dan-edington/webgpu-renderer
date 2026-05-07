@@ -13,6 +13,7 @@ interface IScene extends IEntity {
   isInitialized: boolean;
   clearColor: GPUColor;
   lightManager: LightManager;
+  isScene: boolean;
   init(renderer: Renderer): void;
   setClearColor(color: GPUColor | [number, number, number, number] | Float32Array): void;
   setAmbientLightColor(color: Float32Array | [number, number, number, number]): void;
@@ -31,6 +32,7 @@ class Scene extends Entity implements IScene {
   clearColor: GPUColor;
   clearColorSRGB: GPUColor;
   lightManager: LightManager;
+  isScene: boolean = true;
 
   constructor() {
     super('Scene');

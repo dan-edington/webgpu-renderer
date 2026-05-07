@@ -167,7 +167,7 @@ abstract class Entity implements IEntity {
 
     // Walk back up the scene graph to the Scene and set appropriate dirty flags
     while (currentNode) {
-      if (currentNode.type === 'Scene' && 'lightManager' in currentNode) {
+      if ('isScene' in currentNode && currentNode.isScene && 'lightManager' in currentNode) {
         if (dirtyType === 'lights') {
           (currentNode as any).lightManager.lightsNeedUpdate = true;
         } else if (dirtyType === 'renderlist') {
