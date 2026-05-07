@@ -1,1 +1,1 @@
-let ambientLight = sceneUniforms.ambientLightIntensity * sceneUniforms.ambientLightColor.rgb;
+let ambientLight = lightUniforms.ambientLightIntensity * lightUniforms.ambientLightColor.rgb;

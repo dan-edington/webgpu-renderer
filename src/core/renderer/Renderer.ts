@@ -188,11 +188,11 @@ class Renderer implements IRenderer {
     scene.updateLights();
 
     if (!scene.sceneUniformsBuffer) throw new Error(errorMessages.missingSceneUniformsBuffer);
-    if (!scene.lightUniformsBuffer) throw new Error(errorMessages.missingLightUniformsBuffer);
+    if (!scene.lightManager.lightUniformsBuffer) throw new Error(errorMessages.missingLightUniformsBuffer);
     if (!camera.cameraUniformsBuffer?.buffer) throw new Error(errorMessages.missingCameraBuffer);
 
     scene.sceneUniformsBuffer.writeUpdatedBufferData();
-    scene.lightUniformsBuffer.writeUpdatedBufferData();
+    scene.lightManager.lightUniformsBuffer.writeUpdatedBufferData();
 
     camera.updateCameraUniforms();
   }

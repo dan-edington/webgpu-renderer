@@ -3,10 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { Entity } from '../Entity';
 import { Scene } from '../Scene';
 
-function createEntity(name: string, options?: { visible?: boolean }) {
-  const entity = new Entity();
+function createEntity(name: string, options?: { visible?: boolean }): Entity & { destroy: () => void } {
+  class TestEntity extends Entity {
+    destroy() {
+      // Test entity - no cleanup needed
+    }
+  }
+  const entity = new TestEntity(name);
 
-  entity.name = name;
   entity.visible = options?.visible ?? true;
 
   return entity;
