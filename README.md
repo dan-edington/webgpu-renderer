@@ -9,6 +9,7 @@ Currently supports:
 - Indexed and non indexed geometry support
 - Geometry tangent generation
 - Lambertian material
+- Blinn Phong material
 - Unlit material
 - Normal material
 - Alpha maps

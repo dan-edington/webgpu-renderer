@@ -16,6 +16,7 @@ import { OrbitControls } from './core/camera/OrbitControls';
 import { LambertMaterial } from './core/materials/LambertMaterial';
 import { NormalMaterial } from './core/materials/NormalMaterial';
 import { UnlitMaterial } from './core/materials/UnlitMaterial';
+import { BlinnPhongMaterial } from './core/materials/BlinnPhongMaterial';
 
 export {
   Renderer,
@@ -29,5 +30,6 @@ export {
   LambertMaterial,
   NormalMaterial,
   UnlitMaterial,
+  BlinnPhongMaterial,
   OrbitControls,
 };

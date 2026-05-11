@@ -6,6 +6,8 @@
 struct MaterialUniforms {
   materialFlag: u32,
   color: vec4f,
+  shininess: f32,
+  specularColor: vec3f,
 };
 
 @group(2) @binding(0) var<uniform> materialUniforms: MaterialUniforms;
@@ -21,6 +23,7 @@ struct VertexOutput {
   @location(2) uvs: vec2f,
   @location(3) tangent: vec3f,
   @location(4) bitangent: vec3f,
+  @location(5) cameraPosition: vec3f,
 };
 
 @vertex
@@ -43,6 +46,7 @@ fn vertex_shader(
   out.tangent = t;
   out.bitangent = b;
   out.uvs = uvs;
+  out.cameraPosition = cameraUniforms.worldPosition;
 
   return out;
 }
@@ -57,7 +61,9 @@ fn fragment_shader(
   // #include "normals"
   // #include "ambientLight"
 
+  let viewDir = normalize(in.cameraPosition - in.worldPosition);
   var accumulatedDiffuse = vec3f(0);
+  var accumulatedSpecular = vec3f(0);
 
   // Loop through all lights
   for (var i = 0u; i < lightUniforms.count; i = i + 1) {
@@ -72,6 +78,7 @@ fn fragment_shader(
     let lightVector = lightPos - in.worldPosition;
     let distance = length(lightVector);
     let lightDir = normalize(lightVector);
+    let halfwayDir = normalize(lightDir + viewDir);
     
     // Lambert diffuse
     let ndotl = max(0.0, dot(normal, lightDir));
@@ -79,12 +86,19 @@ fn fragment_shader(
     // 1/distance squared falloff
     let distSq = distance * distance;
     let attenuation = 1.0 / max(distSq, 0.01);
-    
+
     let lightContribution = lightColor * lightIntensity * ndotl * attenuation;
     accumulatedDiffuse = accumulatedDiffuse + lightContribution;
+    
+    // Specular (Blinn-Phong)
+    if (ndotl > 0.0) {
+      let specularStrength = pow(max(dot(normal, halfwayDir), 0.0), materialUniforms.shininess);
+      let specular = materialUniforms.specularColor * lightColor * lightIntensity * attenuation * specularStrength;
+      accumulatedSpecular = accumulatedSpecular + specular;
+    }
   }
 
-  let finalColor = ambientLight + colorRGB * accumulatedDiffuse;
+  let finalColor = ambientLight + colorRGB * accumulatedDiffuse + accumulatedSpecular;
   let outputFragment = vec4f(finalColor, colorA);
 
   return outputFragment;
