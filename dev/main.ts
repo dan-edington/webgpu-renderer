@@ -1,5 +1,5 @@
 import './style.css';
-import { cube } from 'primitive-geometry';
+import { sphere } from 'primitive-geometry';
 
 import {
   Geometry,
@@ -7,11 +7,12 @@ import {
   Renderer,
   Scene,
   PerspectiveCamera,
+  BlinnPhongMaterial,
   LambertMaterial,
   PointLight,
   Texture,
   OrbitControls,
-} from '../dist/index';
+} from '../src/index';
 
 const container = document.getElementById('app');
 
@@ -21,7 +22,7 @@ if (container) {
 
   // Create a scene
   const scene = new Scene();
-  scene.setClearColor([0, 0, 0, 1]);
+  scene.setClearColor([0.25, 0.25, 0.25, 1]);
 
   // Create a camera
   const camera = new PerspectiveCamera({
@@ -32,15 +33,19 @@ if (container) {
   });
 
   // Create cube geometry
-  const cubePrimitive = cube({ sx: 1, sy: 1, sz: 1, nx: 1, ny: 1, nz: 1 });
-  const cubeIndices = Uint16Array.from(cubePrimitive.cells); // CONVERT FROM UINT8 TO UINT16
-  const cubeNormals = cubePrimitive.normals;
-  const cubeUVs = cubePrimitive.uvs;
-  const cubeGeometry = new Geometry({
-    vertices: cubePrimitive.positions,
-    indices: cubeIndices,
-    normals: cubeNormals,
-    uvs: cubeUVs,
+  const spherePrimitive = sphere({ radius: 1, nx: 32, ny: 32 });
+  const sphereGeometry = new Geometry({
+    vertices: spherePrimitive.positions,
+    indices: Uint16Array.from(spherePrimitive.cells),
+    normals: spherePrimitive.normals,
+    uvs: spherePrimitive.uvs,
+  });
+
+  const sphereGeometry2 = new Geometry({
+    vertices: spherePrimitive.positions,
+    indices: Uint16Array.from(spherePrimitive.cells),
+    normals: spherePrimitive.normals,
+    uvs: spherePrimitive.uvs,
   });
 
   async function loadTexture(url: string, colorSpace: 'srgb' | 'linear' | 'data' = 'srgb') {
@@ -51,40 +56,42 @@ if (container) {
 
   const albedoTexture = await loadTexture('/uvtest.png');
   const normalTexture = await loadTexture('/normal.png', 'linear');
-  // const alphaTexture = await loadTexture('/alpha.jpg');
+  const alphaTexture = await loadTexture('/alpha.jpg');
 
-  const testMaterial = new LambertMaterial({
-    albedoTexture: albedoTexture,
-    normalTexture: normalTexture,
+  const testMaterial2 = new LambertMaterial({
+    color: [0, 0, 1, 1],
+  });
+
+  const testMaterial = new BlinnPhongMaterial({
+    color: [1, 0, 0, 1],
+    shininess: 100,
+    specularColor: [1, 1, 1],
   });
 
   // Create meshes
-  const cubeMesh = new Mesh(cubeGeometry, testMaterial);
-  cubeMesh.setPosition(0, 0, 0);
+  const sphereMesh = new Mesh(sphereGeometry, testMaterial);
+  sphereMesh.setPosition(0, 0, 0);
+
+  const sphereMesh2 = new Mesh(sphereGeometry2, testMaterial2);
+  sphereMesh2.setPosition(2, 0, 0);
 
   // Create a point light
   const pointLight = new PointLight();
-  pointLight.setPosition(0, 0, 0);
-  pointLight.intensity = 5;
-
-  const pointLight2 = new PointLight();
-  pointLight2.setPosition(0, 0, 0);
-  pointLight2.intensity = 5;
+  pointLight.setPosition(5, 5, 5);
+  pointLight.intensity = 10;
 
   // Add objects to scene
-  scene.add([cubeMesh, camera, pointLight, pointLight2]);
+  scene.add([sphereMesh, camera, pointLight, sphereMesh2]);
   scene.setAmbientLightIntensity(0.0);
 
-  camera.setPosition(3, 3, 5);
+  camera.setPosition(0, 0, 5);
   camera.lookAt(new Float32Array([0, 0, 0]));
   new OrbitControls({ camera, domElement: renderer.canvasManager.canvasElement });
 
   // Render the scene
   function render() {
-    const lightDistance = 10;
     const t = renderer.elapsedTime * 0.001;
-    pointLight.setPosition(Math.cos(t * 2) * lightDistance, 0, Math.sin(t) * lightDistance);
-    pointLight2.setPosition(0, Math.cos(t) * lightDistance, Math.sin(t) * lightDistance);
+    pointLight.setPosition(Math.sin(t) * 5, 0, Math.cos(t) * 5);
     renderer.render(scene, camera);
     requestAnimationFrame(render);
   }
