@@ -3,7 +3,11 @@ function srgbToLinear(value: number): number {
 }
 
 function colorToLinear(color: ArrayLike<number>): Float32Array {
-  return new Float32Array([srgbToLinear(color[0]), srgbToLinear(color[1]), srgbToLinear(color[2]), color[3]]);
+  if (color.length < 4) {
+    return new Float32Array([srgbToLinear(color[0]), srgbToLinear(color[1]), srgbToLinear(color[2])]);
+  } else {
+    return new Float32Array([srgbToLinear(color[0]), srgbToLinear(color[1]), srgbToLinear(color[2]), color[3]]);
+  }
 }
 
 export { srgbToLinear, colorToLinear };
