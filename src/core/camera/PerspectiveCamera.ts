@@ -76,6 +76,7 @@ class PerspectiveCamera extends Entity implements IPerspectiveCamera {
   private createCameraUniformBuffer() {
     this.cameraUniformsBuffer = new UniformBuffer({
       viewProjectionMatrix: { type: 'mat4x4<f32>', value: this.viewProjectionMatrix },
+      worldPosition: { type: 'vec3<f32>', value: this.position },
     });
   }
 
@@ -123,6 +124,7 @@ class PerspectiveCamera extends Entity implements IPerspectiveCamera {
     if (this.cameraUniformsBuffer && this.bufferNeedsUpdate) {
       this.cameraUniformsBuffer.updateUniform({
         viewProjectionMatrix: this.viewProjectionMatrix,
+        worldPosition: this.position,
       });
       this.cameraUniformsBuffer.writeUpdatedBufferData();
       this.bufferNeedsUpdate = false;
