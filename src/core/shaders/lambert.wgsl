@@ -57,7 +57,7 @@ fn fragment_shader(
   // #include "normals"
   // #include "ambientLight"
 
-  var accumulatedLight = ambientLight;
+  var accumulatedDiffuse = vec3f(0);
 
   // Loop through all lights
   for (var i = 0u; i < lightUniforms.count; i = i + 1) {
@@ -74,19 +74,18 @@ fn fragment_shader(
     let lightDir = normalize(lightVector);
     
     // Lambert diffuse
-    let diffuse = max(0.0, dot(lightDir, normal));
+    let ndotl = max(0.0, dot(normal, lightDir));
     
-    // 1/distance² falloff
+    // 1/distance squared falloff
     let distSq = distance * distance;
     let attenuation = 1.0 / max(distSq, 0.01);
     
-    // Accumulate contribution
-    let contribution = lightColor * lightIntensity * diffuse * attenuation;
-    accumulatedLight = accumulatedLight + contribution;
+    let lightContribution = lightColor * lightIntensity * ndotl * attenuation;
+    accumulatedDiffuse = accumulatedDiffuse + lightContribution;
   }
 
-  let finalColor = fragmentColor * accumulatedLight;
-  let outputFragment = vec4f(finalColor, fragmentAlpha);
+  let finalColor = ambientLight + colorRGB * accumulatedDiffuse;
+  let outputFragment = vec4f(finalColor, colorA);
 
   return outputFragment;
 }
