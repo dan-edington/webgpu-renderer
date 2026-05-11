@@ -41,7 +41,7 @@ fn fragment_shader(
   // #include "materialFlags"
   // #include "fragmentColorAndAlpha"
 
-  var finalColor = vec4f(fragmentColor, fragmentAlpha);
+  var finalColor = vec4f(colorRGB, colorA);
 
   return finalColor;
 }
