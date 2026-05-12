@@ -15,7 +15,7 @@ class CustomMaterial extends Material {
 
   protected override getBindGroupEntries(): GPUBindGroupEntry[] {
     if (!this.materialUniformsBuffer?.buffer) return [];
-    console.log(this.materialUniformsBuffer);
+
     return [{ binding: 0, resource: { buffer: this.materialUniformsBuffer.buffer } }];
   }
 
