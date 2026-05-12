@@ -1,3 +1,5 @@
+import { uuid } from '../../types';
+
 const shaderIncludes: Record<string, string> = import.meta.glob('../../shaders/includes/*.wgsl', {
   query: '?raw',
   eager: true,
@@ -49,6 +51,26 @@ class ShaderLibrary {
       const resolvedShaderContent = this.resolveIncludes(shaderContent);
       this.shaders.set(shaderName, resolvedShaderContent);
     }
+  }
+
+  buildCustomShader(options: { shader: string; id: uuid }): string {
+    const { shader, id } = options;
+
+    if (this.shaders.has(id)) return this.shaders.get(id) as string;
+
+    const finalShader = `
+      // #include "camera"
+      // #include "scene"
+      // #include "lights"
+      // #include "entity"
+      
+      ${shader}
+    `;
+
+    const resolvedShader = this.resolveIncludes(finalShader);
+    this.shaders.set(id, resolvedShader);
+
+    return resolvedShader;
   }
 
   getShader(shaderName: string) {

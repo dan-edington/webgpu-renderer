@@ -33,7 +33,7 @@ interface IMaterial {
   updateUniforms(updatedUniforms: Record<string, UniformValueInput>): void;
 }
 
-type MaterialOptions = {
+export type MaterialOptions = {
   shader: string;
   uniforms?: Record<string, UniformValue>;
   shaderEntryPoints?: {
@@ -84,13 +84,21 @@ abstract class Material implements IMaterial {
       ...(options.uniforms ?? {}),
     };
 
+    if (this.type === 'custom') {
+      delete this.materialUniforms.materialFlags;
+    }
+
     this.materialUniformsBuffer = new UniformBuffer(this.materialUniforms);
   }
 
   init(renderer: Renderer) {
-    if (this.isInitialized) return;
+    if (this.isInitialized || !renderer.shaderLibrary) return;
 
     this.rendererInstance = renderer;
+
+    if (this.type === 'custom') {
+      this.shader = renderer.shaderLibrary.buildCustomShader({ shader: this.shader, id: this.id });
+    }
 
     this.createShaderModule(renderer.device);
 
@@ -129,7 +137,14 @@ abstract class Material implements IMaterial {
   private createShaderModule(device: GPUDevice) {
     if (!this.rendererInstance?.shaderLibrary) throw new Error(errorMessages.missingShaderLibrary);
 
-    const shaderCode = this.rendererInstance.shaderLibrary.getShader(this.shader);
+    let shaderCode;
+
+    if (this.type === 'custom') {
+      shaderCode = this.rendererInstance.shaderLibrary.getShader(this.id);
+    } else {
+      shaderCode = this.rendererInstance.shaderLibrary.getShader(this.shader);
+    }
+
     if (!shaderCode) throw new Error(errorMessages.missingShaderCode);
 
     this.shaderModule = device.createShaderModule({
