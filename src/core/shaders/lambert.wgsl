@@ -67,10 +67,17 @@ fn fragment_shader(
     let lightPos = lightUniforms.positions[i].xyz;
     let lightColor = lightUniforms.colors[i].xyz;
     let lightIntensity = lightUniforms.params[i].x;
+    let lightRange = lightUniforms.params[i].y;
     
     // Calculate light direction and distance
     let lightVector = lightPos - in.worldPosition;
     let distance = length(lightVector);
+    
+    // Skip this light if beyond range
+    if (distance > lightRange) {
+      continue;
+    }
+    
     let lightDir = normalize(lightVector);
     
     // Lambert diffuse
