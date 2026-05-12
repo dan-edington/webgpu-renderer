@@ -79,7 +79,7 @@ export type ComputeBufferLayoutOptions = {
   addressSpace?: BufferAddressSpace;
 };
 
-export type MaterialType = 'lambert' | 'blinnphong' | 'pbr' | 'normal' | 'unlit';
+export type MaterialType = 'lambert' | 'blinnphong' | 'pbr' | 'normal' | 'unlit' | 'custom';
 
 export type TextureKey = string;
 export type SamplerDescriptorKey = string;

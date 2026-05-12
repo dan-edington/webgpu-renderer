@@ -12,6 +12,7 @@ Currently supports:
 - Blinn Phong material
 - Unlit material
 - Normal material
+- Basic Custom Shader Material
 - Alpha maps
 - Albedo texture maps
 - Normal maps
