@@ -11,15 +11,12 @@ import { CanvasManager } from './CanvasManager';
 import { ContextManager } from './ContextManager';
 import { PassManager } from './PassManager';
 import { RenderPass } from './passes/RenderPass';
-import { PipelineLibrary } from './libraries/PipelineLibrary';
-import { OpaquePipeline } from './pipelines/OpaquePipeline';
 import { cameraBindGroupLayoutDescriptor } from './bindGroupLayouts/camera';
 import { sceneBindGroupLayoutDescriptor } from './bindGroupLayouts/scene';
 import { entityBindGroupLayoutDescriptor } from './bindGroupLayouts/entity';
 import { materialBindGroupLayoutDescriptors } from './bindGroupLayouts/materials';
-import { AlphaPipeline } from './pipelines/AlphaPipeline';
 import { PostProcessingPass } from './passes/PostProcessingPass';
-import { PostProcessingPipeline } from './pipelines/PostProcessingPipeline';
+import { PipelineManager } from './PipelineManager';
 
 interface IRenderer {
   canvasManager: CanvasManager;
@@ -46,6 +43,7 @@ interface IRenderer {
   shaderLibrary: ShaderLibrary | null;
   depthTexture: DepthTexture | null;
   passManager: PassManager | null;
+  pipelineManager: PipelineManager | null;
   init(): Promise<void>;
   render(scene: Scene, camera: PerspectiveCamera): void;
 }
@@ -81,8 +79,8 @@ class Renderer implements IRenderer {
   textureLibrary: TextureLibrary | null = null;
   samplerLibrary: SamplerLibrary | null = null;
   shaderLibrary: ShaderLibrary | null = null;
-  pipelineLibrary: PipelineLibrary | null = null;
   passManager: PassManager | null = null;
+  pipelineManager: PipelineManager | null = null;
 
   private constructor(options: RendererOptions, canvasManager: CanvasManager, contextManager: ContextManager) {
     this.dpr = options.dpr ?? window.devicePixelRatio;
@@ -116,7 +114,7 @@ class Renderer implements IRenderer {
   async init() {
     this.samplerLibrary = new SamplerLibrary(this.device);
     this.textureLibrary = new TextureLibrary(this);
-    this.shaderLibrary = new ShaderLibrary();
+    this.shaderLibrary = new ShaderLibrary(this);
 
     this.initializeBindGroupLayouts();
 
@@ -128,15 +126,8 @@ class Renderer implements IRenderer {
       renderer: this,
     });
 
-    this.configurePipelines();
+    this.pipelineManager = new PipelineManager(this);
     this.configurePasses();
-  }
-
-  private configurePipelines() {
-    this.pipelineLibrary = new PipelineLibrary();
-    this.pipelineLibrary.registerPipelineConstructor('opaque', OpaquePipeline);
-    this.pipelineLibrary.registerPipelineConstructor('alpha', AlphaPipeline);
-    this.pipelineLibrary.registerPipelineConstructor('postprocessing', PostProcessingPipeline);
   }
 
   private configurePasses() {
