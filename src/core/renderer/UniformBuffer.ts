@@ -15,7 +15,7 @@ interface IUniformBuffer {
   buffer: GPUBuffer | null;
   uniforms: Record<string, UniformValue>;
   bufferData: ArrayBuffer | null;
-  init(renderer: Renderer): void;
+  init(rendererInstance: Renderer): void;
   updateUniform(updatedUniforms: Record<string, UniformValueInput>): void;
   writeUpdatedBufferData(): void;
   destroy(): void;
@@ -33,7 +33,7 @@ class UniformBuffer implements IUniformBuffer {
   uniforms: Record<string, UniformValue>;
   bufferData: ArrayBuffer | null = null;
   needsUpdate: boolean;
-  rendererInstance: Renderer | null = null;
+  private rendererInstance: Renderer | null = null;
   layoutEntries: UniformEntryMeta[] = [];
   addressSpace: BufferAddressSpace;
   usage: GPUBufferUsageFlags;
@@ -52,8 +52,8 @@ class UniformBuffer implements IUniformBuffer {
     this.computeBufferLayout();
   }
 
-  init(renderer: Renderer) {
-    this.rendererInstance = renderer;
+  init(rendererInstance: Renderer) {
+    this.rendererInstance = rendererInstance;
 
     if (!this.rendererInstance.device) throw new Error(errorMessages.missingDevice);
 

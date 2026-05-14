@@ -26,12 +26,12 @@ type CreateRenderPipelineOptions = {
 };
 
 class PipelineManager implements IPipelineManager {
-  rendererInstance: Renderer;
-  pipelineCache: Map<string, GPURenderPipeline>;
-  pipelineLayoutCache: Map<string, GPUPipelineLayout>;
+  readonly rendererInstance: Renderer;
+  readonly pipelineCache: Map<string, GPURenderPipeline>;
+  readonly pipelineLayoutCache: Map<string, GPUPipelineLayout>;
 
-  constructor(renderer: Renderer) {
-    this.rendererInstance = renderer;
+  constructor(rendererInstance: Renderer) {
+    this.rendererInstance = rendererInstance;
     this.pipelineCache = new Map();
     this.pipelineLayoutCache = new Map();
   }

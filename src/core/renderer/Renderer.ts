@@ -123,7 +123,7 @@ class Renderer implements IRenderer {
     this.depthTexture = new DepthTexture({
       width: this.canvasManager.canvasElement.width,
       height: this.canvasManager.canvasElement.height,
-      renderer: this,
+      rendererInstance: this,
     });
 
     this.pipelineManager = new PipelineManager(this);

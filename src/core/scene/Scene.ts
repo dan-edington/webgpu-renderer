@@ -14,7 +14,7 @@ interface IScene extends IEntity {
   clearColor: GPUColor;
   lightManager: LightManager;
   isScene: boolean;
-  init(renderer: Renderer): void;
+  init(rendererInstance: Renderer): void;
   setClearColor(color: GPUColor | [number, number, number, number] | Float32Array): void;
   setAmbientLightColor(color: Float32Array | [number, number, number, number]): void;
   setAmbientLightIntensity(intensity: number): void;
@@ -46,12 +46,12 @@ class Scene extends Entity implements IScene {
     this.createSceneUniformsBuffer();
   }
 
-  init(renderer: Renderer) {
+  init(rendererInstance: Renderer) {
     if (!this.sceneUniformsBuffer) throw new Error(errorMessages.missingSceneUniformsBuffer);
 
-    this.sceneUniformsBuffer.init(renderer);
-    this.lightManager.init(renderer);
-    this.createSceneUniformsBindGroup(renderer);
+    this.sceneUniformsBuffer.init(rendererInstance);
+    this.lightManager.init(rendererInstance);
+    this.createSceneUniformsBindGroup(rendererInstance);
     this.isInitialized = true;
   }
 
@@ -61,13 +61,13 @@ class Scene extends Entity implements IScene {
     });
   }
 
-  private createSceneUniformsBindGroup(renderer: Renderer) {
-    if (!renderer.sceneBindGroupLayout) throw new Error(errorMessages.missingSceneBindGroupLayout);
+  private createSceneUniformsBindGroup(rendererInstance: Renderer) {
+    if (!rendererInstance.sceneBindGroupLayout) throw new Error(errorMessages.missingSceneBindGroupLayout);
     if (!this.sceneUniformsBuffer?.buffer) throw new Error(errorMessages.missingSceneUniformsBuffer);
     if (!this.lightManager.lightUniformsBuffer?.buffer) throw new Error('Missing light uniforms buffer');
 
-    this.sceneUniformsBindGroup = renderer.device.createBindGroup({
-      layout: renderer.sceneBindGroupLayout,
+    this.sceneUniformsBindGroup = rendererInstance.device.createBindGroup({
+      layout: rendererInstance.sceneBindGroupLayout,
       entries: [
         {
           binding: 0,

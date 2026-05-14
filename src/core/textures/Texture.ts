@@ -3,7 +3,6 @@ import { uuid } from '../types';
 interface ITexture {
   id: uuid;
   gpuTexture: GPUTexture | null;
-  gpuTextureView: GPUTextureView | null;
   width: number;
   height: number;
   format: GPUTextureFormat;
@@ -22,7 +21,7 @@ export type TextureColorSpace = 'srgb' | 'linear' | 'data';
 class Texture implements ITexture {
   id: uuid;
   gpuTexture: GPUTexture | null = null;
-  gpuTextureView: GPUTextureView | null = null;
+  private gpuTextureView: GPUTextureView | null = null;
   width: number;
   height: number;
   format: GPUTextureFormat;

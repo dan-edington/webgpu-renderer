@@ -7,11 +7,20 @@ interface IGeometry {
   name?: string;
   type: string;
   isIndexed: boolean;
+  indexCount: number;
+  indexFormat: GPUIndexFormat;
+  topology: GPUPrimitiveTopology;
   vertices: Float32Array;
   indices?: Uint16Array | Uint32Array;
   normals: Float32Array;
   uvs: Float32Array;
-  init(renderer: Renderer): void;
+  tangents: Float32Array;
+  vertexBuffer: GPUBuffer | null;
+  indexBuffer: GPUBuffer | null;
+  normalBuffer: GPUBuffer | null;
+  tangentBuffer: GPUBuffer | null;
+  uvBuffer: GPUBuffer | null;
+  init(rendererInstance: Renderer): void;
 }
 
 type GeometryOptions = {
@@ -67,8 +76,8 @@ class Geometry implements IGeometry {
     this.topology = options.topology ?? 'triangle-list';
   }
 
-  init(renderer: Renderer) {
-    this.createBuffers(renderer);
+  init(rendererInstance: Renderer) {
+    this.createBuffers(rendererInstance);
   }
 
   private generateTangents(): Float32Array {
@@ -187,43 +196,43 @@ class Geometry implements IGeometry {
     return out;
   }
 
-  protected createBuffers(renderer: Renderer) {
-    this.vertexBuffer = renderer.device.createBuffer({
+  protected createBuffers(rendererInstance: Renderer) {
+    this.vertexBuffer = rendererInstance.device.createBuffer({
       size: this.vertices.byteLength,
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
 
-    renderer.device.queue.writeBuffer(this.vertexBuffer, 0, this.vertices.buffer);
+    rendererInstance.device.queue.writeBuffer(this.vertexBuffer, 0, this.vertices.buffer);
 
     if (this.isIndexed && this.indices) {
-      this.indexBuffer = renderer.device.createBuffer({
+      this.indexBuffer = rendererInstance.device.createBuffer({
         size: this.indices.byteLength,
         usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
       });
 
-      renderer.device.queue.writeBuffer(this.indexBuffer, 0, this.indices.buffer);
+      rendererInstance.device.queue.writeBuffer(this.indexBuffer, 0, this.indices.buffer);
     }
 
-    this.normalBuffer = renderer.device.createBuffer({
+    this.normalBuffer = rendererInstance.device.createBuffer({
       size: this.normals.byteLength,
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
 
-    renderer.device.queue.writeBuffer(this.normalBuffer, 0, this.normals.buffer);
+    rendererInstance.device.queue.writeBuffer(this.normalBuffer, 0, this.normals.buffer);
 
-    this.uvBuffer = renderer.device.createBuffer({
+    this.uvBuffer = rendererInstance.device.createBuffer({
       size: this.uvs.byteLength,
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
 
-    renderer.device.queue.writeBuffer(this.uvBuffer, 0, this.uvs.buffer);
+    rendererInstance.device.queue.writeBuffer(this.uvBuffer, 0, this.uvs.buffer);
 
-    this.tangentBuffer = renderer.device.createBuffer({
+    this.tangentBuffer = rendererInstance.device.createBuffer({
       size: this.tangents ? this.tangents.byteLength : 0,
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
 
-    renderer.device.queue.writeBuffer(this.tangentBuffer, 0, this.tangents.buffer);
+    rendererInstance.device.queue.writeBuffer(this.tangentBuffer, 0, this.tangents.buffer);
   }
 
   destroy() {

@@ -15,13 +15,12 @@ interface ILightManager {
   lights: Light[];
   lightsNeedUpdate: boolean;
   sceneUniformsBindGroup: GPUBindGroup | null;
-  init(renderer: Renderer): void;
+  init(rendererInstance: Renderer): void;
   setAmbientLightColor(color: Float32Array | [number, number, number, number]): void;
   setAmbientLightIntensity(intensity: number): void;
   setAmbientLight(ambientLight: { color: Float32Array | [number, number, number, number]; intensity: number }): void;
-  rebuildLightsArray(rootEntity: Entity): void;
   updateLights(rootEntity: Entity): void;
-  createSceneUniformsBindGroup(renderer: Renderer): void;
+  createSceneUniformsBindGroup(rendererInstance: Renderer): void;
   destroy(): void;
 }
 
@@ -44,10 +43,10 @@ class LightManager implements ILightManager {
     this.createLightUniformsBuffer();
   }
 
-  init(renderer: Renderer) {
-    this.rendererInstance = renderer;
+  init(rendererInstance: Renderer) {
+    this.rendererInstance = rendererInstance;
     if (this.lightUniformsBuffer) {
-      this.lightUniformsBuffer.init(renderer);
+      this.lightUniformsBuffer.init(rendererInstance);
     }
   }
 
@@ -158,7 +157,7 @@ class LightManager implements ILightManager {
     this.setAmbientLightIntensity(ambientLight.intensity);
   }
 
-  rebuildLightsArray(rootEntity: Entity) {
+  private rebuildLightsArray(rootEntity: Entity) {
     this.lights = [];
 
     const traverse = (entity: Entity) => {
@@ -185,12 +184,12 @@ class LightManager implements ILightManager {
     this.lightsNeedUpdate = false;
   }
 
-  createSceneUniformsBindGroup(renderer: Renderer) {
-    if (!renderer.sceneBindGroupLayout) return;
+  createSceneUniformsBindGroup(rendererInstance: Renderer) {
+    if (!rendererInstance.sceneBindGroupLayout) return;
     if (!this.lightUniformsBuffer?.buffer) return;
 
-    this.sceneUniformsBindGroup = renderer.device.createBindGroup({
-      layout: renderer.sceneBindGroupLayout,
+    this.sceneUniformsBindGroup = rendererInstance.device.createBindGroup({
+      layout: rendererInstance.sceneBindGroupLayout,
       entries: [
         {
           binding: 1,

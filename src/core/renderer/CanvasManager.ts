@@ -32,7 +32,7 @@ class CanvasManager implements ICanvasManager {
     this.initEventListeners();
   }
 
-  initEventListeners() {
+  private initEventListeners() {
     const onResize = () => {
       this.updateCanvasSize();
     };

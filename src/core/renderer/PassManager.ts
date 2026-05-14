@@ -24,14 +24,14 @@ export type PassContext = {
 };
 
 class PassManager {
-  rendererInstance: Renderer;
+  readonly rendererInstance: Renderer;
   scene: Scene | null;
   camera: PerspectiveCamera | null;
-  passes: Map<string, Pass>;
-  renderTargets: Map<string, RenderTarget>;
+  readonly passes: Map<string, Pass>;
+  readonly renderTargets: Map<string, RenderTarget>;
 
-  constructor(renderer: Renderer) {
-    this.rendererInstance = renderer;
+  constructor(rendererInstance: Renderer) {
+    this.rendererInstance = rendererInstance;
     this.scene = null;
     this.camera = null;
     this.passes = new Map();

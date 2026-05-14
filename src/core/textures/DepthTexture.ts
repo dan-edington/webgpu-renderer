@@ -6,7 +6,8 @@ interface IDepthTexture {
   height: number;
   format: GPUTextureFormat;
   gpuTexture: GPUTexture | null;
-  rendererInstance: Renderer | null;
+  gpuTextureView: GPUTextureView | null;
+  rendererInstance: Renderer;
   resize(width: number, height: number): void;
   destroy(): void;
 }
@@ -15,7 +16,7 @@ type DepthTextureOptions = {
   width?: number;
   height?: number;
   format?: GPUTextureFormat;
-  renderer: Renderer;
+  rendererInstance: Renderer;
 };
 
 class DepthTexture implements IDepthTexture {
@@ -24,13 +25,13 @@ class DepthTexture implements IDepthTexture {
   format: GPUTextureFormat;
   gpuTexture: GPUTexture | null = null;
   gpuTextureView: GPUTextureView | null = null;
-  rendererInstance: Renderer | null = null;
+  rendererInstance: Renderer;
 
   constructor(depthTextureOptions: DepthTextureOptions) {
     this.width = depthTextureOptions.width ?? 1;
     this.height = depthTextureOptions.height ?? 1;
     this.format = depthTextureOptions.format ?? 'depth24plus';
-    this.rendererInstance = depthTextureOptions.renderer;
+    this.rendererInstance = depthTextureOptions.rendererInstance;
     this.createDepthTexture();
   }
 

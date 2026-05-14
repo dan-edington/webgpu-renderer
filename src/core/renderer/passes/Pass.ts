@@ -16,8 +16,8 @@ export type PassRoute = {
 };
 
 abstract class Pass {
-  name: string;
-  rendererInstance: Renderer;
+  readonly name: string;
+  readonly rendererInstance: Renderer;
   route: PassRoute;
 
   constructor(options: PassOptions) {

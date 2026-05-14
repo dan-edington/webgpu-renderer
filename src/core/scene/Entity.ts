@@ -6,6 +6,7 @@ export interface IEntity {
   id: uuid;
   name?: string;
   type: string;
+  visible: boolean;
   isLight: boolean;
   children: Entity[];
   parent: Entity | Scene | null;
@@ -14,6 +15,7 @@ export interface IEntity {
   rotation: Vec3;
   quaternion: Quat;
   matrix: Mat4;
+  matrixWorld: Mat4;
   matrixNeedsUpdate: boolean;
   add(entity: Entity | Entity[]): void;
   remove(entity: Entity): void;

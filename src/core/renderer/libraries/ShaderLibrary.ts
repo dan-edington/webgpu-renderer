@@ -20,12 +20,12 @@ type CachedShader = {
 };
 
 class ShaderLibrary {
-  rendererInstance: Renderer;
-  private shaderCache: Map<string, CachedShader>;
-  private includeCache: Map<string, string>;
+  private readonly rendererInstance: Renderer;
+  private readonly shaderCache: Map<string, CachedShader>;
+  private readonly includeCache: Map<string, string>;
 
-  constructor(renderer: Renderer) {
-    this.rendererInstance = renderer;
+  constructor(rendererInstance: Renderer) {
+    this.rendererInstance = rendererInstance;
     this.shaderCache = new Map();
     this.includeCache = new Map();
     this.buildIncludeCache();

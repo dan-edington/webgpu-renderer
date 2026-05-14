@@ -13,8 +13,8 @@ interface IMesh extends IEntity {
   isInitialized: boolean;
   entityUniformsBuffer: UniformBuffer | null;
   entityUniformsBindGroup: GPUBindGroup | null;
-  init(renderer: Renderer): void;
-  draw(pass: GPURenderPassEncoder, renderer: Renderer): void;
+  init(rendererInstance: Renderer): void;
+  draw(pass: GPURenderPassEncoder, rendererInstance: Renderer): void;
 }
 
 class Mesh extends Entity implements IMesh {
@@ -32,35 +32,35 @@ class Mesh extends Entity implements IMesh {
     this.material = material;
   }
 
-  init(renderer: Renderer) {
-    this.geometry.init(renderer);
-    this.material.init(renderer);
+  init(rendererInstance: Renderer) {
+    this.geometry.init(rendererInstance);
+    this.material.init(rendererInstance);
     this.createEntityBuffer();
-    this.createRenderPipeline(renderer);
+    this.createRenderPipeline(rendererInstance);
 
     if (this.entityUniformsBuffer) {
-      this.entityUniformsBuffer.init(renderer);
-      this.createEntityBindGroup(renderer);
+      this.entityUniformsBuffer.init(rendererInstance);
+      this.createEntityBindGroup(rendererInstance);
     }
 
     this.isInitialized = true;
   }
 
-  private createRenderPipeline(renderer: Renderer) {
-    const shaderModule = renderer.shaderLibrary?.getShader(this.material.shader)?.shaderModule;
-    const materialBindGroupLayout = renderer.materialBindGroupLayouts?.get(this.material.type);
+  private createRenderPipeline(rendererInstance: Renderer) {
+    const shaderModule = rendererInstance.shaderLibrary?.getShader(this.material.shader)?.shaderModule;
+    const materialBindGroupLayout = rendererInstance.materialBindGroupLayouts?.get(this.material.type);
 
-    if (!renderer.depthTexture) throw new Error(errorMessages.missingDepthTexture);
+    if (!rendererInstance.depthTexture) throw new Error(errorMessages.missingDepthTexture);
     if (!shaderModule) throw new Error(errorMessages.missingMaterialShaderModule);
     if (!materialBindGroupLayout)
       throw new Error(`${errorMessages.missingMaterialTypeBindGroupLayout} Material type: '${this.material.type}'.`);
 
-    if (!renderer.cameraBindGroupLayout) throw new Error(errorMessages.missingCameraBufferLayout);
-    if (!renderer.sceneBindGroupLayout) throw new Error(errorMessages.missingSceneBindGroupLayout);
-    if (!renderer.entityBindGroupLayout) throw new Error(errorMessages.missingEntityBindGroupLayout);
+    if (!rendererInstance.cameraBindGroupLayout) throw new Error(errorMessages.missingCameraBufferLayout);
+    if (!rendererInstance.sceneBindGroupLayout) throw new Error(errorMessages.missingSceneBindGroupLayout);
+    if (!rendererInstance.entityBindGroupLayout) throw new Error(errorMessages.missingEntityBindGroupLayout);
 
     this.pipeline =
-      renderer.pipelineManager?.getOrCreateRenderPipeline({
+      rendererInstance.pipelineManager?.getOrCreateRenderPipeline({
         label: `MeshPipeline_${this.material.type}`,
         shaderModule,
         topology: this.geometry.topology,
@@ -109,13 +109,13 @@ class Mesh extends Entity implements IMesh {
           },
         ],
         bindGroupLayouts: [
-          renderer.cameraBindGroupLayout,
-          renderer.sceneBindGroupLayout,
+          rendererInstance.cameraBindGroupLayout,
+          rendererInstance.sceneBindGroupLayout,
           materialBindGroupLayout,
-          renderer.entityBindGroupLayout,
+          rendererInstance.entityBindGroupLayout,
         ],
         depthStencilState: {
-          format: renderer.depthTexture.format,
+          format: rendererInstance.depthTexture.format,
           depthWriteEnabled: this.material.transparent ? false : this.material.depthWrite,
           depthCompare: 'less',
         },
@@ -142,12 +142,12 @@ class Mesh extends Entity implements IMesh {
     });
   }
 
-  private createEntityBindGroup(renderer: Renderer) {
-    if (!renderer.entityBindGroupLayout) throw new Error(errorMessages.missingEntityBindGroupLayout);
+  private createEntityBindGroup(rendererInstance: Renderer) {
+    if (!rendererInstance.entityBindGroupLayout) throw new Error(errorMessages.missingEntityBindGroupLayout);
 
     if (this.entityUniformsBuffer?.buffer && this.pipeline) {
-      this.entityUniformsBindGroup = renderer.device.createBindGroup({
-        layout: renderer.entityBindGroupLayout,
+      this.entityUniformsBindGroup = rendererInstance.device.createBindGroup({
+        layout: rendererInstance.entityBindGroupLayout,
         entries: [{ binding: 0, resource: { buffer: this.entityUniformsBuffer.buffer } }],
       });
     }
@@ -161,7 +161,7 @@ class Mesh extends Entity implements IMesh {
     }
   }
 
-  draw(pass: GPURenderPassEncoder, _renderer: Renderer) {
+  draw(pass: GPURenderPassEncoder, _rendererInstance: Renderer) {
     if (!this.isInitialized) throw new Error(errorMessages.meshNotInitialized);
 
     if (!this.pipeline) throw new Error(errorMessages.missingPipeline);

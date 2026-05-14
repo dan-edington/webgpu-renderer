@@ -19,7 +19,6 @@ interface IMaterial {
   materialUniforms?: Record<string, UniformValue>;
   materialUniformsBuffer: UniformBuffer | null;
   materialUniformsBindGroup: GPUBindGroup | null;
-  pipelineDescriptor: GPURenderPipelineDescriptor | null;
   shaderEntryPoints: {
     vertex: string;
     fragment: string;
@@ -30,7 +29,7 @@ interface IMaterial {
   doubleSided: boolean;
   transparent: boolean;
   depthWrite: boolean;
-  init(renderer: Renderer): void;
+  init(rendererInstance: Renderer): void;
   getPipelineCacheKey(): string;
   updateUniforms(updatedUniforms: Record<string, UniformValueInput>): void;
 }
@@ -59,7 +58,6 @@ abstract class Material implements IMaterial {
   materialUniforms?: Record<string, UniformValue>;
   materialUniformsBuffer: UniformBuffer | null = null;
   materialUniformsBindGroup: GPUBindGroup | null = null;
-  pipelineDescriptor: GPURenderPipelineDescriptor | null = null;
   shaderEntryPoints: {
     vertex: string;
     fragment: string;
@@ -99,13 +97,13 @@ abstract class Material implements IMaterial {
     this.materialUniformsBuffer = new UniformBuffer(this.materialUniforms);
   }
 
-  init(renderer: Renderer) {
-    if (this.isInitialized || !renderer.shaderLibrary) return;
+  init(rendererInstance: Renderer) {
+    if (this.isInitialized || !rendererInstance.shaderLibrary) return;
 
-    this.rendererInstance = renderer;
+    this.rendererInstance = rendererInstance;
 
     if (this.type === 'custom') {
-      this.shader = renderer.shaderLibrary.buildCustomShader({
+      this.shader = rendererInstance.shaderLibrary.buildCustomShader({
         shader: this.shader,
         id: this.id,
         label: this.name,
@@ -115,10 +113,10 @@ abstract class Material implements IMaterial {
     this.cacheShaderModule();
 
     if (this.materialUniformsBuffer) {
-      this.materialUniformsBuffer.init(renderer);
+      this.materialUniformsBuffer.init(rendererInstance);
     }
 
-    this.createMaterialBindGroup(renderer);
+    this.createMaterialBindGroup(rendererInstance);
 
     this.isInitialized = true;
   }
@@ -162,25 +160,26 @@ abstract class Material implements IMaterial {
     this.createMaterialBindGroup(this.rendererInstance);
   }
 
-  protected createMaterialBindGroup(renderer: Renderer) {
-    if (!renderer.materialBindGroupLayouts) throw new Error(errorMessages.missingRendererMaterialBindGroupLayouts);
+  protected createMaterialBindGroup(rendererInstance: Renderer) {
+    if (!rendererInstance.materialBindGroupLayouts)
+      throw new Error(errorMessages.missingRendererMaterialBindGroupLayouts);
 
-    const materialBindGroupLayout = renderer.materialBindGroupLayouts.get(this.type);
+    const materialBindGroupLayout = rendererInstance.materialBindGroupLayouts.get(this.type);
 
     if (!materialBindGroupLayout)
       throw new Error(`${errorMessages.missingMaterialTypeBindGroupLayout} Material type: '${this.type}'.`);
 
-    const entries = this.getBindGroupEntries(renderer);
+    const entries = this.getBindGroupEntries(rendererInstance);
 
     if (entries.length > 0) {
-      this.materialUniformsBindGroup = renderer.device.createBindGroup({
+      this.materialUniformsBindGroup = rendererInstance.device.createBindGroup({
         layout: materialBindGroupLayout,
         entries,
       });
     }
   }
 
-  protected getBindGroupEntries(_renderer: Renderer): GPUBindGroupEntry[] {
+  protected getBindGroupEntries(_rendererInstance: Renderer): GPUBindGroupEntry[] {
     if (!this.materialUniformsBuffer?.buffer) return [];
 
     return [{ binding: 0, resource: { buffer: this.materialUniformsBuffer.buffer } }];

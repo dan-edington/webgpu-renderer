@@ -113,11 +113,11 @@ class BlinnPhongMaterial extends Material {
     this.updateUniforms({ shininess: this._shininess });
   }
 
-  protected override getBindGroupEntries(renderer: Renderer): GPUBindGroupEntry[] {
-    const albedoTexture = this._albedoTexture ?? renderer.textureLibrary?.getFallback('white');
-    const alphaTexture = this._alphaTexture ?? renderer.textureLibrary?.getFallback('white');
-    const normalTexture = this._normalTexture ?? renderer.textureLibrary?.getFallback('normal');
-    const sampler = renderer.samplerLibrary?.getSampler('linearRepeat');
+  protected override getBindGroupEntries(rendererInstance: Renderer): GPUBindGroupEntry[] {
+    const albedoTexture = this._albedoTexture ?? rendererInstance.textureLibrary?.getFallback('white');
+    const alphaTexture = this._alphaTexture ?? rendererInstance.textureLibrary?.getFallback('white');
+    const normalTexture = this._normalTexture ?? rendererInstance.textureLibrary?.getFallback('normal');
+    const sampler = rendererInstance.samplerLibrary?.getSampler('linearRepeat');
 
     if (!albedoTexture || !normalTexture || !sampler || !alphaTexture) {
       throw new Error('Lambert material resources are missing.');

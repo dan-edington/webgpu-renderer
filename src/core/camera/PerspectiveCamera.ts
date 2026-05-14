@@ -15,8 +15,11 @@ interface IPerspectiveCamera {
   cameraUniformsBuffer: UniformBuffer | null;
   cameraUniformsBindGroup: GPUBindGroup | null;
   isInitialized: boolean;
-  init(renderer: Renderer): void;
+  init(rendererInstance: Renderer): void;
+  lookAt(target: Float32Array, up?: Float32Array): void;
+  updateCameraUniforms(): void;
   updateProjectionMatrix(): void;
+  destroy(): void;
 }
 
 type PerspectiveCameraOptions = {
@@ -54,21 +57,21 @@ class PerspectiveCamera extends Entity implements IPerspectiveCamera {
     this.bufferNeedsUpdate = false;
   }
 
-  init(renderer: Renderer) {
+  init(rendererInstance: Renderer) {
     if (this.cameraUniformsBuffer) {
-      this.cameraUniformsBuffer.init(renderer);
-      this.createCameraBindGroup(renderer);
+      this.cameraUniformsBuffer.init(rendererInstance);
+      this.createCameraBindGroup(rendererInstance);
     }
 
     this.isInitialized = true;
   }
 
-  private createCameraBindGroup(renderer: Renderer) {
-    if (!renderer.cameraBindGroupLayout) throw new Error(errorMessages.missingCameraBufferLayout);
+  private createCameraBindGroup(rendererInstance: Renderer) {
+    if (!rendererInstance.cameraBindGroupLayout) throw new Error(errorMessages.missingCameraBufferLayout);
     if (!this.cameraUniformsBuffer?.buffer) throw new Error(errorMessages.missingCameraBuffer);
 
-    this.cameraUniformsBindGroup = renderer.device.createBindGroup({
-      layout: renderer.cameraBindGroupLayout,
+    this.cameraUniformsBindGroup = rendererInstance.device.createBindGroup({
+      layout: rendererInstance.cameraBindGroupLayout,
       entries: [{ binding: 0, resource: { buffer: this.cameraUniformsBuffer.buffer } }],
     });
   }

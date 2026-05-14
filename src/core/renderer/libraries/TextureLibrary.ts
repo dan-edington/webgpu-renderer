@@ -12,9 +12,9 @@ class TextureLibrary {
     normal: Texture;
   } | null = null;
 
-  constructor(renderer: Renderer) {
+  constructor(rendererInstance: Renderer) {
     this.textures = new Map();
-    this.device = renderer.device;
+    this.device = rendererInstance.device;
     this.initializeFallbackTextures();
   }
 

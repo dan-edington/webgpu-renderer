@@ -1,10 +1,8 @@
 import { Light, LightFlag, LightOptions } from './Light';
 
-interface IPointLight {}
+type PointLightOptions = LightOptions;
 
-type PointLightOptions = {} & LightOptions;
-
-class PointLight extends Light implements IPointLight {
+class PointLight extends Light {
   constructor(options?: PointLightOptions) {
     super(options ?? { type: 'PointLight' });
     this.flags |= LightFlag.PointLight;
