@@ -5,6 +5,7 @@ import { PerspectiveCamera } from '../../camera/PerspectiveCamera';
 import { Scene } from '../../scene/Scene';
 import { PassContext } from '../PassManager';
 import { Pass, PassOptions } from './Pass';
+import { postProcessingBindGroupLayoutDescriptor } from '../bindGroupLayouts/postprocessing';
 
 class PostProcessingPass extends Pass {
   geometry: Geometry;
@@ -35,11 +36,50 @@ class PostProcessingPass extends Pass {
   }
 
   private createPipeline() {
-    const Pipeline = this.rendererInstance.pipelineLibrary?.getPipelineContructor('postprocessing');
-    if (!Pipeline) throw new Error(errorMessages.missingPipeline);
+    const shader = this.rendererInstance.shaderLibrary?.getShader('postprocessing');
 
-    this.pipeline = Pipeline.createPipeline({
-      renderer: this.rendererInstance,
+    if (!shader) throw new Error(errorMessages.missingShaderCode);
+
+    this.pipeline = this.rendererInstance.pipelineManager?.getOrCreateRenderPipeline({
+      label: 'PostProcessing Pipeline',
+      shaderModule: shader.shaderModule,
+      topology: 'triangle-list',
+      format: this.rendererInstance.presentationFormat,
+      cullMode: 'back',
+      vertexBuffers: [
+        {
+          arrayStride: 3 * Float32Array.BYTES_PER_ELEMENT,
+          attributes: [
+            {
+              shaderLocation: 0,
+              offset: 0,
+              format: 'float32x3',
+            },
+          ],
+        },
+        {
+          arrayStride: 3 * Float32Array.BYTES_PER_ELEMENT,
+          attributes: [
+            {
+              shaderLocation: 1,
+              offset: 0,
+              format: 'float32x3',
+            },
+          ],
+        },
+        {
+          arrayStride: 2 * Float32Array.BYTES_PER_ELEMENT,
+          attributes: [
+            {
+              shaderLocation: 2,
+              offset: 0,
+              format: 'float32x2',
+            },
+          ],
+        },
+      ],
+      bindGroupLayouts: [this.rendererInstance.device.createBindGroupLayout(postProcessingBindGroupLayoutDescriptor)],
+      msaa: 1,
     });
   }
 
