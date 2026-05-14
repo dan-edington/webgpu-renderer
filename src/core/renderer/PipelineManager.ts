@@ -111,6 +111,7 @@ class PipelineManager implements IPipelineManager {
       cullMode = 'back',
       blendState,
       depthStencilState,
+      msaa,
     } = options;
 
     const vertexBufferKey = vertexBuffers
@@ -128,7 +129,7 @@ class PipelineManager implements IPipelineManager {
     const depthStencilKey = depthStencilState ? JSON.stringify(depthStencilState) : 'no-depth';
     const shaderModuleKey = shaderModule.label ?? 'unlabelled-shader';
 
-    return `${shaderModuleKey}|${shaderEntryPoints.vertex}|${shaderEntryPoints.fragment}|${vertexBufferKey}|${bindGroupLayoutKey}|${format}|${topology}|${cullMode}|${depthStencilKey}|${blendKey}|msaa:${this.rendererInstance.multiSampling}`;
+    return `${shaderModuleKey}|${shaderEntryPoints.vertex}|${shaderEntryPoints.fragment}|${vertexBufferKey}|${bindGroupLayoutKey}|${format}|${topology}|${cullMode}|${depthStencilKey}|${blendKey}|${msaa}`;
   }
 
   private getOrCreatePipelineLayout(bindGroupLayouts: GPUBindGroupLayout[]) {
