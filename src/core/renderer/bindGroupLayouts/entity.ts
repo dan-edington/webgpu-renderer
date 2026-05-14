@@ -1,4 +1,5 @@
 const entityBindGroupLayoutDescriptor: GPUBindGroupLayoutDescriptor = {
+  label: 'Entity Bind Group Layout',
   entries: [
     {
       binding: 0,

@@ -1,4 +1,5 @@
 const sceneBindGroupLayoutDescriptor: GPUBindGroupLayoutDescriptor = {
+  label: 'Scene Bind Group Layout',
   entries: [
     {
       binding: 0,

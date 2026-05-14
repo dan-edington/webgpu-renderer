@@ -52,6 +52,7 @@ class NormalMaterial extends Material {
 
   static override getMaterialLayoutDescriptor(): GPUBindGroupLayoutDescriptor {
     return {
+      label: 'Normal Material Bind Group Layout',
       entries: [
         // binding 0: material uniforms (color, etc.)
         {

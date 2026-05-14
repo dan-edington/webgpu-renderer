@@ -1,4 +1,5 @@
 const cameraBindGroupLayoutDescriptor: GPUBindGroupLayoutDescriptor = {
+  label: 'Camera Bind Group Layout',
   entries: [
     {
       binding: 0,
