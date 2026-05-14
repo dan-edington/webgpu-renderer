@@ -1,5 +1,7 @@
 import '../style.css';
 import { sphere } from 'primitive-geometry';
+import { Pane } from 'tweakpane';
+import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 
 import {
   Geometry,
@@ -17,6 +19,9 @@ import {
 const container = document.getElementById('app');
 
 if (container) {
+  const pane = new Pane();
+  pane.registerPlugin(EssentialsPlugin);
+
   // Create and init the renderer
   const renderer = await Renderer.create({ containerElement: container, alpha: true });
 
@@ -58,6 +63,10 @@ if (container) {
   const normalTexture = await loadTexture('/normal.png', 'linear');
   const alphaTexture = await loadTexture('/alpha.jpg');
 
+  const params = {
+    shininess: 100,
+  };
+
   const testMaterial2 = new LambertMaterial({
     albedoTexture,
     normalTexture,
@@ -66,7 +75,7 @@ if (container) {
 
   const testMaterial = new BlinnPhongMaterial({
     color: [1, 0, 0, 1],
-    shininess: 100,
+    shininess: params.shininess,
     specularColor: [1, 1, 1],
   });
 
@@ -103,5 +112,9 @@ if (container) {
   // Add resize handler for camera
   window.addEventListener('resize', () => {
     camera.aspect = container.clientWidth / container.clientHeight;
+  });
+
+  pane.addBinding(params, 'shininess', { min: 0, max: 200 }).on('change', () => {
+    testMaterial.shininess = params.shininess;
   });
 }

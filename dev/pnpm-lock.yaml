@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@tweakpane/plugin-essentials':
+        specifier: ^0.2.1
+        version: 0.2.1(tweakpane@4.0.5)
       primitive-geometry:
         specifier: ^2.11.0
         version: 2.11.0
@@ -17,6 +20,11 @@ importers:
 
 packages:
 
+  '@tweakpane/plugin-essentials@0.2.1':
+    resolution: {integrity: sha512-VbFU1/uD+CJNFQdfLXUOLjeG5HyUZH97Ox9CxmyVetg1hqjVun3C83HAGFULyhKzl8tSgii8jr304r8QpdHwzQ==}
+    peerDependencies:
+      tweakpane: ^4.0.0
+
   primitive-geometry@2.11.0:
     resolution: {integrity: sha512-W/Kl9za7sIQWRWvY6Fvr/wnexhP6D3fBcPz4gZsE2aMiUgm0N8ZUCQiwG/h+r+P1qTKi2yEINF3x79WN6gJSXA==}
     engines: {node: '>=22.0.0', npm: '>=10.5.1', snowdev: '>=2.3.x'}
@@ -25,6 +33,10 @@ packages:
     resolution: {integrity: sha512-rxEXdSI+ArlG1RyO6FghC4ZUX8JkEfz8F3v1JuteXSV0pEtHJzyo07fcDG+NsJfN5L39kSbCYbB9cBGHyuI/tQ==}
 
 snapshots:
+
+  '@tweakpane/plugin-essentials@0.2.1(tweakpane@4.0.5)':
+    dependencies:
+      tweakpane: 4.0.5
 
   primitive-geometry@2.11.0: {}
 
