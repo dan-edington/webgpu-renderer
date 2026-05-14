@@ -1,4 +1,5 @@
 import { uuid } from '../../types';
+import type { Renderer } from '../Renderer';
 
 const shaderIncludes: Record<string, string> = import.meta.glob('../../shaders/includes/*.wgsl', {
   query: '?raw',
@@ -13,12 +14,19 @@ const shaders: Record<string, string> = import.meta.glob('../../shaders/*.wgsl',
 
 const INCLUDE_REGEX = /^\s*\/\/\s*#include\s*(['"])([a-zA-Z0-9/]+)\1\s*$/gm;
 
+type CachedShader = {
+  code: string;
+  shaderModule: GPUShaderModule;
+};
+
 class ShaderLibrary {
-  private shaders: Map<string, string>;
+  rendererInstance: Renderer;
+  private shaderCache: Map<string, CachedShader>;
   private includeCache: Map<string, string>;
 
-  constructor() {
-    this.shaders = new Map();
+  constructor(renderer: Renderer) {
+    this.rendererInstance = renderer;
+    this.shaderCache = new Map();
     this.includeCache = new Map();
     this.buildIncludeCache();
     this.buildShaderCache();
@@ -49,14 +57,22 @@ class ShaderLibrary {
       const shaderName = key.replace(basePath, '').replace('.wgsl', '');
       const shaderContent = shaders[key];
       const resolvedShaderContent = this.resolveIncludes(shaderContent);
-      this.shaders.set(shaderName, resolvedShaderContent);
+      const shaderModule = this.rendererInstance.device.createShaderModule({
+        label: `ShaderModule_${shaderName}`,
+        code: resolvedShaderContent,
+      });
+
+      this.shaderCache.set(shaderName, {
+        code: resolvedShaderContent,
+        shaderModule,
+      });
     }
   }
 
-  buildCustomShader(options: { shader: string; id: uuid }): string {
-    const { shader, id } = options;
+  buildCustomShader(options: { shader: string; id: uuid; label?: string }): string {
+    const { shader, id, label } = options;
 
-    if (this.shaders.has(id)) return this.shaders.get(id) as string;
+    if (this.shaderCache.has(id)) return id;
 
     const finalShader = `
       // #include "camera"
@@ -68,13 +84,21 @@ class ShaderLibrary {
     `;
 
     const resolvedShader = this.resolveIncludes(finalShader);
-    this.shaders.set(id, resolvedShader);
+    const shaderModule = this.rendererInstance.device.createShaderModule({
+      label: `ShaderModule_${label ?? `custom_${id}`}`,
+      code: resolvedShader,
+    });
 
-    return resolvedShader;
+    this.shaderCache.set(id, {
+      code: resolvedShader,
+      shaderModule,
+    });
+
+    return id;
   }
 
   getShader(shaderName: string) {
-    return this.shaders.get(shaderName);
+    return this.shaderCache.get(shaderName);
   }
 }
 
