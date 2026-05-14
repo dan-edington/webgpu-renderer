@@ -1,4 +1,5 @@
 const postProcessingBindGroupLayoutDescriptor: GPUBindGroupLayoutDescriptor = {
+  label: 'Post-Processing Bind Group Layout',
   entries: [
     {
       binding: 0,

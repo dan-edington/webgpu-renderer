@@ -47,9 +47,93 @@ class Mesh extends Entity implements IMesh {
   }
 
   private createRenderPipeline(renderer: Renderer) {
-    const pipelineName = this.material.usesAlphaPipeline ? 'alpha' : 'opaque';
+    const shaderModule = renderer.shaderLibrary?.getShader(this.material.shader)?.shaderModule;
+    const materialBindGroupLayout = renderer.materialBindGroupLayouts?.get(this.material.type);
+
+    if (!renderer.depthTexture) throw new Error(errorMessages.missingDepthTexture);
+    if (!shaderModule) throw new Error(errorMessages.missingMaterialShaderModule);
+    if (!materialBindGroupLayout)
+      throw new Error(`${errorMessages.missingMaterialTypeBindGroupLayout} Material type: '${this.material.type}'.`);
+
+    if (!renderer.cameraBindGroupLayout) throw new Error(errorMessages.missingCameraBufferLayout);
+    if (!renderer.sceneBindGroupLayout) throw new Error(errorMessages.missingSceneBindGroupLayout);
+    if (!renderer.entityBindGroupLayout) throw new Error(errorMessages.missingEntityBindGroupLayout);
+
     this.pipeline =
-      renderer.pipelineLibrary?.getOrCreatePipeline(pipelineName, this.material, this.geometry, renderer) || null;
+      renderer.pipelineManager?.getOrCreateRenderPipeline({
+        label: `MeshPipeline_${this.material.type}`,
+        shaderModule,
+        topology: this.geometry.topology,
+        format: constants.INTERNAL_COLOR_FORMAT,
+        cullMode: this.material.doubleSided ? 'none' : 'back',
+        vertexBuffers: [
+          {
+            arrayStride: 3 * Float32Array.BYTES_PER_ELEMENT,
+            attributes: [
+              {
+                shaderLocation: 0,
+                offset: 0,
+                format: 'float32x3',
+              },
+            ],
+          },
+          {
+            arrayStride: 3 * Float32Array.BYTES_PER_ELEMENT,
+            attributes: [
+              {
+                shaderLocation: 1,
+                offset: 0,
+                format: 'float32x3',
+              },
+            ],
+          },
+          {
+            arrayStride: 2 * Float32Array.BYTES_PER_ELEMENT,
+            attributes: [
+              {
+                shaderLocation: 2,
+                offset: 0,
+                format: 'float32x2',
+              },
+            ],
+          },
+          {
+            arrayStride: 4 * Float32Array.BYTES_PER_ELEMENT,
+            attributes: [
+              {
+                shaderLocation: 3,
+                offset: 0,
+                format: 'float32x4',
+              },
+            ],
+          },
+        ],
+        bindGroupLayouts: [
+          renderer.cameraBindGroupLayout,
+          renderer.sceneBindGroupLayout,
+          materialBindGroupLayout,
+          renderer.entityBindGroupLayout,
+        ],
+        depthStencilState: {
+          format: renderer.depthTexture.format,
+          depthWriteEnabled: this.material.transparent ? false : this.material.depthWrite,
+          depthCompare: 'less',
+        },
+        blendState: this.material.transparent
+          ? {
+              color: {
+                srcFactor: 'src-alpha',
+                dstFactor: 'one-minus-src-alpha',
+                operation: 'add',
+              },
+              alpha: {
+                srcFactor: 'one',
+                dstFactor: 'one-minus-src-alpha',
+                operation: 'add',
+              },
+            }
+          : undefined,
+      }) || null;
   }
 
   private createEntityBuffer() {

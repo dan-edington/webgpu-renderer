@@ -24,10 +24,12 @@ interface IMaterial {
     vertex: string;
     fragment: string;
   };
-  transparent: boolean;
   readonly usesAlphaPipeline: boolean;
   isInitialized: boolean;
   materialFlags: MaterialFlags;
+  doubleSided: boolean;
+  transparent: boolean;
+  depthWrite: boolean;
   init(renderer: Renderer): void;
   getPipelineCacheKey(): string;
   updateUniforms(updatedUniforms: Record<string, UniformValueInput>): void;
@@ -43,6 +45,8 @@ export type MaterialOptions = {
   name?: string;
   type: MaterialType;
   transparent?: boolean;
+  doubleSided?: boolean;
+  depthWrite?: boolean;
   initialFlags?: MaterialFlags;
 };
 
@@ -60,10 +64,12 @@ abstract class Material implements IMaterial {
     vertex: string;
     fragment: string;
   };
-  isInitialized: boolean = false;
-  transparent: boolean;
   protected rendererInstance: Renderer | null = null;
+  isInitialized: boolean = false;
   materialFlags: MaterialFlags;
+  doubleSided: boolean = false;
+  transparent: boolean;
+  depthWrite: boolean = true;
 
   constructor(options: MaterialOptions) {
     this.id = crypto.randomUUID();
@@ -77,6 +83,8 @@ abstract class Material implements IMaterial {
     };
     this.transparent = options.transparent ?? false;
     this.materialFlags = options.initialFlags ?? MaterialFlags.None;
+    this.doubleSided = options.doubleSided ?? false;
+    this.depthWrite = options.depthWrite ?? true;
 
     // materialFlag must be first to match the WGSL struct memory layout!
     this.materialUniforms = {
@@ -97,10 +105,14 @@ abstract class Material implements IMaterial {
     this.rendererInstance = renderer;
 
     if (this.type === 'custom') {
-      this.shader = renderer.shaderLibrary.buildCustomShader({ shader: this.shader, id: this.id });
+      this.shader = renderer.shaderLibrary.buildCustomShader({
+        shader: this.shader,
+        id: this.id,
+        label: this.name,
+      });
     }
 
-    this.createShaderModule(renderer.device);
+    this.cacheShaderModule();
 
     if (this.materialUniformsBuffer) {
       this.materialUniformsBuffer.init(renderer);
@@ -134,22 +146,14 @@ abstract class Material implements IMaterial {
     this.updateUniforms({ materialFlags: this.materialFlags });
   }
 
-  private createShaderModule(device: GPUDevice) {
+  private cacheShaderModule() {
     if (!this.rendererInstance?.shaderLibrary) throw new Error(errorMessages.missingShaderLibrary);
 
-    let shaderCode;
+    const shader = this.rendererInstance.shaderLibrary.getShader(this.shader);
 
-    if (this.type === 'custom') {
-      shaderCode = this.rendererInstance.shaderLibrary.getShader(this.id);
-    } else {
-      shaderCode = this.rendererInstance.shaderLibrary.getShader(this.shader);
-    }
+    if (!shader) throw new Error(errorMessages.missingShaderCode);
 
-    if (!shaderCode) throw new Error(errorMessages.missingShaderCode);
-
-    this.shaderModule = device.createShaderModule({
-      code: shaderCode,
-    });
+    this.shaderModule = shader.shaderModule;
   }
 
   protected recreateMaterialBindGroup() {

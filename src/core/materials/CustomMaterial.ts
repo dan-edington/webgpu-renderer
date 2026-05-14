@@ -21,6 +21,7 @@ class CustomMaterial extends Material {
 
   static override getMaterialLayoutDescriptor(): GPUBindGroupLayoutDescriptor {
     return {
+      label: 'Custom Material Bind Group Layout',
       entries: [
         // Custom uniforms go here
         {

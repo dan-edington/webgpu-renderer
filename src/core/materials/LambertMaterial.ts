@@ -109,6 +109,7 @@ class LambertMaterial extends Material {
 
   static override getMaterialLayoutDescriptor(): GPUBindGroupLayoutDescriptor {
     return {
+      label: 'Lambert Material Bind Group Layout',
       entries: [
         // binding 0: material uniforms (color, etc.)
         {

@@ -89,6 +89,7 @@ class UnlitMaterial extends Material {
 
   static override getMaterialLayoutDescriptor(): GPUBindGroupLayoutDescriptor {
     return {
+      label: 'Unlit Material Bind Group Layout',
       entries: [
         // binding 0: material uniforms (color, etc.)
         {
