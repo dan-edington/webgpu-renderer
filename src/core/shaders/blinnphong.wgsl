@@ -104,14 +104,13 @@ fn fragment_shader(
     // Specular (Blinn-Phong)
     if (ndotl > 0.0) {
       let ndoth = dot(normal, halfwayDir);
-      let shininess = materialUniforms.shininess * 10;
-      let specularStrength = pow(max(ndoth, 0.0), shininess);
+      let specularStrength = pow(max(ndoth, 0.0), materialUniforms.shininess);
       let specular = materialUniforms.specularColor * lightColor * lightIntensity * attenuation * specularStrength;
       accumulatedSpecular = accumulatedSpecular + specular;
     }
   }
 
-  let finalColor =  colorRGB * (ambientLight + accumulatedDiffuse) + accumulatedSpecular;
+  let finalColor =  colorRGB * (ambientLight + accumulatedDiffuse) + (accumulatedSpecular * materialUniforms.shininess / 50);
   let outputFragment = vec4f(finalColor, colorA);
 
   return outputFragment;
