@@ -106,7 +106,7 @@ class Renderer implements IRenderer {
   }
 
   async init() {
-    this.samplerLibrary = new SamplerLibrary(this.device);
+    this.samplerLibrary = new SamplerLibrary(this);
     this.textureLibrary = new TextureLibrary(this);
     this.shaderLibrary = new ShaderLibrary(this);
 

@@ -1,5 +1,5 @@
-import { errorMessages } from '../../constants/errorMessages';
 import type { SamplerDescriptorKey } from '../../types';
+import { Renderer } from '../Renderer';
 
 interface SamplerConfig {
   magFilter?: GPUFilterMode;
@@ -11,17 +11,15 @@ interface SamplerConfig {
 }
 
 class SamplerLibrary {
-  private device: GPUDevice | null = null;
+  private rendererInstance: Renderer;
   private samplers: Map<SamplerDescriptorKey, GPUSampler> = new Map();
 
-  constructor(device: GPUDevice) {
-    this.device = device;
+  constructor(renderer: Renderer) {
+    this.rendererInstance = renderer;
     this.createDefaultSamplers();
   }
 
   private createDefaultSamplers() {
-    if (!this.device) throw new Error(errorMessages.missingDevice);
-
     // Linear interpolation, repeat wrapping
     this.createSampler('linearRepeat', {
       magFilter: 'linear',
@@ -58,11 +56,9 @@ class SamplerLibrary {
   }
 
   createSampler(key: SamplerDescriptorKey, config: SamplerConfig): GPUSampler {
-    if (!this.device) throw new Error(errorMessages.missingSamplerLibraryDevice);
-
     if (this.samplers.has(key)) throw new Error(`Sampler with key "${key}" already exists in the library`);
 
-    const sampler = this.device.createSampler({
+    const sampler = this.rendererInstance.device.createSampler({
       magFilter: config.magFilter ?? 'linear',
       minFilter: config.minFilter ?? 'linear',
       mipmapFilter: config.mipmapFilter,
@@ -72,6 +68,7 @@ class SamplerLibrary {
     });
 
     this.samplers.set(key, sampler);
+
     return sampler;
   }
 
