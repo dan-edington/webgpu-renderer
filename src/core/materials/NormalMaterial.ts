@@ -34,8 +34,8 @@ class NormalMaterial extends Material {
   }
 
   protected override getBindGroupEntries(rendererInstance: Renderer): GPUBindGroupEntry[] {
-    const normalTexture = this._normalTexture ?? rendererInstance.textureLibrary?.getFallback('normal');
-    const sampler = rendererInstance.samplerLibrary?.getSampler('linearRepeat');
+    const normalTexture = this._normalTexture ?? rendererInstance.textureLibrary.getFallback('normal');
+    const sampler = rendererInstance.samplerLibrary.getSampler('linearRepeat');
 
     if (!normalTexture || !sampler) {
       throw new Error('Normal material resources are missing.');

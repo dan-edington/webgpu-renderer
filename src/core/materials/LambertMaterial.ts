@@ -87,10 +87,10 @@ class LambertMaterial extends Material {
   }
 
   protected override getBindGroupEntries(rendererInstance: Renderer): GPUBindGroupEntry[] {
-    const albedoTexture = this._albedoTexture ?? rendererInstance.textureLibrary?.getFallback('white');
-    const alphaTexture = this._alphaTexture ?? rendererInstance.textureLibrary?.getFallback('white');
-    const normalTexture = this._normalTexture ?? rendererInstance.textureLibrary?.getFallback('normal');
-    const sampler = rendererInstance.samplerLibrary?.getSampler('linearRepeat');
+    const albedoTexture = this._albedoTexture ?? rendererInstance.textureLibrary.getFallback('white');
+    const alphaTexture = this._alphaTexture ?? rendererInstance.textureLibrary.getFallback('white');
+    const normalTexture = this._normalTexture ?? rendererInstance.textureLibrary.getFallback('normal');
+    const sampler = rendererInstance.samplerLibrary.getSampler('linearRepeat');
 
     if (!albedoTexture || !normalTexture || !sampler || !alphaTexture) {
       throw new Error('Lambert material resources are missing.');

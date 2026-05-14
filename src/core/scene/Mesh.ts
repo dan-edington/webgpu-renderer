@@ -47,10 +47,9 @@ class Mesh extends Entity implements IMesh {
   }
 
   private createRenderPipeline(rendererInstance: Renderer) {
-    const shaderModule = rendererInstance.shaderLibrary?.getShader(this.material.shader)?.shaderModule;
+    const shaderModule = rendererInstance.shaderLibrary.getShader(this.material.shader)?.shaderModule;
     const materialBindGroupLayout = rendererInstance.materialBindGroupLayouts?.get(this.material.type);
 
-    if (!rendererInstance.depthTexture) throw new Error(errorMessages.missingDepthTexture);
     if (!shaderModule) throw new Error(errorMessages.missingMaterialShaderModule);
     if (!materialBindGroupLayout)
       throw new Error(`${errorMessages.missingMaterialTypeBindGroupLayout} Material type: '${this.material.type}'.`);
@@ -60,7 +59,7 @@ class Mesh extends Entity implements IMesh {
     if (!rendererInstance.entityBindGroupLayout) throw new Error(errorMessages.missingEntityBindGroupLayout);
 
     this.pipeline =
-      rendererInstance.pipelineManager?.getOrCreateRenderPipeline({
+      rendererInstance.pipelineManager.getOrCreateRenderPipeline({
         label: `MeshPipeline_${this.material.type}`,
         shaderModule,
         topology: this.geometry.topology,

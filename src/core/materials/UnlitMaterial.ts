@@ -69,9 +69,9 @@ class UnlitMaterial extends Material {
   }
 
   protected override getBindGroupEntries(rendererInstance: Renderer): GPUBindGroupEntry[] {
-    const albedoTexture = this._albedoTexture ?? rendererInstance.textureLibrary?.getFallback('white');
-    const alphaTexture = this._alphaTexture ?? rendererInstance.textureLibrary?.getFallback('white');
-    const sampler = rendererInstance.samplerLibrary?.getSampler('linearRepeat');
+    const albedoTexture = this._albedoTexture ?? rendererInstance.textureLibrary.getFallback('white');
+    const alphaTexture = this._alphaTexture ?? rendererInstance.textureLibrary.getFallback('white');
+    const sampler = rendererInstance.samplerLibrary.getSampler('linearRepeat');
 
     if (!albedoTexture || !alphaTexture || !sampler) {
       throw new Error('Unlit material resources are missing.');

@@ -15,13 +15,14 @@ class OrbitControls {
   radius: number = 0;
   rotationSpeed: number = 0.005;
   currentRotation: Float32Array = new Float32Array([0, 0]);
-  abortController: AbortController | null = null;
+  abortController: AbortController;
 
   constructor(options: OrbitControlsOptions) {
     this.camera = options.camera;
     this.isDragging = false;
     this.domElement = options.domElement ?? document.body;
     this.target = options.target ?? new Float32Array([0, 0, 0]);
+    this.abortController = new AbortController();
 
     this.initEventListeners();
   }
@@ -34,7 +35,6 @@ class OrbitControls {
   }
 
   private initEventListeners() {
-    this.abortController = new AbortController();
     this.domElement.addEventListener('pointerdown', () => this.handleDragStart.call(this), {
       signal: this.abortController.signal,
     });
@@ -44,13 +44,13 @@ class OrbitControls {
   }
 
   destroy() {
-    this.abortController?.abort();
+    this.abortController.abort();
   }
 
   private handleDragStart() {
     this.isDragging = true;
     this.updateCurrentRadiusAndRotation();
-    this.domElement.addEventListener('pointermove', this.handleDrag, { signal: this.abortController?.signal });
+    this.domElement.addEventListener('pointermove', this.handleDrag, { signal: this.abortController.signal });
   }
 
   private handleDragEnd() {

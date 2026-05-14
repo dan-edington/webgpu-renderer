@@ -145,7 +145,7 @@ abstract class Material implements IMaterial {
   }
 
   private cacheShaderModule() {
-    if (!this.rendererInstance?.shaderLibrary) throw new Error(errorMessages.missingShaderLibrary);
+    if (!this.rendererInstance) throw new Error(errorMessages.missingRendererInstance);
 
     const shader = this.rendererInstance.shaderLibrary.getShader(this.shader);
 
