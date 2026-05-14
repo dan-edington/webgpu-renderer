@@ -25,12 +25,7 @@ class PostProcessingPass extends Pass {
 
     this.geometry = new Geometry({ vertices, indices, uvs, normals });
     this.geometry.init(this.rendererInstance);
-    this.sampler =
-      this.rendererInstance.samplerLibrary?.getSampler('linear') ||
-      this.rendererInstance.device.createSampler({
-        magFilter: 'linear',
-        minFilter: 'linear',
-      });
+    this.sampler = this.rendererInstance.samplerLibrary?.getSampler('linearClamp')!;
 
     this.createPipeline();
   }
