@@ -3,7 +3,6 @@ import { errorMessages } from '../constants/errorMessages';
 import { Renderer } from './Renderer';
 
 interface ISurfaceManager {
-  rendererInstance: Renderer | null;
   alpha: boolean;
   canvasElement: HTMLCanvasElement;
   containerElement: HTMLElement;
@@ -33,7 +32,7 @@ type SurfaceManagerOptions = SurfaceManagerCreateOptions & {
 };
 
 class SurfaceManager implements ISurfaceManager {
-  rendererInstance: Renderer | null = null;
+  private rendererInstance: Renderer | null = null;
   alpha: boolean;
   canvasElement: HTMLCanvasElement;
   containerElement: HTMLElement;
@@ -72,6 +71,13 @@ class SurfaceManager implements ISurfaceManager {
     this.multiSampleTextureView = this.multiSampleTexture.createView();
 
     this.initEventListeners();
+  }
+
+  init(renderer: Renderer) {
+    this.rendererInstance = renderer;
+    this.updateCanvasSize();
+
+    return this;
   }
 
   static async create(options: SurfaceManagerCreateOptions): Promise<SurfaceManager> {

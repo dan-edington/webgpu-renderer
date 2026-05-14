@@ -35,14 +35,12 @@ interface IRenderer {
   materialBindGroupLayout: GPUBindGroupLayout | null;
   entityBindGroupLayout: GPUBindGroupLayout | null;
   materialBindGroupLayouts: Map<MaterialType, GPUBindGroupLayout> | null;
-  meshPipelineLayout: GPUPipelineLayout | null;
-  textureLibrary: TextureLibrary | null;
-  samplerLibrary: SamplerLibrary | null;
-  shaderLibrary: ShaderLibrary | null;
-  depthTexture: DepthTexture | null;
-  passManager: PassManager | null;
-  pipelineManager: PipelineManager | null;
-  init(): Promise<void>;
+  textureLibrary: TextureLibrary;
+  samplerLibrary: SamplerLibrary;
+  shaderLibrary: ShaderLibrary;
+  depthTexture: DepthTexture;
+  passManager: PassManager;
+  pipelineManager: PipelineManager;
   render(scene: Scene, camera: PerspectiveCamera): void;
 }
 
@@ -71,24 +69,40 @@ class Renderer implements IRenderer {
   materialBindGroupLayout: GPUBindGroupLayout | null = null;
   entityBindGroupLayout: GPUBindGroupLayout | null = null;
   materialBindGroupLayouts: Map<MaterialType, GPUBindGroupLayout> | null = null;
-  meshPipelineLayout: GPUPipelineLayout | null = null;
-  depthTexture: DepthTexture | null = null;
-  textureLibrary: TextureLibrary | null = null;
-  samplerLibrary: SamplerLibrary | null = null;
-  shaderLibrary: ShaderLibrary | null = null;
-  passManager: PassManager | null = null;
-  pipelineManager: PipelineManager | null = null;
+  depthTexture: DepthTexture;
+  textureLibrary: TextureLibrary;
+  samplerLibrary: SamplerLibrary;
+  shaderLibrary: ShaderLibrary;
+  passManager: PassManager;
+  pipelineManager: PipelineManager;
 
   private constructor(options: RendererOptions, surfaceManager: SurfaceManager) {
     this.dpr = options.dpr ?? window.devicePixelRatio;
     this.multiSampling = options.multiSampling ?? 4;
     this.alpha = options.alpha ?? true;
-    this.surfaceManager = surfaceManager;
-    this.surfaceManager.rendererInstance = this;
+
+    this.surfaceManager = surfaceManager.init(this);
     this.context = this.surfaceManager.context;
     this.adapter = this.surfaceManager.adapter;
     this.device = this.surfaceManager.device;
     this.presentationFormat = this.surfaceManager.presentationFormat;
+
+    this.pipelineManager = new PipelineManager(this);
+    this.passManager = new PassManager(this);
+
+    this.samplerLibrary = new SamplerLibrary(this);
+    this.textureLibrary = new TextureLibrary(this);
+    this.shaderLibrary = new ShaderLibrary(this);
+
+    this.depthTexture = new DepthTexture({
+      width: this.surfaceManager.canvasElement.width,
+      height: this.surfaceManager.canvasElement.height,
+      rendererInstance: this,
+    });
+
+    this.initializeBindGroupLayouts();
+
+    this.configurePasses();
   }
 
   static async create(options: RendererOptions): Promise<Renderer> {
@@ -98,35 +112,10 @@ class Renderer implements IRenderer {
       multiSampling: options.multiSampling ?? 4,
     });
 
-    const renderer = new Renderer(options, surfaceManager);
-
-    renderer.init();
-
-    return renderer;
-  }
-
-  async init() {
-    this.samplerLibrary = new SamplerLibrary(this);
-    this.textureLibrary = new TextureLibrary(this);
-    this.shaderLibrary = new ShaderLibrary(this);
-
-    this.initializeBindGroupLayouts();
-
-    this.surfaceManager.updateCanvasSize();
-
-    this.depthTexture = new DepthTexture({
-      width: this.surfaceManager.canvasElement.width,
-      height: this.surfaceManager.canvasElement.height,
-      rendererInstance: this,
-    });
-
-    this.pipelineManager = new PipelineManager(this);
-    this.configurePasses();
+    return new Renderer(options, surfaceManager);
   }
 
   private configurePasses() {
-    this.passManager = new PassManager(this);
-
     this.passManager.registerPass('render', RenderPass, {
       input: null,
       output: 'scene',
@@ -141,7 +130,6 @@ class Renderer implements IRenderer {
   }
 
   private initializeBindGroupLayouts() {
-    if (!this.device) throw new Error(errorMessages.missingDevice);
     this.cameraBindGroupLayout = this.device.createBindGroupLayout(cameraBindGroupLayoutDescriptor);
     this.sceneBindGroupLayout = this.device.createBindGroupLayout(sceneBindGroupLayoutDescriptor);
     this.entityBindGroupLayout = this.device.createBindGroupLayout(entityBindGroupLayoutDescriptor);
@@ -181,7 +169,6 @@ class Renderer implements IRenderer {
 
     if (!scene.sceneUniformsBuffer) throw new Error(errorMessages.missingSceneUniformsBuffer);
     if (!scene.lightManager.lightUniformsBuffer) throw new Error(errorMessages.missingLightUniformsBuffer);
-    if (!camera.cameraUniformsBuffer?.buffer) throw new Error(errorMessages.missingCameraBuffer);
 
     scene.sceneUniformsBuffer.writeUpdatedBufferData();
     scene.lightManager.lightUniformsBuffer.writeUpdatedBufferData();
@@ -192,9 +179,6 @@ class Renderer implements IRenderer {
   render(scene: Scene, camera: PerspectiveCamera) {
     this.updateFrameTimers();
     this.prepareFrame(scene, camera);
-
-    if (!this.passManager) throw new Error(errorMessages.missingPassManager);
-    if (!this.device) throw new Error(errorMessages.missingDevice);
 
     const commandEncoder = this.device.createCommandEncoder();
 
