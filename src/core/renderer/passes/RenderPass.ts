@@ -12,8 +12,7 @@ class RenderPass extends Pass {
   }
 
   private buildRenderPassDescriptor(scene: Scene, passContext: PassContext): GPURenderPassDescriptor {
-    if (!this.rendererInstance.context) throw new Error(errorMessages.missingContext);
-    if (!this.rendererInstance.depthTexture?.gpuTextureView) throw new Error(errorMessages.missingDepthTexture);
+    if (!this.rendererInstance.depthTexture.gpuTextureView) throw new Error(errorMessages.missingDepthTexture);
 
     const outputName = passContext.route.output;
     if (!outputName) throw new Error('RenderPass route.output is not defined.');
@@ -67,6 +66,7 @@ class RenderPass extends Pass {
     const opaqueEntities = scene.renderList.filter(
       (entity) => entity instanceof Mesh && !entity.material.usesAlphaPipeline,
     );
+
     const alphaEntities = scene.renderList.filter(
       (entity) => entity instanceof Mesh && entity.material.usesAlphaPipeline,
     );

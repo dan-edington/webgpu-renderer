@@ -25,13 +25,13 @@ class PostProcessingPass extends Pass {
 
     this.geometry = new Geometry({ vertices, indices, uvs, normals });
     this.geometry.init(this.rendererInstance);
-    this.sampler = this.rendererInstance.samplerLibrary?.getSampler('linearClamp')!;
+    this.sampler = this.rendererInstance.samplerLibrary.getSampler('linearClamp')!;
 
     this.createPipeline();
   }
 
   private createPipeline() {
-    const shader = this.rendererInstance.shaderLibrary?.getShader('postprocessing');
+    const shader = this.rendererInstance.shaderLibrary.getShader('postprocessing');
 
     if (!shader) throw new Error(errorMessages.missingShaderCode);
 
@@ -91,9 +91,6 @@ class PostProcessingPass extends Pass {
   }
 
   private buildPostProcessingPassDescriptor(scene: Scene, passContext: PassContext): GPURenderPassDescriptor {
-    if (!this.rendererInstance.context) throw new Error(errorMessages.missingContext);
-    if (!this.rendererInstance.depthTexture?.gpuTexture) throw new Error(errorMessages.missingDepthTexture);
-
     return {
       label: this.name,
       colorAttachments: [
@@ -114,10 +111,10 @@ class PostProcessingPass extends Pass {
     passContext: PassContext,
   ) {
     const inputName = this.route.input;
-    if (!inputName) throw new Error('PostProcessingPass route.input is not set.');
+    if (!inputName) throw new Error('PostProcessingPass route.input is not set');
 
     const inputTarget = passContext.getRenderTarget(inputName);
-    if (!inputTarget) throw new Error(`PostProcessingPass: render target "${inputName}" not found.`);
+    if (!inputTarget) throw new Error(`PostProcessingPass: render target "${inputName}" not found`);
 
     // Rebuild bind group if input view changed (e.g. after resize)
     if (!this.bindGroup || this.boundInputView !== inputTarget.view) {

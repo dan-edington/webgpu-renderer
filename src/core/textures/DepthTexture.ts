@@ -1,4 +1,3 @@
-import { errorMessages } from '../constants/errorMessages';
 import { Renderer } from '../renderer/Renderer';
 
 interface IDepthTexture {
@@ -23,8 +22,8 @@ class DepthTexture implements IDepthTexture {
   width: number;
   height: number;
   format: GPUTextureFormat;
-  gpuTexture: GPUTexture | null = null;
-  gpuTextureView: GPUTextureView | null = null;
+  gpuTexture: GPUTexture | null;
+  gpuTextureView: GPUTextureView | null;
   rendererInstance: Renderer;
 
   constructor(depthTextureOptions: DepthTextureOptions) {
@@ -32,12 +31,18 @@ class DepthTexture implements IDepthTexture {
     this.height = depthTextureOptions.height ?? 1;
     this.format = depthTextureOptions.format ?? 'depth24plus';
     this.rendererInstance = depthTextureOptions.rendererInstance;
-    this.createDepthTexture();
+
+    this.gpuTexture = this.rendererInstance.device.createTexture({
+      size: [this.width, this.height],
+      format: this.format,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT,
+      sampleCount: this.rendererInstance.multiSampling,
+    });
+
+    this.gpuTextureView = this.gpuTexture.createView();
   }
 
-  private createDepthTexture() {
-    if (!this.rendererInstance?.device) throw new Error(errorMessages.missingDevice);
-
+  private recreateDepthTexture() {
     this.gpuTexture = this.rendererInstance.device.createTexture({
       size: [this.width, this.height],
       format: this.format,
@@ -58,7 +63,7 @@ class DepthTexture implements IDepthTexture {
     this.width = width;
     this.height = height;
     this.destroy();
-    this.createDepthTexture();
+    this.recreateDepthTexture();
   }
 }
 

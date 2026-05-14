@@ -68,8 +68,6 @@ class PassManager {
   }
 
   createRenderTarget(name: string, width: number, height: number, format: GPUTextureFormat) {
-    if (!this.rendererInstance.device) throw new Error(errorMessages.missingDevice);
-
     this.getRenderTarget(name)?.texture.destroy();
 
     const texture = this.rendererInstance.device.createTexture({

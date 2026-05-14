@@ -55,8 +55,6 @@ class UniformBuffer implements IUniformBuffer {
   init(rendererInstance: Renderer) {
     this.rendererInstance = rendererInstance;
 
-    if (!this.rendererInstance.device) throw new Error(errorMessages.missingDevice);
-
     if (!this.bufferData) throw new Error('Buffer data not computed');
 
     this.buffer = this.rendererInstance.device.createBuffer({
@@ -65,6 +63,7 @@ class UniformBuffer implements IUniformBuffer {
     });
 
     this.needsUpdate = true;
+
     this.writeUpdatedBufferData();
   }
 
@@ -104,8 +103,7 @@ class UniformBuffer implements IUniformBuffer {
 
   writeUpdatedBufferData() {
     if (this.needsUpdate) {
-      if (!this.rendererInstance || !this.rendererInstance.device) throw new Error(errorMessages.missingDevice);
-
+      if (!this.rendererInstance) throw new Error(errorMessages.missingDevice);
       if (!this.buffer || !this.bufferData) throw new Error('Uniform buffer not initialized');
 
       this.rendererInstance.device.queue.writeBuffer(this.buffer, 0, this.bufferData);
