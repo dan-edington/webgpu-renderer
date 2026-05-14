@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
-import wasm from 'vite-plugin-wasm';
 import { resolve } from 'node:path';
+import { devFoldersPlugin } from './dev/listDirs.js';
 
 export default defineConfig((configEnv) => {
   const isDev = configEnv.command === 'serve';
@@ -13,11 +13,11 @@ export default defineConfig((configEnv) => {
       open: 'index.html',
     },
     plugins: [
+      devFoldersPlugin(),
       dts({
         entryRoot: resolve(__dirname, 'src'),
         insertTypesEntry: true,
       }),
-      wasm(),
     ],
     build: {
       outDir: resolve(__dirname, 'dist'),

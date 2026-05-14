@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Dev Demos</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 2em;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+      li {
+        margin: 0.5em 0;
+      }
+      a {
+        text-decoration: none;
+        color: #1976d2;
+        font-size: 1.2em;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Available Dev Demos</h1>
+    <ul id="folder-list"></ul>
+    <script>
+      const ul = document.getElementById('folder-list');
+
+      fetch('/dev-folders')
+        .then(async (r) => {
+          if (!r.ok) {
+            throw new Error(`Request failed with status ${r.status}`);
+          }
+
+          const contentType = r.headers.get('content-type') || '';
+          if (!contentType.includes('application/json')) {
+            throw new Error(`Expected JSON but got: ${contentType || 'unknown content type'}`);
+          }
+
+          return r.json();
+        })
+        .then((folders) => {
+          folders.forEach((folder) => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = `./${folder}/`;
+            a.textContent = folder;
+            li.appendChild(a);
+            ul.appendChild(li);
+          });
+        })
+        .catch((error) => {
+          const li = document.createElement('li');
+          li.textContent = `Could not load demo folders: ${error.message}`;
+          ul.appendChild(li);
+        });
+    </script>
+  </body>
+</html>
