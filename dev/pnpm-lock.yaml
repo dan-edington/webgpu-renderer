@@ -1,0 +1,31 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      primitive-geometry:
+        specifier: ^2.11.0
+        version: 2.11.0
+      tweakpane:
+        specifier: ^4.0.5
+        version: 4.0.5
+
+packages:
+
+  primitive-geometry@2.11.0:
+    resolution: {integrity: sha512-W/Kl9za7sIQWRWvY6Fvr/wnexhP6D3fBcPz4gZsE2aMiUgm0N8ZUCQiwG/h+r+P1qTKi2yEINF3x79WN6gJSXA==}
+    engines: {node: '>=22.0.0', npm: '>=10.5.1', snowdev: '>=2.3.x'}
+
+  tweakpane@4.0.5:
+    resolution: {integrity: sha512-rxEXdSI+ArlG1RyO6FghC4ZUX8JkEfz8F3v1JuteXSV0pEtHJzyo07fcDG+NsJfN5L39kSbCYbB9cBGHyuI/tQ==}
+
+snapshots:
+
+  primitive-geometry@2.11.0: {}
+
+  tweakpane@4.0.5: {}
