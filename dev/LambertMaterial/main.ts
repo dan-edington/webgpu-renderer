@@ -95,7 +95,7 @@ if (container) {
 
   camera.setPosition(0, 0, 5);
   camera.lookAt(new Float32Array([0, 0, 0]));
-  new OrbitControls({ camera, domElement: renderer.canvasManager.canvasElement });
+  new OrbitControls({ camera, domElement: renderer.surfaceManager.canvasElement });
 
   // Render the scene
   function render() {

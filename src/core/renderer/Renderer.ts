@@ -7,8 +7,7 @@ import { Scene } from '../scene/Scene';
 import { Mesh } from '../scene/Mesh';
 import { errorMessages } from '../constants/errorMessages';
 import { DepthTexture } from '../textures/DepthTexture';
-import { CanvasManager } from './CanvasManager';
-import { ContextManager } from './ContextManager';
+import { SurfaceManager } from './SurfaceManager';
 import { PassManager } from './PassManager';
 import { RenderPass } from './passes/RenderPass';
 import { cameraBindGroupLayoutDescriptor } from './bindGroupLayouts/camera';
@@ -19,8 +18,7 @@ import { PostProcessingPass } from './passes/PostProcessingPass';
 import { PipelineManager } from './PipelineManager';
 
 interface IRenderer {
-  canvasManager: CanvasManager;
-  contextManager: ContextManager;
+  surfaceManager: SurfaceManager;
   dpr: number;
   multiSampling: number;
   alpha: boolean;
@@ -56,8 +54,7 @@ type RendererOptions = {
 };
 
 class Renderer implements IRenderer {
-  canvasManager: CanvasManager;
-  contextManager: ContextManager;
+  surfaceManager: SurfaceManager;
   dpr: number;
   multiSampling: number;
   alpha: boolean;
@@ -82,29 +79,26 @@ class Renderer implements IRenderer {
   passManager: PassManager | null = null;
   pipelineManager: PipelineManager | null = null;
 
-  private constructor(options: RendererOptions, canvasManager: CanvasManager, contextManager: ContextManager) {
+  private constructor(options: RendererOptions, surfaceManager: SurfaceManager) {
     this.dpr = options.dpr ?? window.devicePixelRatio;
     this.multiSampling = options.multiSampling ?? 4;
     this.alpha = options.alpha ?? true;
-    this.canvasManager = canvasManager;
-    this.canvasManager.rendererInstance = this;
-    this.contextManager = contextManager;
-    this.context = this.contextManager.context;
-    this.adapter = this.contextManager.adapter;
-    this.device = this.contextManager.device;
-    this.presentationFormat = this.contextManager.presentationFormat;
+    this.surfaceManager = surfaceManager;
+    this.surfaceManager.rendererInstance = this;
+    this.context = this.surfaceManager.context;
+    this.adapter = this.surfaceManager.adapter;
+    this.device = this.surfaceManager.device;
+    this.presentationFormat = this.surfaceManager.presentationFormat;
   }
 
   static async create(options: RendererOptions): Promise<Renderer> {
-    const canvasManager = new CanvasManager({ containerElement: options.containerElement });
-
-    const contextManager = await ContextManager.create({
-      canvasElement: canvasManager.canvasElement,
+    const surfaceManager = await SurfaceManager.create({
+      containerElement: options.containerElement,
       alpha: options.alpha ?? false,
       multiSampling: options.multiSampling ?? 4,
     });
 
-    const renderer = new Renderer(options, canvasManager, contextManager);
+    const renderer = new Renderer(options, surfaceManager);
 
     renderer.init();
 
@@ -118,11 +112,11 @@ class Renderer implements IRenderer {
 
     this.initializeBindGroupLayouts();
 
-    this.canvasManager.updateCanvasSize();
+    this.surfaceManager.updateCanvasSize();
 
     this.depthTexture = new DepthTexture({
-      width: this.canvasManager.canvasElement.width,
-      height: this.canvasManager.canvasElement.height,
+      width: this.surfaceManager.canvasElement.width,
+      height: this.surfaceManager.canvasElement.height,
       rendererInstance: this,
     });
 

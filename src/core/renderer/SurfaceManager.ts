@@ -1,9 +1,12 @@
 import { constants } from '../constants/constants';
 import { errorMessages } from '../constants/errorMessages';
+import { Renderer } from './Renderer';
 
-interface IContextManager {
+interface ISurfaceManager {
+  rendererInstance: Renderer | null;
   alpha: boolean;
   canvasElement: HTMLCanvasElement;
+  containerElement: HTMLElement;
   context: GPUCanvasContext;
   adapter: GPUAdapter;
   device: GPUDevice;
@@ -11,25 +14,29 @@ interface IContextManager {
   canvasTexture: GPUTexture;
   multiSampleTexture: GPUTexture;
   multiSampleTextureView: GPUTextureView;
+  updateCanvasSize(): void;
   resize(width: number, height: number, multiSampling: number): void;
 }
 
-type ContextManagerCreateOptions = {
-  canvasElement: HTMLCanvasElement;
+type SurfaceManagerCreateOptions = {
+  containerElement?: HTMLElement;
   alpha?: boolean;
   multiSampling: number;
 };
 
-type ContextManagerOptions = ContextManagerCreateOptions & {
+type SurfaceManagerOptions = SurfaceManagerCreateOptions & {
+  canvasElement: HTMLCanvasElement;
   context: GPUCanvasContext;
   adapter: GPUAdapter;
   device: GPUDevice;
   presentationFormat: GPUTextureFormat;
 };
 
-class ContextManager implements IContextManager {
+class SurfaceManager implements ISurfaceManager {
+  rendererInstance: Renderer | null = null;
   alpha: boolean;
   canvasElement: HTMLCanvasElement;
+  containerElement: HTMLElement;
   context: GPUCanvasContext;
   adapter: GPUAdapter;
   device: GPUDevice;
@@ -38,8 +45,9 @@ class ContextManager implements IContextManager {
   multiSampleTexture: GPUTexture;
   multiSampleTextureView: GPUTextureView;
 
-  private constructor(options: ContextManagerOptions) {
+  private constructor(options: SurfaceManagerOptions) {
     this.alpha = options.alpha ?? true;
+    this.containerElement = options.containerElement ?? document.body;
     this.canvasElement = options.canvasElement;
     this.context = options.context;
     this.adapter = options.adapter;
@@ -62,10 +70,20 @@ class ContextManager implements IContextManager {
     });
 
     this.multiSampleTextureView = this.multiSampleTexture.createView();
+
+    this.initEventListeners();
   }
 
-  static async create(options: ContextManagerCreateOptions): Promise<ContextManager> {
-    const context = options.canvasElement.getContext('webgpu');
+  static async create(options: SurfaceManagerCreateOptions): Promise<SurfaceManager> {
+    const containerElement = options.containerElement ?? document.body;
+    if (!(containerElement instanceof HTMLElement)) {
+      throw new Error('Invalid container element');
+    }
+
+    const canvasElement = document.createElement('canvas');
+    containerElement.appendChild(canvasElement);
+
+    const context = canvasElement.getContext('webgpu');
     if (!context) throw new Error(errorMessages.contextRequest);
 
     const adapter = await navigator.gpu.requestAdapter();
@@ -77,13 +95,36 @@ class ContextManager implements IContextManager {
     const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
     if (!presentationFormat) throw new Error(errorMessages.presentationFormatRequest);
 
-    return new ContextManager({
+    return new SurfaceManager({
       ...options,
+      containerElement,
+      canvasElement,
       context,
       adapter,
       device,
       presentationFormat,
     });
+  }
+
+  private initEventListeners() {
+    const onResize = () => {
+      this.updateCanvasSize();
+    };
+
+    window.addEventListener('resize', onResize);
+  }
+
+  updateCanvasSize() {
+    if (!this.canvasElement) throw new Error(errorMessages.missingCanvasElement);
+    if (!this.rendererInstance) throw new Error(errorMessages.missingRendererInstance);
+
+    this.canvasElement.width = Math.floor(this.containerElement.clientWidth * this.rendererInstance.dpr);
+    this.canvasElement.height = Math.floor(this.containerElement.clientHeight * this.rendererInstance.dpr);
+
+    this.resize(this.canvasElement.width, this.canvasElement.height, this.rendererInstance.multiSampling);
+
+    this.rendererInstance.depthTexture?.resize(this.canvasElement.width, this.canvasElement.height);
+    this.rendererInstance.passManager?.resizeRenderTargets(this.canvasElement.width, this.canvasElement.height);
   }
 
   resize(width: number, height: number, multiSampling: number) {
@@ -102,4 +143,4 @@ class ContextManager implements IContextManager {
   }
 }
 
-export { ContextManager };
+export { SurfaceManager };

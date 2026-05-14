@@ -27,7 +27,7 @@ class RenderPass extends Pass {
       constants.INTERNAL_COLOR_FORMAT,
     );
 
-    const colorView = msaaEnabled ? this.rendererInstance.contextManager.multiSampleTextureView : outputTarget.view;
+    const colorView = msaaEnabled ? this.rendererInstance.surfaceManager.multiSampleTextureView : outputTarget.view;
 
     const resolveTarget = msaaEnabled ? outputTarget.view : undefined;
 

@@ -60,8 +60,8 @@ class PassManager {
       getRenderTarget: this.getRenderTarget.bind(this),
       getSwapChainView: () => this.rendererInstance.context.getCurrentTexture().createView(),
       validateRenderTarget: this.validateRenderTarget.bind(this),
-      width: this.rendererInstance.canvasManager.canvasElement.width,
-      height: this.rendererInstance.canvasManager.canvasElement.height,
+      width: this.rendererInstance.surfaceManager.canvasElement.width,
+      height: this.rendererInstance.surfaceManager.canvasElement.height,
     };
 
     pass.runPass(commandEncoder, this.scene, this.camera, passContext);
