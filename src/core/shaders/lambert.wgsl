@@ -91,7 +91,7 @@ fn fragment_shader(
     accumulatedDiffuse = accumulatedDiffuse + lightContribution;
   }
 
-  let finalColor = ambientLight + colorRGB * accumulatedDiffuse;
+  let finalColor = colorRGB * (ambientLight + accumulatedDiffuse);
   let outputFragment = vec4f(finalColor, colorA);
 
   return outputFragment;
