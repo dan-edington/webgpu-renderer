@@ -63,6 +63,10 @@ fn fragment_shader(
   for (var i = 0u; i < lightUniforms.count; i = i + 1) {
     // #include "lightFlags"
 
+    if (shouldSkipLight) {
+      continue;
+    }
+
     // Light properties
     let lightPos = lightUniforms.positions[i].xyz;
     let lightColor = lightUniforms.colors[i].xyz;

@@ -1,6 +1,6 @@
 import { constants } from '../constants/constants';
 import { Entity } from './Entity';
-import { Light } from '../lights/Light';
+import { Light, LightFlag } from '../lights/Light';
 import { Renderer } from '../renderer/Renderer';
 import { UniformBuffer } from '../renderer/UniformBuffer';
 import { colorToLinear, srgbToLinear } from '../utilities/colorUtilities';
@@ -77,7 +77,7 @@ class LightManager implements ILightManager {
       params[base + 2] = 0;
       params[base + 3] = 0;
 
-      flags[index] = light.flags;
+      flags[index] = (light.visible ? LightFlag.Visible : LightFlag.None) | light.flags;
     });
 
     this.lightUniformsBuffer = new UniformBuffer(
@@ -124,7 +124,7 @@ class LightManager implements ILightManager {
       params[base + 2] = 0;
       params[base + 3] = 0;
 
-      flags[index] = light.flags;
+      flags[index] = (light.visible ? LightFlag.Visible : LightFlag.None) | light.flags;
     });
 
     this.lightUniformsBuffer.updateUniform({
