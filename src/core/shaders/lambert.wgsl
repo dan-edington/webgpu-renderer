@@ -1,7 +1,7 @@
-// #include "cameraUniforms"
-// #include "sceneUniforms"
-// #include "lightUniforms"
-// #include "entityUniforms"
+// #include "./includes/uniforms/cameraUniforms"
+// #include "./includes/uniforms/sceneUniforms"
+// #include "./includes/uniforms/lightUniforms"
+// #include "./includes/uniforms/entityUniforms"
 
 struct MaterialUniforms {
   materialFlag: u32,
@@ -52,16 +52,16 @@ fn fragment_shader(
   in: VertexOutput
 ) -> @location(0) vec4f {
 
-  // #include "materialFlags"
-  // #include "fragmentColorAndAlpha"
-  // #include "normals"
-  // #include "ambientLight"
+  // #include "./includes/material/materialFlags"
+  // #include "./includes/material/fragmentColorAndAlpha"
+  // #include "./includes/material/normals"
+  // #include "./includes/lighting/ambientLight"
 
   var accumulatedDiffuse = vec3f(0);
 
   // Loop through all lights
   for (var i = 0u; i < lightUniforms.count; i = i + 1) {
-    // #include "lightFlags"
+    // #include "./includes/lighting/lightFlags"
 
     if (shouldSkipLight) {
       continue;

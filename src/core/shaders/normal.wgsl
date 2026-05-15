@@ -1,6 +1,6 @@
-// #include "cameraUniforms"
-// #include "sceneUniforms"
-// #include "entityUniforms"
+// #include "./includes/uniforms/cameraUniforms"
+// #include "./includes/uniforms/sceneUniforms"
+// #include "./includes/uniforms/entityUniforms"
 
 struct MaterialUniforms {
   materialFlag: u32
@@ -48,8 +48,8 @@ fn fragment_shader(
   in: VertexOutput
 ) -> @location(0) vec4f {
 
-  // #include "materialFlags"
-  // #include "normals"
+  // #include "./includes/material/materialFlags"
+  // #include "./includes/material/normals"
 
   return vec4f(normal * 0.5 + 0.5, 1.0);
 }
