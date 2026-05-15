@@ -50,7 +50,7 @@ fn fragment_shader(
 
 
   let material = Material(
-    1u,
+    MATERIAL_BLINNPHONG,
     albedoColor,
     materialUniforms.shininess,
     materialUniforms.specularColor,

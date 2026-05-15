@@ -46,7 +46,7 @@ fn fragment_shader(
   // #include "./includes/material/normals"
 
   let material = Material(
-    0u,
+    MATERIAL_LAMBERT,
     albedoColor,
     0,
     vec3f(1.0),
