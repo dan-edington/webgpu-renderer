@@ -1,6 +1,6 @@
-// #include "camera"
-// #include "scene"
-// #include "entity"
+// #include "cameraUniforms"
+// #include "sceneUniforms"
+// #include "entityUniforms"
 
 struct MaterialUniforms {
   materialFlag: u32
