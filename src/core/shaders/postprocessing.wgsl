@@ -1,4 +1,4 @@
-// #include "tonemapping"
+// #include "./includes/colour/tonemapping"
 
 @group(0) @binding(0) var sceneSampler: sampler;
 @group(0) @binding(1) var sceneTexture: texture_2d<f32>;

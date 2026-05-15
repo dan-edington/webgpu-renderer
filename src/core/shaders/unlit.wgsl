@@ -1,7 +1,7 @@
-// #include "camera"
-// #include "scene"
-// #include "lights"
-// #include "entity"
+// #include "./includes/uniforms/cameraUniforms"
+// #include "./includes/uniforms/sceneUniforms"
+// #include "./includes/uniforms/lightUniforms"
+// #include "./includes/uniforms/entityUniforms"
 
 struct MaterialUniforms {
   materialFlag: u32,
@@ -38,10 +38,10 @@ fn fragment_shader(
   in: VertexOutput
 ) -> @location(0) vec4f {
 
-  // #include "materialFlags"
-  // #include "fragmentColorAndAlpha"
+  // #include "./includes/material/materialFlags"
+  // #include "./includes/material/fragmentColorAndAlpha"
 
-  var finalColor = vec4f(colorRGB, colorA);
+  var finalColor = vec4f(albedoColor, fragmentAlpha);
 
   return finalColor;
 }

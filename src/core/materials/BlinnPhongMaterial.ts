@@ -12,6 +12,7 @@ type BlinnPhongMaterialOptions = {
   transparent?: boolean;
   shininess?: number;
   specularColor?: ArrayLike<number>;
+  specularStrength?: number;
 };
 
 class BlinnPhongMaterial extends Material {
@@ -21,6 +22,7 @@ class BlinnPhongMaterial extends Material {
   private _alphaTexture: Texture | null;
   private _shininess: number;
   private _specularColor: Float32Array;
+  private _specularStrength: number;
 
   constructor(options: BlinnPhongMaterialOptions = {}) {
     const color = new Float32Array(options.color ?? [1, 1, 1, 1]);
@@ -39,6 +41,7 @@ class BlinnPhongMaterial extends Material {
         color: { type: 'vec4<f32>', value: colorToLinear(color) },
         shininess: { type: 'f32', value: options.shininess ?? 1.0 },
         specularColor: { type: 'vec3<f32>', value: colorToLinear(specularColor) },
+        specularStrength: { type: 'f32', value: options.specularStrength ?? 1.0 },
       },
       transparent: options.transparent ?? false,
       initialFlags,
@@ -50,6 +53,7 @@ class BlinnPhongMaterial extends Material {
     this._normalTexture = options.normalTexture ?? null;
     this._shininess = options.shininess ?? 1.0;
     this._specularColor = specularColor;
+    this._specularStrength = options.specularStrength ?? 1.0;
   }
 
   override get usesAlphaPipeline(): boolean {
@@ -72,6 +76,15 @@ class BlinnPhongMaterial extends Material {
   set specularColor(value: ArrayLike<number>) {
     this._specularColor = new Float32Array(value);
     this.updateUniforms({ specularColor: colorToLinear(this._specularColor) });
+  }
+
+  get specularStrength(): Float32Array {
+    return this._specularColor;
+  }
+
+  set specularStrength(value: number) {
+    this._specularStrength = value;
+    this.updateUniforms({ specularStrength: this._specularStrength });
   }
 
   get albedoTexture(): Texture | null {

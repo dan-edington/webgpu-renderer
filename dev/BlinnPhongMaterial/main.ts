@@ -48,6 +48,7 @@ if (container) {
     color: { r: 1, g: 0, b: 0, a: 1 },
     shininess: 48,
     specularColor: { r: 1, g: 1, b: 1, a: 1 },
+    specularStrength: 1,
   };
 
   const lightParams = {
@@ -132,6 +133,12 @@ if (container) {
     .addBinding(blinnPhongMaterialParams, 'shininess', { min: 0, max: 1000, step: 0.1 })
     .on('change', () => {
       blinnPhongMaterial.shininess = blinnPhongMaterialParams.shininess;
+    });
+
+  blinnPhongMaterialFolder
+    .addBinding(blinnPhongMaterialParams, 'specularStrength', { min: 0, max: 1, step: 0.1 })
+    .on('change', () => {
+      blinnPhongMaterial.specularStrength = blinnPhongMaterialParams.specularStrength;
     });
 
   blinnPhongMaterialFolder
