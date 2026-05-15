@@ -15,6 +15,9 @@
 struct MaterialUniforms {
   materialFlag: u32,
   color: vec4f,
+  textureRepeatAlbedo: vec2f,
+  textureRepeatAlpha: vec2f,
+  textureRepeatNormal: vec2f,
 };
 
 @group(2) @binding(0) var<uniform> materialUniforms: MaterialUniforms;

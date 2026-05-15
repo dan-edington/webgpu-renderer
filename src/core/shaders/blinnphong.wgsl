@@ -15,6 +15,9 @@
 struct MaterialUniforms {
   materialFlag: u32,
   color: vec4f,
+  textureRepeatAlbedo: vec2f,
+  textureRepeatAlpha: vec2f,
+  textureRepeatNormal: vec2f,
   shininess: f32,
   specularColor: vec3f,
   specularStrength: f32,

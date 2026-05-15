@@ -1,6 +1,7 @@
 import { Renderer } from '../renderer/Renderer';
 import { Texture } from '../textures/Texture';
 import { Material, MaterialFlags } from './Material';
+import { MaterialTexture } from './MaterialTexture';
 
 type NormalMaterialOptions = {
   name?: string;
@@ -8,7 +9,7 @@ type NormalMaterialOptions = {
 };
 
 class NormalMaterial extends Material {
-  private _normalTexture: Texture | null;
+  private _normalTexture: MaterialTexture;
 
   constructor(options: NormalMaterialOptions = {}) {
     let initialFlags = MaterialFlags.None;
@@ -21,23 +22,31 @@ class NormalMaterial extends Material {
       initialFlags,
     });
 
-    this._normalTexture = options.normalTexture ?? null;
+    this._normalTexture = new MaterialTexture({
+      material: this,
+      slot: 'normal',
+      texture: options.normalTexture || null,
+      fallback: 'normal',
+    });
+
+    this.materialTextures.push(this._normalTexture);
   }
 
   get normalTexture(): Texture | null {
-    return this._normalTexture;
+    return this._normalTexture.texture;
   }
 
   set normalTexture(value: Texture | null) {
-    this._normalTexture = value;
+    this._normalTexture.texture = value;
+    this.setMaterialFlags(MaterialFlags.Normal, value !== null);
     this.recreateMaterialBindGroup();
   }
 
   protected override getBindGroupEntries(rendererInstance: Renderer): GPUBindGroupEntry[] {
-    const normalTexture = this._normalTexture ?? rendererInstance.textureLibrary.getFallback('normal');
+    const normalTextureView = this._normalTexture.getView();
     const sampler = rendererInstance.samplerLibrary.getSampler('linearRepeat');
 
-    if (!normalTexture || !sampler) {
+    if (!normalTextureView || !sampler) {
       throw new Error('Normal material resources are missing.');
     }
 
@@ -45,7 +54,7 @@ class NormalMaterial extends Material {
 
     return [
       { binding: 0, resource: { buffer: this.materialUniformsBuffer.buffer } },
-      { binding: 1, resource: normalTexture.getView() },
+      { binding: 1, resource: normalTextureView },
       { binding: 2, resource: sampler },
     ];
   }
