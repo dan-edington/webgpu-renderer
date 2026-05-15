@@ -1,7 +1,16 @@
+// #include "./includes/misc/constants"
+
+// #include "./includes/material/materialStruct"
+// #include  "/includes/vertex/vertexOutputStruct"
+
 // #include "./includes/uniforms/cameraUniforms"
 // #include "./includes/uniforms/sceneUniforms"
 // #include "./includes/uniforms/lightUniforms"
 // #include "./includes/uniforms/entityUniforms"
+
+// #include "./includes/BRDF/lambertBRDF"
+
+// #include "./includes/lighting/lightingFunctions"
 
 struct MaterialUniforms {
   materialFlag: u32,
@@ -14,15 +23,6 @@ struct MaterialUniforms {
 @group(2) @binding(3) var albedoTexture: texture_2d<f32>;
 @group(2) @binding(4) var materialSampler: sampler;
 
-struct VertexOutput {
-  @builtin(position) position: vec4f,
-  @location(0) worldPosition: vec3f,
-  @location(1) normal: vec3f,
-  @location(2) uvs: vec2f,
-  @location(3) tangent: vec3f,
-  @location(4) bitangent: vec3f,
-};
-
 @vertex
 fn vertex_shader(
   @location(0) pos: vec3<f32>,
@@ -31,18 +31,7 @@ fn vertex_shader(
   @location(3) tangent: vec4<f32>,
 ) -> VertexOutput {
 
-  var out: VertexOutput;
-
-  let t = normalize((entityUniforms.modelMatrix * vec4f(tangent.xyz, 0.0)).xyz);
-  let n = normalize((entityUniforms.modelMatrix * vec4f(normal, 0.0)).xyz);
-  let b = cross(n, t) * tangent.w;
-
-  out.position = cameraUniforms.viewProjectionMatrix * entityUniforms.modelMatrix * vec4f(pos, 1.0);
-  out.worldPosition = (entityUniforms.modelMatrix * vec4f(pos, 1.0)).xyz;
-  out.normal = n;
-  out.tangent = t;
-  out.bitangent = b;
-  out.uvs = uvs;
+  // #include "/includes/vertex/vertexOutput"
 
   return out;
 }
@@ -55,48 +44,18 @@ fn fragment_shader(
   // #include "./includes/material/materialFlags"
   // #include "./includes/material/fragmentColorAndAlpha"
   // #include "./includes/material/normals"
-  // #include "./includes/lighting/ambientLight"
 
-  var accumulatedDiffuse = vec3f(0);
+  let material = Material(
+    0u,
+    albedoColor,
+    0,
+    vec3f(1.0),
+    0
+  );
 
-  // Loop through all lights
-  for (var i = 0u; i < lightUniforms.count; i = i + 1) {
-    // #include "./includes/lighting/lightFlags"
+  let V = normalize(cameraUniforms.worldPosition - in.worldPosition);
 
-    if (shouldSkipLight) {
-      continue;
-    }
+  let finalColor = calculateLighting(material, in.worldPosition, N, V);
 
-    // Light properties
-    let lightPos = lightUniforms.positions[i].xyz;
-    let lightColor = lightUniforms.colors[i].xyz;
-    let lightIntensity = lightUniforms.params[i].x;
-    let lightRange = lightUniforms.params[i].y;
-    
-    // Calculate light direction and distance
-    let lightVector = lightPos - in.worldPosition;
-    let distance = length(lightVector);
-    
-    // Skip this light if beyond range
-    if (distance > lightRange) {
-      continue;
-    }
-    
-    let lightDir = normalize(lightVector);
-    
-    // Lambert diffuse
-    let ndotl = max(0.0, dot(normal, lightDir));
-    
-    // 1/distance squared falloff
-    let distSq = distance * distance;
-    let attenuation = 1.0 / max(distSq, 0.01);
-    
-    let lightContribution = lightColor * lightIntensity * ndotl * attenuation;
-    accumulatedDiffuse = accumulatedDiffuse + lightContribution;
-  }
-
-  let finalColor = colorRGB * (ambientLight + accumulatedDiffuse);
-  let outputFragment = vec4f(finalColor, colorA);
-
-  return outputFragment;
+  return vec4f(finalColor, fragmentAlpha);;
 }
