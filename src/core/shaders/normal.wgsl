@@ -9,7 +9,8 @@
 // #include "./includes/uniforms/entityUniforms"
 
 struct MaterialUniforms {
-  materialFlag: u32
+  materialFlag: u32,
+  textureRepeatNormal: vec2f,
 };
 
 @group(2) @binding(0) var<uniform> materialUniforms: MaterialUniforms;

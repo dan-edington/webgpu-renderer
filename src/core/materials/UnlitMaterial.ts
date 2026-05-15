@@ -2,6 +2,8 @@ import { Material, MaterialFlags } from './Material';
 import { Renderer } from '../renderer/Renderer';
 import { Texture } from '../textures/Texture';
 import { colorToLinear } from '../utilities/colorUtilities';
+import { MaterialTexture } from './MaterialTexture';
+import { MaterialTextureSlot } from '../types';
 
 type UnlitMaterialOptions = {
   name?: string;
@@ -13,11 +15,18 @@ type UnlitMaterialOptions = {
 
 class UnlitMaterial extends Material {
   private _color: Float32Array;
-  private _albedoTexture: Texture | null;
-  private _alphaTexture: Texture | null;
+  private _albedoTexture: MaterialTexture;
+  private _alphaTexture: MaterialTexture;
+  private textureRepeatBySlot: Record<'albedo' | 'alpha', Float32Array>;
+  private readonly repeatUniformBySlot: Record<'albedo' | 'alpha', string> = {
+    albedo: 'textureRepeatAlbedo',
+    alpha: 'textureRepeatAlpha',
+  };
 
   constructor(options: UnlitMaterialOptions = {}) {
     const color = new Float32Array(options.color ?? [1, 1, 1, 1]);
+    const textureRepeatAlbedo = new Float32Array([1, 1]);
+    const textureRepeatAlpha = new Float32Array([1, 1]);
 
     let initialFlags = MaterialFlags.None;
     if (options.alphaTexture) initialFlags |= MaterialFlags.Alpha;
@@ -29,14 +38,33 @@ class UnlitMaterial extends Material {
       shader: 'unlit',
       uniforms: {
         color: { type: 'vec4<f32>', value: colorToLinear(color) },
+        textureRepeatAlbedo: { type: 'vec2<f32>', value: textureRepeatAlbedo },
+        textureRepeatAlpha: { type: 'vec2<f32>', value: textureRepeatAlpha },
       },
       transparent: options.transparent ?? false,
       initialFlags,
     });
 
     this._color = color;
-    this._albedoTexture = options.albedoTexture ?? null;
-    this._alphaTexture = options.alphaTexture ?? null;
+
+    this._albedoTexture = new MaterialTexture({
+      material: this,
+      slot: 'albedo',
+      texture: options.albedoTexture || null,
+    });
+
+    this._alphaTexture = new MaterialTexture({
+      material: this,
+      slot: 'alpha',
+      texture: options.alphaTexture || null,
+    });
+
+    this.textureRepeatBySlot = {
+      albedo: textureRepeatAlbedo,
+      alpha: textureRepeatAlpha,
+    };
+
+    this.materialTextures.push(this._albedoTexture, this._alphaTexture);
   }
 
   get color(): Float32Array {
@@ -49,31 +77,39 @@ class UnlitMaterial extends Material {
   }
 
   get albedoTexture(): Texture | null {
-    return this._albedoTexture;
+    return this._albedoTexture.texture;
   }
 
   set albedoTexture(value: Texture | null) {
-    this._albedoTexture = value;
+    this._albedoTexture.texture = value;
     this.setMaterialFlags(MaterialFlags.Albedo, value !== null);
     this.recreateMaterialBindGroup();
   }
 
   get alphaTexture(): Texture | null {
-    return this._alphaTexture;
+    return this._alphaTexture.texture;
   }
 
   set alphaTexture(value: Texture | null) {
-    this._alphaTexture = value;
+    this._alphaTexture.texture = value;
     this.setMaterialFlags(MaterialFlags.Alpha, value !== null);
     this.recreateMaterialBindGroup();
   }
 
+  override onMaterialTextureUpdate(slot: MaterialTextureSlot, texture: Texture | null) {
+    if (slot !== 'albedo' && slot !== 'alpha') return;
+
+    const repeatValue = texture?.repeat ?? new Float32Array([1, 1]);
+    this.textureRepeatBySlot[slot].set(repeatValue);
+    this.updateUniforms({ [this.repeatUniformBySlot[slot]]: this.textureRepeatBySlot[slot] });
+  }
+
   protected override getBindGroupEntries(rendererInstance: Renderer): GPUBindGroupEntry[] {
-    const albedoTexture = this._albedoTexture ?? rendererInstance.textureLibrary.getFallback('white');
-    const alphaTexture = this._alphaTexture ?? rendererInstance.textureLibrary.getFallback('white');
+    const albedoTextureView = this._albedoTexture.getView();
+    const alphaTextureView = this._alphaTexture.getView();
     const sampler = rendererInstance.samplerLibrary.getSampler('linearRepeat');
 
-    if (!albedoTexture || !alphaTexture || !sampler) {
+    if (!albedoTextureView || !alphaTextureView || !sampler) {
       throw new Error('Unlit material resources are missing.');
     }
 
@@ -81,8 +117,8 @@ class UnlitMaterial extends Material {
 
     return [
       { binding: 0, resource: { buffer: this.materialUniformsBuffer.buffer } },
-      { binding: 1, resource: alphaTexture.getView() },
-      { binding: 2, resource: albedoTexture.getView() },
+      { binding: 1, resource: alphaTextureView },
+      { binding: 2, resource: albedoTextureView },
       { binding: 3, resource: sampler },
     ];
   }

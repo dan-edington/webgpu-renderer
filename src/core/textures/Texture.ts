@@ -1,11 +1,17 @@
 import { uuid } from '../types';
 
+export interface TextureSubscriber {
+  id: uuid;
+  onTextureUpdate(texture: Texture): void;
+}
+
 interface ITexture {
   id: uuid;
   gpuTexture: GPUTexture | null;
   width: number;
   height: number;
   format: GPUTextureFormat;
+  repeat: Float32Array;
   isInitialized: boolean;
   getView(): GPUTextureView;
 }
@@ -25,8 +31,10 @@ class Texture implements ITexture {
   width: number;
   height: number;
   format: GPUTextureFormat;
+  private _repeat: Float32Array;
   colorSpace: TextureColorSpace;
   isInitialized: boolean = false;
+  private subscribers: Map<uuid, TextureSubscriber> = new Map();
 
   constructor(options: TextureOptions) {
     this.id = crypto.randomUUID();
@@ -34,6 +42,7 @@ class Texture implements ITexture {
     this.height = options.height;
     this.colorSpace = options.colorSpace || 'srgb';
     this.format = this.colorSpace === 'srgb' ? 'rgba8unorm-srgb' : 'rgba8unorm';
+    this._repeat = new Float32Array([1, 1]);
   }
 
   static fromImageBitmap(imageBitmap: ImageBitmap, device: GPUDevice, colorSpace: TextureColorSpace = 'srgb'): Texture {
@@ -112,6 +121,29 @@ class Texture implements ITexture {
       this.gpuTexture = null;
       this.gpuTextureView = null;
     }
+  }
+
+  subscribe(subscriber: TextureSubscriber) {
+    if (!this.subscribers.has(subscriber.id)) {
+      this.subscribers.set(subscriber.id, subscriber);
+    }
+  }
+
+  unsubscribe(id: uuid) {
+    this.subscribers.delete(id);
+  }
+
+  private publish() {
+    this.subscribers.forEach((subscriber) => subscriber.onTextureUpdate(this));
+  }
+
+  get repeat() {
+    return this._repeat;
+  }
+
+  set repeat(repeat: Float32Array) {
+    this._repeat = new Float32Array(repeat);
+    this.publish();
   }
 }
 

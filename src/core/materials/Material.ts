@@ -1,7 +1,9 @@
 import { errorMessages } from '../constants/errorMessages';
 import { Renderer } from '../renderer/Renderer';
-import { MaterialType, UniformValue, UniformValueInput, uuid } from '../types';
+import { MaterialTextureSlot, MaterialType, UniformValue, UniformValueInput, uuid } from '../types';
 import { UniformBuffer } from '../renderer/UniformBuffer';
+import { MaterialTexture } from './MaterialTexture';
+import { Texture } from '../textures/Texture';
 
 export const enum MaterialFlags {
   None = 0,
@@ -26,12 +28,13 @@ interface IMaterial {
   readonly usesAlphaPipeline: boolean;
   isInitialized: boolean;
   materialFlags: MaterialFlags;
+  materialTextures: MaterialTexture[];
   doubleSided: boolean;
   transparent: boolean;
   depthWrite: boolean;
   init(rendererInstance: Renderer): void;
-  getPipelineCacheKey(): string;
   updateUniforms(updatedUniforms: Record<string, UniformValueInput>): void;
+  onMaterialTextureUpdate(slot: MaterialTextureSlot, texture: Texture | null): void;
 }
 
 export type MaterialOptions = {
@@ -65,6 +68,7 @@ abstract class Material implements IMaterial {
   protected rendererInstance: Renderer | null = null;
   isInitialized: boolean = false;
   materialFlags: MaterialFlags;
+  materialTextures: MaterialTexture[] = [];
   doubleSided: boolean = false;
   transparent: boolean;
   depthWrite: boolean = true;
@@ -102,6 +106,8 @@ abstract class Material implements IMaterial {
 
     this.rendererInstance = rendererInstance;
 
+    this.materialTextures.forEach((materialTexture) => materialTexture.init(rendererInstance));
+
     if (this.type === 'custom') {
       this.shader = rendererInstance.shaderLibrary.buildCustomShader({
         shader: this.shader,
@@ -121,10 +127,6 @@ abstract class Material implements IMaterial {
     this.isInitialized = true;
   }
 
-  getPipelineCacheKey(): string {
-    return this.type;
-  }
-
   get usesAlphaPipeline(): boolean {
     return this.transparent;
   }
@@ -134,6 +136,8 @@ abstract class Material implements IMaterial {
 
     this.materialUniformsBuffer?.updateUniform(updatedUniforms);
   }
+
+  onMaterialTextureUpdate(_slot: MaterialTextureSlot, _texture: Texture | null) {}
 
   protected setMaterialFlags(flag: MaterialFlags, enabled: boolean) {
     const nextFlags = enabled ? this.materialFlags | flag : this.materialFlags & ~flag;
@@ -191,6 +195,7 @@ abstract class Material implements IMaterial {
 
   destroy() {
     this.materialUniformsBuffer?.destroy();
+    this.materialTextures.forEach((materialTexture) => materialTexture.destroy());
   }
 }
 

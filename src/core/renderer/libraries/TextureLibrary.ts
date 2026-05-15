@@ -1,7 +1,7 @@
 import { Texture } from '../../textures/Texture';
 import { errorMessages } from '../../constants/errorMessages';
 import { Renderer } from '../../renderer/Renderer';
-import { TextureKey } from '../../types';
+import { TextureFallback, TextureKey } from '../../types';
 
 class TextureLibrary {
   private device: GPUDevice | null = null;
@@ -60,7 +60,7 @@ class TextureLibrary {
     this.textures.set(key, texture);
   }
 
-  getFallback(textureName: 'white' | 'black' | 'normal'): Texture {
+  getFallback(textureName: TextureFallback): Texture {
     if (!this.fallbackTextures) throw new Error(errorMessages.missingTextureLibraryFallbacks);
     return this.fallbackTextures[textureName];
   }

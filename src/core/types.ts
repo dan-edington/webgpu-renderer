@@ -81,5 +81,9 @@ export type ComputeBufferLayoutOptions = {
 
 export type MaterialType = 'lambert' | 'blinnphong' | 'pbr' | 'normal' | 'unlit' | 'custom';
 
+export type TextureFallback = 'white' | 'black' | 'normal';
+
+export type MaterialTextureSlot = 'albedo' | 'alpha' | 'normal';
+
 export type TextureKey = string;
 export type SamplerDescriptorKey = string;

@@ -73,15 +73,15 @@ if (container) {
     transparent: true,
   });
 
-  const testMaterial = new BlinnPhongMaterial({
-    color: [1, 0, 0, 1],
-    shininess: params.shininess,
-    specularColor: [1, 1, 1],
-  });
+  // const testMaterial = new BlinnPhongMaterial({
+  //   color: [1, 0, 0, 1],
+  //   shininess: params.shininess,
+  //   specularColor: [1, 1, 1],
+  // });
 
   // Create meshes
-  const sphereMesh = new Mesh(sphereGeometry, testMaterial);
-  sphereMesh.setPosition(0, 0, 0);
+  // const sphereMesh = new Mesh(sphereGeometry, testMaterial);
+  // sphereMesh.setPosition(0, 0, 0);
 
   const sphereMesh2 = new Mesh(sphereGeometry2, testMaterial2);
   sphereMesh2.setPosition(2, 0, 0);
@@ -92,7 +92,7 @@ if (container) {
   pointLight.intensity = 10;
 
   // Add objects to scene
-  scene.add([sphereMesh, camera, pointLight, sphereMesh2]);
+  scene.add([camera, pointLight, sphereMesh2]);
   scene.setAmbientLightIntensity(0.0);
 
   camera.setPosition(0, 0, 5);
@@ -112,9 +112,5 @@ if (container) {
   // Add resize handler for camera
   window.addEventListener('resize', () => {
     camera.aspect = container.clientWidth / container.clientHeight;
-  });
-
-  pane.addBinding(params, 'shininess', { min: 0, max: 200 }).on('change', () => {
-    testMaterial.shininess = params.shininess;
   });
 }
