@@ -58,8 +58,14 @@ if (container) {
   const materialParams = {
     color: { r: 1, g: 1, b: 1, a: 1 },
     useAlbedoMap: true,
-    useAlphaMap: true,
+    useAlphaMap: false,
     useNormalMap: true,
+    albedoRepeatU: 1,
+    albedoRepeatV: 1,
+    alphaRepeatU: 1,
+    alphaRepeatV: 1,
+    normalRepeatU: 1,
+    normalRepeatV: 1,
   };
 
   const lightParams = {
@@ -80,7 +86,7 @@ if (container) {
     transparent: true,
     color: [materialParams.color.r, materialParams.color.g, materialParams.color.b, materialParams.color.a],
     albedoTexture,
-    alphaTexture,
+    alphaTexture: null,
     normalTexture,
   });
 
@@ -130,17 +136,59 @@ if (container) {
     lambertMaterial.color = [value.r, value.g, value.b, value.a];
   });
 
-  textureMaterialFolder.addBinding(materialParams, 'useAlbedoMap').on('change', () => {
+  // Albedo texture folder
+  const albedoFolder = textureMaterialFolder.addFolder
+    ? textureMaterialFolder.addFolder({ title: 'Albedo Map' })
+    : textureMaterialFolder;
+  albedoFolder.addBinding(materialParams, 'useAlbedoMap', { label: 'Enabled' }).on('change', () => {
     lambertMaterial.albedoTexture = materialParams.useAlbedoMap ? albedoTexture : null;
   });
+  albedoFolder
+    .addBinding(materialParams, 'albedoRepeatU', { label: 'RepeatU', min: 0.1, max: 10, step: 0.1 })
+    .on('change', () => {
+      albedoTexture.repeat = new Float32Array([materialParams.albedoRepeatU, albedoTexture.repeat[1]]);
+    });
+  albedoFolder
+    .addBinding(materialParams, 'albedoRepeatV', { label: 'RepeatV', min: 0.1, max: 10, step: 0.1 })
+    .on('change', () => {
+      albedoTexture.repeat = new Float32Array([albedoTexture.repeat[0], materialParams.albedoRepeatV]);
+    });
 
-  textureMaterialFolder.addBinding(materialParams, 'useAlphaMap').on('change', () => {
+  // Alpha texture folder
+  const alphaFolder = textureMaterialFolder.addFolder
+    ? textureMaterialFolder.addFolder({ title: 'Alpha Map' })
+    : textureMaterialFolder;
+  alphaFolder.addBinding(materialParams, 'useAlphaMap', { label: 'Enabled' }).on('change', () => {
     lambertMaterial.alphaTexture = materialParams.useAlphaMap ? alphaTexture : null;
   });
+  alphaFolder
+    .addBinding(materialParams, 'alphaRepeatU', { label: 'RepeatU', min: 0.1, max: 10, step: 0.1 })
+    .on('change', () => {
+      alphaTexture.repeat = new Float32Array([materialParams.alphaRepeatU, alphaTexture.repeat[1]]);
+    });
+  alphaFolder
+    .addBinding(materialParams, 'alphaRepeatV', { label: 'RepeatV', min: 0.1, max: 10, step: 0.1 })
+    .on('change', () => {
+      alphaTexture.repeat = new Float32Array([alphaTexture.repeat[0], materialParams.alphaRepeatV]);
+    });
 
-  textureMaterialFolder.addBinding(materialParams, 'useNormalMap').on('change', () => {
+  // Normal texture folder
+  const normalFolder = textureMaterialFolder.addFolder
+    ? textureMaterialFolder.addFolder({ title: 'Normal Map' })
+    : textureMaterialFolder;
+  normalFolder.addBinding(materialParams, 'useNormalMap', { label: 'Enabled' }).on('change', () => {
     lambertMaterial.normalTexture = materialParams.useNormalMap ? normalTexture : null;
   });
+  normalFolder
+    .addBinding(materialParams, 'normalRepeatU', { label: 'RepeatU', min: 0.1, max: 10, step: 0.1 })
+    .on('change', () => {
+      normalTexture.repeat = new Float32Array([materialParams.normalRepeatU, normalTexture.repeat[1]]);
+    });
+  normalFolder
+    .addBinding(materialParams, 'normalRepeatV', { label: 'RepeatV', min: 0.1, max: 10, step: 0.1 })
+    .on('change', () => {
+      normalTexture.repeat = new Float32Array([normalTexture.repeat[0], materialParams.normalRepeatV]);
+    });
 
   const lightFolder = paneApi.addFolder ? paneApi.addFolder({ title: 'Light' }) : paneApi;
 
