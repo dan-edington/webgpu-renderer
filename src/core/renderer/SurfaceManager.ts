@@ -21,6 +21,8 @@ type SurfaceManagerCreateOptions = {
   containerElement?: HTMLElement;
   alpha?: boolean;
   multiSampling: number;
+  requiredFeatures?: GPUFeatureName[];
+  requiredLimits?: Record<string, number>;
 };
 
 type SurfaceManagerOptions = SurfaceManagerCreateOptions & {
@@ -95,7 +97,10 @@ class SurfaceManager implements ISurfaceManager {
     const adapter = await navigator.gpu.requestAdapter();
     if (!adapter) throw new Error(errorMessages.adapterRequest);
 
-    const device = await adapter.requestDevice();
+    const device = await adapter.requestDevice({
+      requiredFeatures: options.requiredFeatures,
+      requiredLimits: options.requiredLimits,
+    });
     if (!device) throw new Error(errorMessages.deviceRequest);
 
     const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
