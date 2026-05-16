@@ -49,6 +49,8 @@ type RendererOptions = {
   dpr?: number;
   alpha?: boolean;
   multiSampling?: number;
+  requiredFeatures?: GPUFeatureName[];
+  requiredLimits?: Record<string, number>;
 };
 
 class Renderer implements IRenderer {
@@ -110,9 +112,26 @@ class Renderer implements IRenderer {
       containerElement: options.containerElement,
       alpha: options.alpha ?? false,
       multiSampling: options.multiSampling ?? 4,
+      requiredFeatures: options.requiredFeatures,
+      requiredLimits: options.requiredLimits,
     });
 
     return new Renderer(options, surfaceManager);
+  }
+
+  static async getAdapterInfo() {
+    const adapter = await navigator.gpu.requestAdapter();
+    if (!adapter) throw new Error(errorMessages.adapterRequest);
+
+    const limits = adapter.limits;
+    const features = Array.from(adapter.features);
+    const info = adapter.info;
+
+    return {
+      limits,
+      features,
+      info,
+    };
   }
 
   private configurePasses() {
