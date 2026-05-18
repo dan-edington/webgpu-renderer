@@ -91,7 +91,6 @@ if (container) {
   });
 
   const pointLight = new PointLight({
-    type: 'PointLight',
     color: new Float32Array([lightParams.color.r, lightParams.color.g, lightParams.color.b, lightParams.color.a]),
     intensity: lightParams.intensity,
     range: 30,

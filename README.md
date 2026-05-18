@@ -19,6 +19,7 @@ Currently supports:
 - Multisampling
 - Sorted alpha blending
 - Point lights
+- Directional lights
 - Scene level ambient light
 - Texture resource handling
 - Multipass rendering

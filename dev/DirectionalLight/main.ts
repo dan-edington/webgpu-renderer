@@ -10,8 +10,8 @@ import {
   Scene,
   PerspectiveCamera,
   OrbitControls,
-  BlinnPhongMaterial,
-  PointLight,
+  LambertMaterial,
+  DirectionalLight,
 } from '../../src/index';
 
 const container = document.getElementById('app');
@@ -35,7 +35,7 @@ if (container) {
     aspect: container.clientWidth / container.clientHeight,
   });
 
-  // Create sphere geometry
+  // Create cube geometry
   const spherePrimitive = sphere({ radius: 1, nx: 32, ny: 32 });
   const sphereGeometry = new Geometry({
     vertices: spherePrimitive.positions,
@@ -44,11 +44,8 @@ if (container) {
     uvs: spherePrimitive.uvs,
   });
 
-  const blinnPhongMaterialParams = {
+  const lambertMaterialParams = {
     color: { r: 1, g: 0, b: 0, a: 1 },
-    shininess: 48,
-    specularColor: { r: 1, g: 1, b: 1, a: 1 },
-    specularStrength: 1,
   };
 
   const lightParams = {
@@ -65,34 +62,22 @@ if (container) {
     intensity: 0,
   };
 
-  const blinnPhongMaterial = new BlinnPhongMaterial({
+  const directionalLight = new DirectionalLight({ direction: [lightParams.x, lightParams.y, lightParams.z] });
+
+  const lambertMaterial = new LambertMaterial({
     transparent: true,
     color: [
-      blinnPhongMaterialParams.color.r,
-      blinnPhongMaterialParams.color.g,
-      blinnPhongMaterialParams.color.b,
-      blinnPhongMaterialParams.color.a,
-    ],
-    shininess: blinnPhongMaterialParams.shininess,
-    specularColor: [
-      blinnPhongMaterialParams.specularColor.r,
-      blinnPhongMaterialParams.specularColor.g,
-      blinnPhongMaterialParams.specularColor.b,
+      lambertMaterialParams.color.r,
+      lambertMaterialParams.color.g,
+      lambertMaterialParams.color.b,
+      lambertMaterialParams.color.a,
     ],
   });
 
-  const pointLight = new PointLight({
-    color: new Float32Array([lightParams.color.r, lightParams.color.g, lightParams.color.b, lightParams.color.a]),
-    intensity: lightParams.intensity,
-    range: 30,
-  });
-  pointLight.setPosition(lightParams.x, lightParams.y, lightParams.z);
-  pointLight.visible = lightParams.visible;
-
-  const sphereMesh = new Mesh(sphereGeometry, blinnPhongMaterial);
+  const sphereMesh = new Mesh(sphereGeometry, lambertMaterial);
 
   // Add objects to scene
-  scene.add([sphereMesh, pointLight]);
+  scene.add([sphereMesh, directionalLight]);
   scene.setAmbientLightColor([
     ambientParams.color.r,
     ambientParams.color.g,
@@ -119,57 +104,37 @@ if (container) {
   });
 
   const paneApi: any = pane;
-  const blinnPhongMaterialFolder = paneApi.addFolder ? paneApi.addFolder({ title: 'BlinnPhong Material' }) : paneApi;
+  const lambertMaterialFolder = paneApi.addFolder ? paneApi.addFolder({ title: 'Lambert Material' }) : paneApi;
 
-  blinnPhongMaterialFolder
-    .addBinding(blinnPhongMaterialParams, 'color', { color: { type: 'float' } })
-    .on('change', () => {
-      const value = blinnPhongMaterialParams.color;
-      blinnPhongMaterial.color = [value.r, value.g, value.b, value.a];
-    });
-
-  blinnPhongMaterialFolder
-    .addBinding(blinnPhongMaterialParams, 'shininess', { min: 0, max: 1000, step: 0.1 })
-    .on('change', () => {
-      blinnPhongMaterial.shininess = blinnPhongMaterialParams.shininess;
-    });
-
-  blinnPhongMaterialFolder
-    .addBinding(blinnPhongMaterialParams, 'specularStrength', { min: 0, max: 1, step: 0.1 })
-    .on('change', () => {
-      blinnPhongMaterial.specularStrength = blinnPhongMaterialParams.specularStrength;
-    });
-
-  blinnPhongMaterialFolder
-    .addBinding(blinnPhongMaterialParams, 'specularColor', { color: { type: 'float' } })
-    .on('change', () => {
-      const value = blinnPhongMaterialParams.specularColor;
-      blinnPhongMaterial.specularColor = [value.r, value.g, value.b];
-    });
+  lambertMaterialFolder.addBinding(lambertMaterialParams, 'color', { color: { type: 'float' } }).on('change', () => {
+    const value = lambertMaterialParams.color;
+    const newColor = [value.r, value.g, value.b, value.a];
+    lambertMaterial.color = newColor;
+  });
 
   const lightFolder = paneApi.addFolder ? paneApi.addFolder({ title: 'Light' }) : paneApi;
 
   lightFolder.addBinding(lightParams, 'color', { color: { type: 'float' } }).on('change', () => {
     const value = lightParams.color;
-    pointLight.color = new Float32Array([value.r, value.g, value.b, value.a]);
+    directionalLight.color = new Float32Array([value.r, value.g, value.b, value.a]);
   });
 
   lightFolder.addBinding(lightParams, 'intensity', { min: 0, max: 30, step: 0.01 }).on('change', () => {
-    pointLight.intensity = lightParams.intensity;
+    directionalLight.intensity = lightParams.intensity;
   });
 
   lightFolder.addBinding(lightParams, 'x', { min: -10, max: 10, step: 0.01 }).on('change', () => {
-    pointLight.setPosition(lightParams.x, lightParams.y, lightParams.z);
+    directionalLight.direction = [lightParams.x, lightParams.y, lightParams.z];
   });
   lightFolder.addBinding(lightParams, 'y', { min: -10, max: 10, step: 0.01 }).on('change', () => {
-    pointLight.setPosition(lightParams.x, lightParams.y, lightParams.z);
+    directionalLight.direction = [lightParams.x, lightParams.y, lightParams.z];
   });
   lightFolder.addBinding(lightParams, 'z', { min: -10, max: 10, step: 0.01 }).on('change', () => {
-    pointLight.setPosition(lightParams.x, lightParams.y, lightParams.z);
+    directionalLight.direction = [lightParams.x, lightParams.y, lightParams.z];
   });
 
   lightFolder.addBinding(lightParams, 'visible').on('change', () => {
-    pointLight.visible = lightParams.visible;
+    directionalLight.visible = lightParams.visible;
   });
 
   const ambientFolder = paneApi.addFolder ? paneApi.addFolder({ title: 'Ambient Light' }) : paneApi;

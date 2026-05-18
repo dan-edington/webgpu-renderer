@@ -7,6 +7,7 @@ import { Texture } from './core/textures/Texture';
 
 // Lights
 import { PointLight } from './core/lights/PointLight';
+import { DirectionalLight } from './core/lights/DirectionalLight';
 
 // Cameras
 import { PerspectiveCamera } from './core/camera/PerspectiveCamera';
@@ -27,6 +28,7 @@ export {
   Group,
   Texture,
   PointLight,
+  DirectionalLight,
   PerspectiveCamera,
   LambertMaterial,
   NormalMaterial,

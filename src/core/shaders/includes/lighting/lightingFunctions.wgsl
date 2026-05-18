@@ -28,15 +28,23 @@ fn calculateLighting(material: Material, worldPosition: vec3f, N: vec3f, V: vec3
         if (distance > lightRange) {
             continue;
         }
-    
-        let L = normalize(lightVector);
-        let NdotL = max(dot(N, L), 0.0);
 
-        // Caclulate attenuation: 1/distance squared falloff
-        let distSq = distance * distance;
-        let attenuation = 1.0 / max(distSq, 0.01);
+        var L: vec3f;
+        var attenuation: f32;
+
+        if(isDirectionalLight) {
+            L = normalize(lightUniforms.directions[i].xyz);
+            attenuation = 1.0;
+        } else {
+            L = normalize(lightVector);
+            // Caclulate attenuation: 1/distance squared falloff (disabled from directional light)
+            let distSq = distance * distance;
+            attenuation = 1.0 / max(distSq, 0.01);
+        }
 
         let lightRadiance = lightColor * lightIntensity * attenuation;
+
+        let NdotL = max(dot(N, L), 0.0);
 
         let brdf = calculateBRDF(material, N, L, V);
 
