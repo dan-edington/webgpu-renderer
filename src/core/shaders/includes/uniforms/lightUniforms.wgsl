@@ -1,11 +1,11 @@
 struct LightUniforms {
   count: u32,
-  positions: array<vec4f, 64>,
-  colors: array<vec4f, 64>,
-  directions: array<vec4f, 64>,
-  spotlightAngles: array<vec2f, 64>,
-  params: array<vec4f, 64>,
-  lightFlags: array<u32, 64>,
+  positions: array<vec4f, 16>,
+  colors: array<vec4f, 16>,
+  directions: array<vec4f, 16>,
+  spotlightAngles: array<vec2f, 16>,
+  params: array<vec4f, 16>,
+  lightFlags: array<u32, 16>,
   ambientLightColor: vec4f,
   ambientLightIntensity: f32,
 }
