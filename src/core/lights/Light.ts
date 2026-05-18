@@ -54,7 +54,7 @@ abstract class Light extends Entity implements ILight {
     return this._color;
   }
 
-  set color(value: Float32Array) {
+  set color(value: ArrayLike<number>) {
     if (
       this._color[0] === value[0] &&
       this._color[1] === value[1] &&
@@ -64,7 +64,7 @@ abstract class Light extends Entity implements ILight {
       return;
     }
 
-    this._color = new Float32Array(value);
+    this._color.set(value);
     this.markSceneAsDirty('lights');
   }
 

@@ -74,7 +74,7 @@ class OrbitControls {
     const cameraY = this.target[1] + this.radius * Math.sin(this.currentRotation[1]);
     const cameraZ = this.target[2] + this.radius * Math.cos(this.currentRotation[0]) * cosV;
 
-    this.camera.setPosition(cameraX, cameraY, cameraZ);
+    this.camera.position = [cameraX, cameraY, cameraZ];
     this.camera.lookAt(this.target);
   };
 }

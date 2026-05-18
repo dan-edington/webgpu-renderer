@@ -71,7 +71,7 @@ if (container) {
     color: [lightParams.color.r, lightParams.color.g, lightParams.color.b, lightParams.color.a],
     intensity: lightParams.intensity,
   });
-  spotLight.setPosition(lightParams.position.x, lightParams.position.y, lightParams.position.z);
+  spotLight.position = [lightParams.position.x, lightParams.position.y, lightParams.position.z];
 
   const lambertMaterial = new LambertMaterial({
     transparent: true,
@@ -97,7 +97,7 @@ if (container) {
 
   scene.setAmbientLightIntensity(ambientParams.intensity);
 
-  camera.setPosition(0, 0, 5);
+  camera.position = [0, 0, 5];
   camera.lookAt(new Float32Array([0, 0, 0]));
   new OrbitControls({ camera, domElement: renderer.surfaceManager.canvasElement });
 
@@ -128,7 +128,7 @@ if (container) {
   // Color
   lightFolder.addBinding(lightParams, 'color', { color: { type: 'float' } }).on('change', () => {
     const value = lightParams.color;
-    spotLight.color = new Float32Array([value.r, value.g, value.b, value.a]);
+    spotLight.color = [value.r, value.g, value.b, value.a];
   });
 
   // Intensity
@@ -140,17 +140,17 @@ if (container) {
   lightFolder
     .addBinding(lightParams.position, 'x', { min: -10, max: 10, step: 0.01, label: 'pos x' })
     .on('change', () => {
-      spotLight.setPosition(lightParams.position.x, lightParams.position.y, lightParams.position.z);
+      spotLight.position = [lightParams.position.x, lightParams.position.y, lightParams.position.z];
     });
   lightFolder
     .addBinding(lightParams.position, 'y', { min: -10, max: 10, step: 0.01, label: 'pos y' })
     .on('change', () => {
-      spotLight.setPosition(lightParams.position.x, lightParams.position.y, lightParams.position.z);
+      spotLight.position = [lightParams.position.x, lightParams.position.y, lightParams.position.z];
     });
   lightFolder
     .addBinding(lightParams.position, 'z', { min: -10, max: 10, step: 0.01, label: 'pos z' })
     .on('change', () => {
-      spotLight.setPosition(lightParams.position.x, lightParams.position.y, lightParams.position.z);
+      spotLight.position = [lightParams.position.x, lightParams.position.y, lightParams.position.z];
     });
 
   // Direction with custom labels
