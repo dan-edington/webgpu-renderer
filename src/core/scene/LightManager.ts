@@ -5,6 +5,14 @@ import { Renderer } from '../renderer/Renderer';
 import { UniformBuffer } from '../renderer/UniformBuffer';
 import { colorToLinear, srgbToLinear } from '../utilities/colorUtilities';
 
+type DirectionalLightLike = Light & {
+  direction: ArrayLike<number>;
+};
+
+function isDirectionalLight(light: Light): light is DirectionalLightLike {
+  return (light.flags & LightFlag.DirectionalLight) !== 0 && light.type === 'DirectionalLight';
+}
+
 interface ILightManager {
   rendererInstance: Renderer | null;
   lightUniformsBuffer: UniformBuffer | null;
@@ -40,7 +48,7 @@ class LightManager implements ILightManager {
       color: new Float32Array([1, 1, 1, 1]),
       intensity: 0.0,
     };
-    this.createLightUniformsBuffer();
+    this.createLightUniforms();
   }
 
   init(rendererInstance: Renderer) {
@@ -50,11 +58,12 @@ class LightManager implements ILightManager {
     }
   }
 
-  private createLightUniformsBuffer() {
+  private gatherLightingData() {
     const maxLights = constants.MAX_LIGHTS;
     const positions = new Float32Array(maxLights * 4);
     const colors = new Float32Array(maxLights * 4);
     const params = new Float32Array(maxLights * 4);
+    const directions = new Float32Array(maxLights * 4);
     const flags = new Uint32Array(maxLights);
 
     const activeLights = this.lights.slice(0, maxLights);
@@ -77,14 +86,27 @@ class LightManager implements ILightManager {
       params[base + 2] = 0;
       params[base + 3] = 0;
 
+      if (isDirectionalLight(light)) {
+        directions[base + 0] = light.direction[0] ?? 0;
+        directions[base + 1] = light.direction[1] ?? 0;
+        directions[base + 2] = light.direction[2] ?? 0;
+      }
+
       flags[index] = (light.visible ? LightFlag.Visible : LightFlag.None) | light.flags;
     });
 
+    return { count: activeLights.length, maxLights, positions, colors, params, directions, flags };
+  }
+
+  private createLightUniforms() {
+    const { count, maxLights, positions, colors, params, directions, flags } = this.gatherLightingData();
+
     this.lightUniformsBuffer = new UniformBuffer(
       {
-        count: { type: 'u32', value: activeLights.length },
+        count: { type: 'u32', value: count },
         positions: { type: `array<vec4<f32>, ${maxLights}>`, value: positions },
         colors: { type: `array<vec4<f32>, ${maxLights}>`, value: colors },
+        directions: { type: `array<vec4<f32>, ${maxLights}>`, value: directions },
         params: { type: `array<vec4<f32>, ${maxLights}>`, value: params },
         flags: { type: `array<u32, ${maxLights}>`, value: flags },
         ambientLightColor: { type: 'vec4<f32>', value: colorToLinear(this.ambientLight.color) },
@@ -94,44 +116,17 @@ class LightManager implements ILightManager {
     );
   }
 
-  private updateLightUniformsData() {
+  private updateLightUniforms() {
     if (!this.lightUniformsBuffer) return;
 
-    const maxLights = constants.MAX_LIGHTS;
-    const activeLights = this.lights.slice(0, maxLights);
-
-    // Build new data arrays with current light values
-    const positions = new Float32Array(maxLights * 4);
-    const colors = new Float32Array(maxLights * 4);
-    const params = new Float32Array(maxLights * 4);
-    const flags = new Uint32Array(maxLights);
-
-    activeLights.forEach((light, index) => {
-      const base = index * 4;
-
-      positions[base + 0] = light.position[0];
-      positions[base + 1] = light.position[1];
-      positions[base + 2] = light.position[2];
-      positions[base + 3] = 1;
-
-      colors[base + 0] = srgbToLinear(light.color[0]);
-      colors[base + 1] = srgbToLinear(light.color[1]);
-      colors[base + 2] = srgbToLinear(light.color[2]);
-      colors[base + 3] = light.color[3];
-
-      params[base + 0] = light.intensity;
-      params[base + 1] = light.range;
-      params[base + 2] = 0;
-      params[base + 3] = 0;
-
-      flags[index] = (light.visible ? LightFlag.Visible : LightFlag.None) | light.flags;
-    });
+    const { count, positions, colors, params, directions, flags } = this.gatherLightingData();
 
     this.lightUniformsBuffer.updateUniform({
-      count: activeLights.length,
+      count,
       positions,
       colors,
       params,
+      directions,
       flags,
     });
   }
@@ -178,7 +173,7 @@ class LightManager implements ILightManager {
   updateLights(rootEntity: Entity) {
     if (this.lightsNeedUpdate) {
       this.rebuildLightsArray(rootEntity);
-      this.updateLightUniformsData();
+      this.updateLightUniforms();
     }
 
     this.lightsNeedUpdate = false;
