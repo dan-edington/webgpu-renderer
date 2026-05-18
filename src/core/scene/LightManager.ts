@@ -9,8 +9,18 @@ type DirectionalLightLike = Light & {
   direction: ArrayLike<number>;
 };
 
+type SpotLightLike = Light & {
+  direction: ArrayLike<number>;
+  angle: number;
+  penumbra: number;
+};
+
 function isDirectionalLight(light: Light): light is DirectionalLightLike {
   return (light.flags & LightFlag.DirectionalLight) !== 0 && light.type === 'DirectionalLight';
+}
+
+function isSpotLight(light: Light): light is SpotLightLike {
+  return (light.flags & LightFlag.SpotLight) !== 0 && light.type === 'SpotLight';
 }
 
 interface ILightManager {
@@ -64,6 +74,7 @@ class LightManager implements ILightManager {
     const colors = new Float32Array(maxLights * 4);
     const params = new Float32Array(maxLights * 4);
     const directions = new Float32Array(maxLights * 4);
+    const spotlightAngles = new Float32Array(maxLights * 2);
     const flags = new Uint32Array(maxLights);
 
     const activeLights = this.lights.slice(0, maxLights);
@@ -86,20 +97,28 @@ class LightManager implements ILightManager {
       params[base + 2] = 0;
       params[base + 3] = 0;
 
-      if (isDirectionalLight(light)) {
+      if (isDirectionalLight(light) || isSpotLight(light)) {
+        const base = index * 3;
         directions[base + 0] = light.direction[0] ?? 0;
         directions[base + 1] = light.direction[1] ?? 0;
         directions[base + 2] = light.direction[2] ?? 0;
       }
 
+      if (isSpotLight(light)) {
+        const base = index * 2;
+        spotlightAngles[base + 0] = light.angle;
+        spotlightAngles[base + 1] = light.penumbra;
+      }
+
       flags[index] = (light.visible ? LightFlag.Visible : LightFlag.None) | light.flags;
     });
 
-    return { count: activeLights.length, maxLights, positions, colors, params, directions, flags };
+    return { count: activeLights.length, maxLights, positions, colors, params, directions, spotlightAngles, flags };
   }
 
   private createLightUniforms() {
-    const { count, maxLights, positions, colors, params, directions, flags } = this.gatherLightingData();
+    const { count, maxLights, positions, colors, params, directions, spotlightAngles, flags } =
+      this.gatherLightingData();
 
     this.lightUniformsBuffer = new UniformBuffer(
       {
@@ -107,6 +126,7 @@ class LightManager implements ILightManager {
         positions: { type: `array<vec4<f32>, ${maxLights}>`, value: positions },
         colors: { type: `array<vec4<f32>, ${maxLights}>`, value: colors },
         directions: { type: `array<vec4<f32>, ${maxLights}>`, value: directions },
+        spotlightAngles: { type: `array<vec2<f32>, ${maxLights}>`, value: spotlightAngles },
         params: { type: `array<vec4<f32>, ${maxLights}>`, value: params },
         flags: { type: `array<u32, ${maxLights}>`, value: flags },
         ambientLightColor: { type: 'vec4<f32>', value: colorToLinear(this.ambientLight.color) },
@@ -119,7 +139,7 @@ class LightManager implements ILightManager {
   private updateLightUniforms() {
     if (!this.lightUniformsBuffer) return;
 
-    const { count, positions, colors, params, directions, flags } = this.gatherLightingData();
+    const { count, positions, colors, params, directions, spotlightAngles, flags } = this.gatherLightingData();
 
     this.lightUniformsBuffer.updateUniform({
       count,
@@ -127,6 +147,7 @@ class LightManager implements ILightManager {
       colors,
       params,
       directions,
+      spotlightAngles,
       flags,
     });
   }
