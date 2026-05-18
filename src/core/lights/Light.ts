@@ -4,6 +4,7 @@ export const enum LightFlag {
   None = 0,
   Visible = 1 << 0,
   PointLight = 1 << 1,
+  DirectionalLight = 1 << 2,
 }
 
 interface ILight extends IEntity {
