@@ -23,6 +23,8 @@ body {
   /* 5. Improve text rendering */
   -webkit-font-smoothing: antialiased;
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  color: white;
+  background-color: hsl(0, 0%, 25%);
 }
 
 /* 6. Improve media defaults */
@@ -67,6 +69,17 @@ h6 {
   text-wrap: balance;
 }
 
+a,
+a:visited,
+a:active {
+  color: white;
+  text-decoration: underline;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
 /*
   10. Create a root stacking context
 */
@@ -81,9 +94,11 @@ ul {
   margin: 0;
 }
 
+.dev {
+  padding: 1rem;
+}
+
 #app {
-  color: white;
-  background-color: hsl(0, 0%, 25%);
   padding: 0;
   margin: 0;
   width: 100vw;
