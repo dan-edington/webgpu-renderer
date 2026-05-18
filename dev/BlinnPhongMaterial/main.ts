@@ -86,7 +86,7 @@ if (container) {
     intensity: lightParams.intensity,
     range: 30,
   });
-  pointLight.setPosition(lightParams.x, lightParams.y, lightParams.z);
+  pointLight.position = [lightParams.x, lightParams.y, lightParams.z];
   pointLight.visible = lightParams.visible;
 
   const sphereMesh = new Mesh(sphereGeometry, blinnPhongMaterial);
@@ -101,7 +101,7 @@ if (container) {
   ]);
   scene.setAmbientLightIntensity(ambientParams.intensity);
 
-  camera.setPosition(0, 0, 5);
+  camera.position = [0, 0, 5];
   camera.lookAt(new Float32Array([0, 0, 0]));
   new OrbitControls({ camera, domElement: renderer.surfaceManager.canvasElement });
 
@@ -151,7 +151,7 @@ if (container) {
 
   lightFolder.addBinding(lightParams, 'color', { color: { type: 'float' } }).on('change', () => {
     const value = lightParams.color;
-    pointLight.color = new Float32Array([value.r, value.g, value.b, value.a]);
+    pointLight.color = [value.r, value.g, value.b, value.a];
   });
 
   lightFolder.addBinding(lightParams, 'intensity', { min: 0, max: 30, step: 0.01 }).on('change', () => {
@@ -159,13 +159,13 @@ if (container) {
   });
 
   lightFolder.addBinding(lightParams, 'x', { min: -10, max: 10, step: 0.01 }).on('change', () => {
-    pointLight.setPosition(lightParams.x, lightParams.y, lightParams.z);
+    pointLight.position = [lightParams.x, lightParams.y, lightParams.z];
   });
   lightFolder.addBinding(lightParams, 'y', { min: -10, max: 10, step: 0.01 }).on('change', () => {
-    pointLight.setPosition(lightParams.x, lightParams.y, lightParams.z);
+    pointLight.position = [lightParams.x, lightParams.y, lightParams.z];
   });
   lightFolder.addBinding(lightParams, 'z', { min: -10, max: 10, step: 0.01 }).on('change', () => {
-    pointLight.setPosition(lightParams.x, lightParams.y, lightParams.z);
+    pointLight.position = [lightParams.x, lightParams.y, lightParams.z];
   });
 
   lightFolder.addBinding(lightParams, 'visible').on('change', () => {

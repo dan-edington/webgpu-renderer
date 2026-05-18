@@ -86,7 +86,7 @@ if (container) {
   ]);
   scene.setAmbientLightIntensity(ambientParams.intensity);
 
-  camera.setPosition(0, 0, 5);
+  camera.position = [0, 0, 5];
   camera.lookAt(new Float32Array([0, 0, 0]));
   new OrbitControls({ camera, domElement: renderer.surfaceManager.canvasElement });
 
@@ -116,7 +116,7 @@ if (container) {
 
   lightFolder.addBinding(lightParams, 'color', { color: { type: 'float' } }).on('change', () => {
     const value = lightParams.color;
-    directionalLight.color = new Float32Array([value.r, value.g, value.b, value.a]);
+    directionalLight.color = [value.r, value.g, value.b, value.a];
   });
 
   lightFolder.addBinding(lightParams, 'intensity', { min: 0, max: 30, step: 0.01 }).on('change', () => {

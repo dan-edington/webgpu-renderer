@@ -54,7 +54,7 @@ if (container) {
   // Add objects to scene
   scene.add([sphereMesh]);
 
-  camera.setPosition(0, 0, 5);
+  camera.position = [0, 0, 5];
   camera.lookAt(new Float32Array([0, 0, 0]));
   new OrbitControls({ camera, domElement: renderer.surfaceManager.canvasElement });
 

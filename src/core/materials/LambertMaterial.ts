@@ -32,10 +32,10 @@ class LambertMaterial extends Material {
     const textureRepeatAlpha = new Float32Array([1, 1]);
     const textureRepeatNormal = new Float32Array([1, 1]);
 
-    let initialFlags = MaterialFlags.None;
-    if (options.alphaTexture) initialFlags |= MaterialFlags.Alpha;
-    if (options.normalTexture) initialFlags |= MaterialFlags.Normal;
-    if (options.albedoTexture) initialFlags |= MaterialFlags.Albedo;
+    let materialFlags = MaterialFlags.None;
+    if (options.alphaTexture) materialFlags |= MaterialFlags.Alpha;
+    if (options.normalTexture) materialFlags |= MaterialFlags.Normal;
+    if (options.albedoTexture) materialFlags |= MaterialFlags.Albedo;
 
     super({
       name: options.name,
@@ -48,7 +48,7 @@ class LambertMaterial extends Material {
         textureRepeatNormal: { type: 'vec2<f32>', value: textureRepeatNormal },
       },
       transparent: options.transparent ?? false,
-      initialFlags,
+      materialFlags: materialFlags,
     });
 
     this._color = color;

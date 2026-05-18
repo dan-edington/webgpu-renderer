@@ -19,10 +19,6 @@ export interface IEntity {
   matrixNeedsUpdate: boolean;
   add(entity: Entity | Entity[]): void;
   remove(entity: Entity): void;
-  setPosition(x: number, y: number, z: number): void;
-  setScale(x: number, y: number, z: number): void;
-  setRotation(x: number, y: number, z: number): void;
-  setQuaternion(x: number, y: number, z: number, w: number): void;
   destroy(): void;
 }
 
@@ -32,12 +28,12 @@ abstract class Entity implements IEntity {
   name?: string;
   isLight: boolean;
   private _visible: boolean;
+  private _position: Vec3;
+  private _scale: Vec3;
+  private _rotation: Vec3;
+  private _quaternion: Quat;
   children: Entity[];
   parent: Entity | Scene | null;
-  position: Vec3;
-  scale: Vec3;
-  rotation: Vec3;
-  quaternion: Quat;
   matrix: Mat4;
   matrixWorld: Mat4;
   matrixNeedsUpdate: boolean;
@@ -49,10 +45,10 @@ abstract class Entity implements IEntity {
     this._visible = true;
     this.children = [];
     this.parent = null;
-    this.position = vec3.create(0, 0, 0);
-    this.scale = vec3.create(1, 1, 1);
-    this.rotation = vec3.create(0, 0, 0);
-    this.quaternion = quat.create(0, 0, 0, 1);
+    this._position = vec3.create(0, 0, 0);
+    this._scale = vec3.create(1, 1, 1);
+    this._rotation = vec3.create(0, 0, 0);
+    this._quaternion = quat.create(0, 0, 0, 1);
     this.matrix = mat4.create();
     this.matrixWorld = mat4.create();
     this.matrixNeedsUpdate = true;
@@ -94,28 +90,44 @@ abstract class Entity implements IEntity {
     entity.destroy();
   }
 
-  public setPosition(x: number, y: number, z: number) {
-    this.position.set([x, y, z]);
+  set position(value: ArrayLike<number>) {
+    this._position.set(value);
     this.matrixNeedsUpdate = true;
     this.updateMatrix();
   }
 
-  public setScale(x: number, y: number, z: number) {
-    this.scale.set([x, y, z]);
+  get position(): Vec3 {
+    return this._position;
+  }
+
+  set scale(value: ArrayLike<number>) {
+    this._scale.set(value);
     this.matrixNeedsUpdate = true;
     this.updateMatrix();
   }
 
-  public setRotation(x: number, y: number, z: number) {
-    this.rotation.set([x, y, z]);
+  get scale(): Vec3 {
+    return this._scale;
+  }
+
+  set rotation(value: ArrayLike<number>) {
+    this._rotation.set(value);
     this.matrixNeedsUpdate = true;
     this.updateMatrix();
   }
 
-  public setQuaternion(x: number, y: number, z: number, w: number) {
-    this.quaternion.set([x, y, z, w]);
+  get rotation(): Vec3 {
+    return this._rotation;
+  }
+
+  set quaternion(value: ArrayLike<number>) {
+    this._quaternion.set(value);
     this.matrixNeedsUpdate = true;
     this.updateMatrix();
+  }
+
+  get quaternion(): Quat {
+    return this._quaternion;
   }
 
   protected updateMatrix() {
@@ -124,10 +136,10 @@ abstract class Entity implements IEntity {
     }
 
     // Order: Rotation, Scale, Translation
-    quat.fromEuler(this.rotation[0], this.rotation[1], this.rotation[2], 'xyz', this.quaternion);
-    mat4.fromQuat(this.quaternion, this.matrix);
-    mat4.scale(this.matrix, this.scale, this.matrix);
-    mat4.setTranslation(this.matrix, this.position, this.matrix);
+    quat.fromEuler(this._rotation[0], this._rotation[1], this._rotation[2], 'xyz', this._quaternion);
+    mat4.fromQuat(this._quaternion, this.matrix);
+    mat4.scale(this.matrix, this._scale, this.matrix);
+    mat4.setTranslation(this.matrix, this._position, this.matrix);
 
     if (this.parent) {
       mat4.multiply(this.parent.matrixWorld, this.matrix, this.matrixWorld);

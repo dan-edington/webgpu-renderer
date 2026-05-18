@@ -1,6 +1,6 @@
 import { Material, MaterialOptions } from './Material';
 
-type CustomMaterialOptions = Omit<MaterialOptions, 'initialFlags' | 'type'>;
+type CustomMaterialOptions = Omit<MaterialOptions, 'materialFlags' | 'type'>;
 
 // CustomMaterial's uniforms will be placed in bind group 2
 
@@ -9,7 +9,7 @@ class CustomMaterial extends Material {
     super({
       ...options,
       type: 'custom',
-      initialFlags: 0,
+      materialFlags: 0,
     });
   }
 

@@ -49,11 +49,12 @@ export type MaterialOptions = {
   transparent?: boolean;
   doubleSided?: boolean;
   depthWrite?: boolean;
-  initialFlags?: MaterialFlags;
+  materialFlags?: MaterialFlags;
 };
 
 abstract class Material implements IMaterial {
   id: uuid;
+  protected rendererInstance: Renderer | null = null;
   name?: string;
   type: MaterialType;
   shader: string;
@@ -65,7 +66,6 @@ abstract class Material implements IMaterial {
     vertex: string;
     fragment: string;
   };
-  protected rendererInstance: Renderer | null = null;
   isInitialized: boolean = false;
   materialFlags: MaterialFlags;
   materialTextures: MaterialTexture[] = [];
@@ -84,7 +84,7 @@ abstract class Material implements IMaterial {
       fragment: 'fragment_shader',
     };
     this.transparent = options.transparent ?? false;
-    this.materialFlags = options.initialFlags ?? MaterialFlags.None;
+    this.materialFlags = options.materialFlags ?? MaterialFlags.None;
     this.doubleSided = options.doubleSided ?? false;
     this.depthWrite = options.depthWrite ?? true;
 

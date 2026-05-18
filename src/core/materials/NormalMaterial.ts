@@ -12,14 +12,14 @@ class NormalMaterial extends Material {
   private _normalTexture: MaterialTexture;
 
   constructor(options: NormalMaterialOptions = {}) {
-    let initialFlags = MaterialFlags.None;
-    if (options.normalTexture) initialFlags |= MaterialFlags.Normal;
+    let materialFlags = MaterialFlags.None;
+    if (options.normalTexture) materialFlags |= MaterialFlags.Normal;
 
     super({
       name: options.name,
       type: 'normal',
       shader: 'normal',
-      initialFlags,
+      materialFlags: materialFlags,
     });
 
     this._normalTexture = new MaterialTexture({

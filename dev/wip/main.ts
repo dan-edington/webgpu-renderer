@@ -81,28 +81,28 @@ if (container) {
 
   // Create meshes
   // const sphereMesh = new Mesh(sphereGeometry, testMaterial);
-  // sphereMesh.setPosition(0, 0, 0);
+  // sphereMesh.position = [0, 0, 0];
 
   const sphereMesh2 = new Mesh(sphereGeometry2, testMaterial2);
-  sphereMesh2.setPosition(2, 0, 0);
+  sphereMesh2.position = [2, 0, 0];
 
   // Create a point light
   const pointLight = new PointLight();
-  pointLight.setPosition(5, 5, 5);
+  pointLight.position = [5, 5, 5];
   pointLight.intensity = 10;
 
   // Add objects to scene
   scene.add([camera, pointLight, sphereMesh2]);
   scene.setAmbientLightIntensity(0.0);
 
-  camera.setPosition(0, 0, 5);
+  camera.position = [0, 0, 5];
   camera.lookAt(new Float32Array([0, 0, 0]));
   new OrbitControls({ camera, domElement: renderer.surfaceManager.canvasElement });
 
   // Render the scene
   function render() {
     const t = renderer.elapsedTime * 0.001;
-    pointLight.setPosition(Math.sin(t) * 5, 0, Math.cos(t) * 5);
+    pointLight.position = [Math.sin(t) * 5, 0, Math.cos(t) * 5];
     renderer.render(scene, camera);
     requestAnimationFrame(render);
   }
