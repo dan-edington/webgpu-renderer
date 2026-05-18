@@ -1,10 +1,13 @@
 import { Light, LightFlag, LightOptions } from './Light';
 
-type PointLightOptions = LightOptions;
+type PointLightOptions = Omit<LightOptions, 'type'>;
 
 class PointLight extends Light {
   constructor(options?: PointLightOptions) {
-    super(options ?? { type: 'PointLight' });
+    const lightOptions: LightOptions = { type: 'PointLight' };
+    Object.assign(lightOptions, options);
+    super(lightOptions);
+
     this.flags |= LightFlag.PointLight;
   }
 
