@@ -2,13 +2,13 @@ import { Light, LightFlag, LightOptions } from './Light';
 
 type DirectionalLightOptions = Omit<
   LightOptions & {
-    direction: ArrayLike<number>;
+    direction?: ArrayLike<number>;
   },
   'type'
 >;
 
 class DirectionalLight extends Light {
-  _direction: Float32Array;
+  private _direction: Float32Array;
 
   constructor(options?: DirectionalLightOptions) {
     const lightOptions: LightOptions = { type: 'DirectionalLight' };
@@ -17,9 +17,7 @@ class DirectionalLight extends Light {
     super(lightOptions);
 
     this.flags |= LightFlag.DirectionalLight;
-    this._direction = new Float32Array([0, -1, 0]);
-
-    if (options?.direction) this._direction.set(options.direction);
+    this._direction = new Float32Array(options?.direction ?? [0, 1, 0]);
   }
 
   get direction() {

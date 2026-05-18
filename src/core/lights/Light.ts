@@ -5,6 +5,7 @@ export const enum LightFlag {
   Visible = 1 << 0,
   PointLight = 1 << 1,
   DirectionalLight = 1 << 2,
+  SpotLight = 1 << 3,
 }
 
 interface ILight extends IEntity {
@@ -17,7 +18,8 @@ interface ILight extends IEntity {
 
 export type LightOptions = {
   type: string;
-  color?: Float32Array;
+  position?: ArrayLike<number>;
+  color?: ArrayLike<number>;
   intensity?: number;
   range?: number;
 };
@@ -33,7 +35,7 @@ abstract class Light extends Entity implements ILight {
     super(options.type);
     this.isLight = true;
     this._intensity = options.intensity ?? 1;
-    this._color = options.color ?? new Float32Array([1, 1, 1, 1]);
+    this._color = new Float32Array(options.color ?? [1, 1, 1, 1]);
     this._range = options.range ?? 10;
     this.flags = LightFlag.None;
   }
