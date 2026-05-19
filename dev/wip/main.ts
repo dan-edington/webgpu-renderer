@@ -18,11 +18,8 @@ if (container) {
     uvs: spherePrimitive.uvs,
   });
 
-  const uniformBuffer = t.createUniformBuffer({
-    test: { type: 'f32', value: 2.25 },
-  });
-
-  console.log(uniformBuffer);
+  const scene = t.createScene();
+  console.log(scene);
 
   // Add resize handler for camera
   // window.addEventListener('resize', () => {
