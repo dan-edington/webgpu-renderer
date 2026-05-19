@@ -1,4 +1,5 @@
 import { errorMessages } from '../constants/errorMessages';
+import { initializeBindGroupLayouts } from './initializeBindGroupLayouts';
 import { createDepthTexture, createMultiSampleTexture } from './internalTextures';
 import type { RendererOptions } from './TonyGL';
 
@@ -20,6 +21,12 @@ export type Renderer = {
   msaa: number;
   alpha: boolean;
   dpr: number;
+  bindGroupLayouts: {
+    cameraBindGroupLayout: GPUBindGroupLayout;
+    sceneBindGroupLayout: GPUBindGroupLayout;
+    entityBindGroupLayout: GPUBindGroupLayout;
+    materialBindGroupLayouts: Map<string, GPUBindGroupLayout>;
+  };
 };
 
 async function configureRenderer(options: RendererOptions): Promise<Renderer> {
@@ -56,6 +63,9 @@ async function configureRenderer(options: RendererOptions): Promise<Renderer> {
   const multiSampleTexture = createMultiSampleTexture(device, canvasTexture, msaa);
   const depthTexture = createDepthTexture(device, canvasTexture, msaa);
 
+  const { cameraBindGroupLayout, sceneBindGroupLayout, entityBindGroupLayout, materialBindGroupLayouts } =
+    initializeBindGroupLayouts(device);
+
   return {
     containerElement,
     canvasElement,
@@ -69,6 +79,12 @@ async function configureRenderer(options: RendererOptions): Promise<Renderer> {
     msaa,
     alpha,
     dpr,
+    bindGroupLayouts: {
+      cameraBindGroupLayout,
+      sceneBindGroupLayout,
+      entityBindGroupLayout,
+      materialBindGroupLayouts,
+    },
   };
 }
 
