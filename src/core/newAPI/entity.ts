@@ -25,6 +25,7 @@ export type Entity = {
   remove(entity: Entity): void;
   updateMatrix: () => void;
   destroy(): void;
+  markSceneAsDirty(dirtyType: 'lights' | 'renderlist'): void;
 };
 
 export type EntityOptions = {
@@ -183,6 +184,7 @@ function createEntity(options: EntityOptions): Entity {
     remove,
     updateMatrix,
     destroy,
+    markSceneAsDirty,
   };
 
   return entity;
